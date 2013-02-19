@@ -41,6 +41,23 @@ type
                     qbmSrcColorAdd    = 7,     { Blend source with color weight and alpha to dest }
                     qbmInvertSrcColor = 8);    { Blend inverted source color }
 
+  // Texture adressing mode
+  TQuadTextureAdressing = (qtaWrap       = 1,
+                           qtaMirror     = 2,
+                           qtaClamp      = 3,
+                           qtaBorder     = 4,
+                           qtaMirrorOnce = 5);
+
+  // Texture filtering mode
+  TQuadTextureFiltering = (qtfNone            = 0,    // filtering disabled (valid for mip filter only)
+                           qtfPoint           = 1,    // nearest
+                           qtfLinear          = 2,    // linear interpolation
+                           qtfANisotropic     = 3,    // anisotropic
+                           qtfPyramidalQuad   = 6,    // 4-sample tent
+                           qtfGaussianQuad    = 7,    // 4-sample gaussian
+                           qtfConvolutionMono = 8);   // Convolution filter for monochrome textures
+
+
   // Vector record declaration
   TVector = packed record
     x: Single;
@@ -144,8 +161,8 @@ type
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
     procedure SetTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure SetTextureAdressing(ATextureAdressing: TD3DTextureAddress); stdcall;
-    procedure SetTextureFiltering(ATextureFiltering: TD3DTextureFilterType); stdcall;
+    procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
+    procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
     procedure ResetDevice; stdcall;

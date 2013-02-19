@@ -29,7 +29,7 @@ const
     (Stream: $FF; Offset: 0;  _Type: D3DDECLTYPE_UNUSED;   Method: D3DDECLMETHOD_DEFAULT; Usage: D3DDECLUSAGE_POSITION; UsageIndex: 0)
     );
 
-  MaxBufferCount = $459C;
+  MaxBufferCount = 60000;
 
 type
   TQuadRender = class(TInterfacedObject, IQuadRender)
@@ -52,8 +52,8 @@ type
     FIsRenderIntoTexture: Boolean;
     Fqbm                : TQuadBlendMode;
     FVertexBuffer       : array [0..MaxBufferCount - 1] of TVertex;
-    FTextureAdressing   : TD3DTextureAddress;
-    FTextureFiltering   : TD3DTextureFilterType;
+    FTextureAdressing   : TQuadTextureAdressing;
+    FTextureFiltering   : TQuadTextureFiltering;
     FViewMatrix         : TD3DMatrix;
     FWidth              : Integer;
     FTimer              : IQuadTimer;
@@ -102,8 +102,8 @@ type
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
     procedure SetTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure SetTextureAdressing(ATextureAdressing: TD3DTextureAddress); stdcall;
-    procedure SetTextureFiltering(ATextureFiltering: TD3DTextureFilterType); stdcall;
+    procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
+    procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
     procedure ResetDevice; stdcall;
@@ -1282,39 +1282,59 @@ end;
 //=============================================================================
 // Defines constants that describe the supported texture-addressing modes.
 //=============================================================================
-procedure TQuadRender.SetTextureAdressing(ATextureAdressing: TD3DTextureAddress);
+procedure TQuadRender.SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing);
 var
   i: Integer;
+  Value: Cardinal;
 begin
   if ATextureAdressing = FTextureAdressing then
     Exit;
 
   FTextureAdressing := ATextureAdressing;
 
+  case FTextureAdressing of
+    qtaWrap:       Value := D3DTADDRESS_WRAP;
+    qtaMirror:     Value := D3DTADDRESS_MIRROR ;
+    qtaClamp:      Value := D3DTADDRESS_CLAMP ;
+    qtaBorder:     Value := D3DTADDRESS_BORDER ;
+    qtaMirrorOnce: Value := D3DTADDRESS_MIRRORONCE;
+  end;
+
   for i := 0 to MaxTextureStages - 1 do
   begin
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSU, FTextureAdressing);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSV, FTextureAdressing);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSU, Value);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSV, Value);
   end;
 end;
 
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.SetTextureFiltering(ATextureFiltering: TD3DTextureFilterType);
+procedure TQuadRender.SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering);
 var
   i: Integer;
+  Value: Cardinal;
 begin
   if ATextureFiltering = FTextureFiltering then
     Exit;
 
   FTextureFiltering := ATextureFiltering;
 
+  case FTextureFiltering of
+    qtfNone:            Value := D3DTEXF_NONE;
+    qtfPoint:           Value := D3DTEXF_POINT;
+    qtfLinear:          Value := D3DTEXF_LINEAR;
+    qtfANisotropic:     Value := D3DTEXF_ANISOTROPIC;
+    qtfPyramidalQuad:   Value := D3DTEXF_PYRAMIDALQUAD;
+    qtfGaussianQuad:    Value := D3DTEXF_GAUSSIANQUAD;
+    qtfConvolutionMono: Value := D3DTEXF_CONVOLUTIONMONO;
+  end;
+
   for i := 0 to MaxTextureStages - 1 do
   begin
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MIPFILTER, FTextureFiltering);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MAGFILTER, FTextureFiltering);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MINFILTER, FTextureFiltering);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MIPFILTER, Value);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MAGFILTER, Value);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MINFILTER, Value);
   end;
 end;
                                                                                
