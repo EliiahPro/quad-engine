@@ -49,13 +49,13 @@ type
                            qtaMirrorOnce = 5);
 
   // Texture filtering mode
-  TQuadTextureFiltering = (qtfNone            = 0,    // filtering disabled (valid for mip filter only)
-                           qtfPoint           = 1,    // nearest
-                           qtfLinear          = 2,    // linear interpolation
-                           qtfANisotropic     = 3,    // anisotropic
-                           qtfPyramidalQuad   = 6,    // 4-sample tent
-                           qtfGaussianQuad    = 7,    // 4-sample gaussian
-                           qtfConvolutionMono = 8);   // Convolution filter for monochrome textures
+  TQuadTextureFiltering = (qtfNone            = 0,    { Filtering disabled (valid for mip filter only) }
+                           qtfPoint           = 1,    { Nearest }
+                           qtfLinear          = 2,    { Linear interpolation }
+                           qtfANisotropic     = 3,    { Aanisotropic }
+                           qtfPyramidalQuad   = 6,    { 4-sample tent }
+                           qtfGaussianQuad    = 7,    { 4-sample gaussian }
+                           qtfConvolutionMono = 8);   { Convolution filter for monochrome textures }
 
 
   // Vector record declaration
