@@ -63,7 +63,7 @@ begin
   AQuadWindow := TQuadWindow.Create;
 end;
 
-function SecretMagicFunction: PAnsiChar; stdcall;
+function SecretMagicFunction: PWideChar; stdcall;
 begin
   Result := 'Theory is - when you know everything but nothing works.'#13 +
             'Practice is - when all works, but you don''t know why.'#13 +
