@@ -18,7 +18,7 @@ uses
   QuadEngine.Render, System.IniFiles, QuadEngine;
 
 const
-  QuadVersion: PAnsiChar = 'Quad Engine v0.5.0';
+  QuadVersion: PWideChar = 'Quad Engine v0.5.0';
 
 type
   TQuadDevice = class(TInterfacedObject, IQuadDevice)
@@ -28,7 +28,7 @@ type
     FLastResultCode: HResult;
     FLog: TQuadLog;
     FRender: TQuadRender;
-    FLastErrorText: PAnsiChar;
+    FLastErrorText: PWideChar;
     FOnErrorFunction: TOnErrorFunction;
     procedure SetLastResultCode(const Value: HResult);
     procedure GetErrorTextByCode(AErrorCode: HResult);
@@ -38,7 +38,7 @@ type
     destructor Destroy; override;
 
     function CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar; out pQuadFont: IQuadFont): HResult; stdcall;
-    function CreateAndLoadTexture(ARegister: Byte; AFilename: PAnsiChar; out pQuadTexture: IQuadTexture;
+    function CreateAndLoadTexture(ARegister: Byte; AFilename: PWideChar; out pQuadTexture: IQuadTexture;
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
@@ -48,7 +48,7 @@ type
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
-    function GetLastError: PAnsiChar; stdcall;
+    function GetLastError: PWideChar; stdcall;
     function GetMonitorsCount: Byte; stdcall;
     procedure GetSupportedScreenResolution(index: Integer; out Resolution: TCoord); stdcall;
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
@@ -140,7 +140,7 @@ begin
     FActiveMonitorIndex := D3DADAPTER_DEFAULT;
 end;
 
-function TQuadDevice.GetLastError: PAnsiChar;
+function TQuadDevice.GetLastError: PWideChar;
 begin
   GetErrorTextByCode(LastResultCode);
   Result := FLastErrorText;
@@ -204,7 +204,7 @@ begin
     E_NOTIMPL                       : FLastErrorText := 'Not implemented.';
     E_OUTOFMEMORY                   : FLastErrorText := 'Direct3D could not allocate sufficient memory to complete the call.';
   else
-    FLastErrorText := PAnsiChar('Unknown error. Code ' + IntToStr(FLastResultCode));
+    FLastErrorText := PWideChar('Unknown error. Code ' + IntToStr(FLastResultCode));
   end;
 
   if FLog <> nil then        {todo : why that?}
@@ -265,7 +265,7 @@ begin
 end;
 
 function TQuadDevice.CreateAndLoadTexture(ARegister: Byte;
-  AFilename: PAnsiChar; out pQuadTexture: IQuadTexture; APatternWidth, APatternHeight,
+  AFilename: PWideChar; out pQuadTexture: IQuadTexture; APatternWidth, APatternHeight,
   AColorKey: Integer): HResult;
 begin
   pQuadTexture := TQuadTexture.Create(FRender);
@@ -274,7 +274,7 @@ end;
 
 function TQuadDevice.CreateCamera(out pQuadCamera: IQuadCamera): HResult;
 begin
-  pQuadCamera := TQuadCamera.create(FRender);
+  pQuadCamera := TQuadCamera.Create(FRender);
 end;
 
 function TQuadDevice.CreateRender(out pQuadRender: IQuadRender): HResult;

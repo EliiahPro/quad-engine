@@ -48,7 +48,7 @@ type
 
   TQuadFont = class(TInterfacedObject, IQuadFont)
   private
-    FColors          : array [Byte] of Cardinal;
+    FColors          : array [Word] of Cardinal;
     FHeight          : Word;
     FIsSmartColoring : Boolean;
     FKerning         : Single;
@@ -72,7 +72,7 @@ type
     function  GetKerning: Single; stdcall;
     procedure SetKerning(AValue: Single); stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename: PWideChar); stdcall;
-    procedure SetSmartColor(AColorChar: AnsiChar; AColor: Cardinal); stdcall;
+    procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
     procedure TextOut(x, y, AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
     function TextHeight(AText: PWideChar; AScale: Single = 1.0) : Single; stdcall;
@@ -167,7 +167,7 @@ begin
     FTexture.Free;
 
   FTexture := TQuadTexture.Create(FQuadRender);
-  FTexture.LoadFromFileW(0, ATextureFilename);
+  FTexture.LoadFromFile(0, ATextureFilename);
 
   FWidth := FTexture.TextureWidth;
   FHeight := FTexture.TextureHeight;
@@ -225,9 +225,9 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadFont.SetSmartColor(AColorChar: AnsiChar; AColor: Cardinal);
+procedure TQuadFont.SetSmartColor(AColorChar: WideChar; AColor: Cardinal);
 begin
-  FColors[Ord(AColorChar)] := AColor; 
+  FColors[Ord(AColorChar)] := AColor;
 end;
 
 //=============================================================================

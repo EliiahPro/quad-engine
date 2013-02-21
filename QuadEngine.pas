@@ -89,12 +89,12 @@ type
   { Quad Render }
 
   // OnError routine. Calls whenever error occurs
-  TOnErrorFunction = procedure(Errorstring: PAnsiChar); stdcall;
+  TOnErrorFunction = procedure(Errorstring: PWideChar); stdcall;
 
   IQuadDevice = interface(IUnknown)
     ['{E28626FF-738F-43B0-924C-1AFC7DEC26C7}']
     function CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar; out pQuadFont: IQuadFont): HResult; stdcall;
-    function CreateAndLoadTexture(ARegister: Byte; AFilename: PAnsiChar; out pQuadTexture: IQuadTexture;
+    function CreateAndLoadTexture(ARegister: Byte; AFilename: PWideChar; out pQuadTexture: IQuadTexture;
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
@@ -109,7 +109,7 @@ type
     /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
-    function GetLastError: PAnsiChar; stdcall;
+    function GetLastError: PWideChar; stdcall;
     function GetMonitorsCount: Byte; stdcall;
     procedure GetSupportedScreenResolution(index: Integer; out Resolution: TCoord); stdcall;
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
@@ -123,10 +123,10 @@ type
     function GetMaxTextureHeight: Cardinal; stdcall;
     function GetMaxTextureStages: Cardinal; stdcall;
     function GetMaxTextureWidth: Cardinal; stdcall;
-    function GetPixelShaderVersionString: PAnsiChar; stdcall;
+    function GetPixelShaderVersionString: PWideChar; stdcall;
     function GetPSVersionMajor: Byte; stdcall;
     function GetPSVersionMinor: Byte; stdcall;
-    function GetVertexShaderVersionString: PAnsiChar; stdcall;
+    function GetVertexShaderVersionString: PWideChar; stdcall;
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
@@ -145,7 +145,7 @@ type
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AIsCreateLog: Boolean = True); stdcall;
-    procedure InitializeFromIni(AHandle: THandle; AFilename: PAnsiChar); stdcall;
+    procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal); stdcall;
     procedure Rectangle(x, y, x2, y2: Double; Color: Cardinal); stdcall;
     procedure RectangleEx(x, y, x2, y2: Double; Color1, Color2, Color3, Color4: Cardinal); stdcall;
@@ -192,9 +192,7 @@ type
     procedure DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxis(x, y, angle, Scale, xA, yA: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxisFrame(x, y, angle, Scale, xA, yA: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure LoadFromFile(ARegister: Byte; AFilename: PAnsiChar; APatternWidth: Integer = 0;
-      APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
-    procedure LoadFromFileW(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
+    procedure LoadFromFile(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
@@ -208,12 +206,9 @@ type
     procedure BindVariableToPS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
     function GetVertexShader(out Shader: IDirect3DVertexShader9): HResult; stdcall;
     function GetPixelShader(out Shader: IDirect3DPixelShader9): HResult; stdcall;
-    procedure LoadVertexShader(AVertexShaderFilename: PAnsiChar); stdcall;
-    procedure LoadVertexShaderW(AVertexShaderFilename: PWideChar); stdcall;
-    procedure LoadPixelShader(APixelShaderFilename: PAnsiChar); stdcall;
-    procedure LoadPixelShaderW(APixelShaderFilename: PWideChar); stdcall;
-    procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PAnsiChar); stdcall;
-    procedure LoadComplexShaderW(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
+    procedure LoadVertexShader(AVertexShaderFilename: PWideChar); stdcall;
+    procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
+    procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
   end;
 
@@ -252,7 +247,7 @@ type
     function GetIsLoaded: Boolean; stdcall;
     function GetKerning: Single; stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename : PWideChar); stdcall;
-    procedure SetSmartColor(AColorChar: AnsiChar; AColor: Cardinal); stdcall;
+    procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
     procedure SetKerning(AValue: Single); stdcall;
     function TextHeight(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
@@ -319,7 +314,7 @@ type
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
   TCreateQuadWindow    = function(out QuadWindow: IQuadWindow): HResult; stdcall;
-  TSecretMagicFunction = function: PAnsiChar;
+  TSecretMagicFunction = function: PWideChar;
 
   function CreateQuadDevice: IQuadDevice;
   function CreateWindow: IQuadWindow;

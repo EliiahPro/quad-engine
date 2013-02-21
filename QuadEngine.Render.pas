@@ -70,10 +70,10 @@ type
     function GetMaxTextureHeight: Cardinal; stdcall;
     function GetMaxTextureStages: Cardinal; stdcall;
     function GetMaxTextureWidth: Cardinal; stdcall;
-    function GetPixelShaderVersionString: PAnsiChar; stdcall;
+    function GetPixelShaderVersionString: PWideChar; stdcall;
     function GetPSVersionMajor: Byte; stdcall;
     function GetPSVersionMinor: Byte; stdcall;
-    function GetVertexShaderVersionString: PAnsiChar; stdcall;
+    function GetVertexShaderVersionString: PWideChar; stdcall;
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
@@ -92,7 +92,7 @@ type
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AIsCreateLog: Boolean = True); stdcall;
-    procedure InitializeFromIni(AHandle: THandle; AFilename: PAnsiChar); stdcall;
+    procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal); stdcall;
     procedure Rectangle(x, y, x2, y2: Double; Color: Cardinal); stdcall;
     procedure RectangleEx(x, y, x2, y2: Double; Color1, Color2, Color3, Color4: Cardinal); stdcall;
@@ -120,12 +120,12 @@ type
     property MaxTextureHeight: Cardinal read GetMaxTextureHeight;
     property MaxTextureStages: Cardinal read GetMaxTextureStages;
     property MaxAnisotropy: Cardinal read GetMaxAnisotropy;
-    property PixelShaderVersionString: PAnsiChar read GetPixelShaderVersionString;
+    property PixelShaderVersionString: PWideChar read GetPixelShaderVersionString;
     property ProjectionMatrix: TD3DMatrix read GetProjectionMatrix;
     property PSVersionMajor: Byte read GetPSVersionMajor;
     property PSVersionMinor: Byte read GetPSVersionMinor;
     property RenderMode: TD3DPrimitiveType read FRenderMode write SetRenderMode;
-    property VertexShaderVersionString : PAnsiChar read GetVertexShaderVersionString;
+    property VertexShaderVersionString : PWideChar read GetVertexShaderVersionString;
     property VSVersionMajor: Byte read GetVSVersionMajor;
     property VSVersionMinor: Byte read GetVSVersionMinor;
     property Width: Integer read FWidth;
@@ -717,9 +717,9 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadRender.GetPixelShaderVersionString: PAnsiChar;
+function TQuadRender.GetPixelShaderVersionString: PWideChar;
 begin
-  Result := PAnsiChar(IntToStr(PSVersionMajor) + '.' + IntToStr(PSVersionMinor));
+  Result := PWideChar(IntToStr(PSVersionMajor) + '.' + IntToStr(PSVersionMinor));
 end;
 
 //=============================================================================
@@ -749,9 +749,9 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadRender.GetVertexShaderVersionString: PAnsiChar;
+function TQuadRender.GetVertexShaderVersionString: PWideChar;
 begin
-  Result := PAnsiChar(IntToStr(VSVersionMajor) + '.' + IntToStr(VSVersionMinor));
+  Result := PWideChar(IntToStr(VSVersionMajor) + '.' + IntToStr(VSVersionMinor));
 end;
 
 //=============================================================================
@@ -782,7 +782,7 @@ end;
 //=============================================================================
 // Main initialization routine
 //=============================================================================
-procedure TQuadRender.InitializeFromIni(AHandle: THandle; AFilename: PAnsiChar);
+procedure TQuadRender.InitializeFromIni(AHandle: THandle; AFilename: PWideChar);
 const
   ASection: string = 'Quadengine';
 var

@@ -38,12 +38,9 @@ type
     procedure BindVariableToPS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
     function GetVertexShader(out Shader: IDirect3DVertexShader9): HResult; stdcall;
     function GetPixelShader(out Shader: IDirect3DPixelShader9): HResult; stdcall;
-    procedure LoadVertexShader(AVertexShaderFilename: PAnsiChar); stdcall;
-    procedure LoadVertexShaderW(AVertexShaderFilename: PWideChar); stdcall;
-    procedure LoadPixelShader(APixelShaderFilename: PAnsiChar); stdcall;
-    procedure LoadPixelShaderW(APixelShaderFilename: PWideChar); stdcall;
-    procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PAnsiChar); stdcall;
-    procedure LoadComplexShaderW(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
+    procedure LoadVertexShader(AVertexShaderFilename: PWideChar); stdcall;
+    procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
+    procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
   end;
 
@@ -123,28 +120,22 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadShader.LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PAnsiChar);
+procedure TQuadShader.LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWidechar);
 begin
   LoadVertexShader(AVertexShaderFilename);
   LoadPixelShader(APixelShaderFilename);
 end;
 
-procedure TQuadShader.LoadComplexShaderW(AVertexShaderFilename,
-  APixelShaderFilename: PWideChar);
-begin
-  LoadComplexShader(PAnsiChar(AnsiString(AVertexShaderFilename)), PAnsiChar(AnsiString(APixelShaderFilename)));
-end;
-
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadShader.LoadPixelShader(APixelShaderFilename: PAnsiChar);
+procedure TQuadShader.LoadPixelShader(APixelShaderFilename: PWideChar);
 var
   dwpPS : PDWORD;
   filePS: THandle;
   mapPS : THandle;
 begin
-  filePS := CreateFileA(APixelShaderFilename, GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  filePS := CreateFile(APixelShaderFilename, GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   mapPS := CreateFileMapping(filePS, nil, PAGE_READONLY, 0, 0, nil);
 
   dwpPS := MapViewOfFile(mapPS, FILE_MAP_READ, 0, 0, 0);
@@ -156,21 +147,16 @@ begin
   CloseHandle(filePS);
 end;
 
-procedure TQuadShader.LoadPixelShaderW(APixelShaderFilename: PWideChar);
-begin
-  LoadPixelShader(PAnsiChar(AnsiString(APixelShaderFilename)));
-end;
-
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadShader.LoadVertexShader(AVertexShaderFilename: PAnsiChar);
+procedure TQuadShader.LoadVertexShader(AVertexShaderFilename: PWideChar);
 var
   dwpVS: PDWORD;
   fileVS: THandle;
   mapVS: THandle;
 begin
-  fileVS := CreateFileA(AVertexShaderFilename, GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  fileVS := CreateFile(AVertexShaderFilename, GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   mapVS := CreateFileMapping(fileVS, nil, PAGE_READONLY, 0, 0, nil);
 
   dwpVS := MapViewOfFile(mapVS, FILE_MAP_READ, 0, 0, 0);
@@ -180,11 +166,6 @@ begin
   UnmapViewOfFile(dwpVS);
   CloseHandle(mapVS);
   CloseHandle(fileVS);
-end;
-
-procedure TQuadShader.LoadVertexShaderW(AVertexShaderFilename: PWideChar);
-begin
-  LoadVertexShader(PAnsiChar(AnsiString(AVertexShaderFilename)));
 end;
 
 //=============================================================================

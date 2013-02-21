@@ -65,9 +65,7 @@ type
     procedure DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxis(x, y, angle, Scale, xA, yA: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxisFrame(x, y, angle, Scale, xA, yA: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure LoadFromFile(ARegister: Byte; AFilename: PAnsiChar; APatternWidth: Integer = 0;
-      APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
-    procedure LoadFromFileW(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
+    procedure LoadFromFile(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
@@ -453,7 +451,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PAnsiChar;
+procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
   APatternWidth, APatternHeight: Integer; AColorKey: Integer);
 var
   Texture : IDirect3DTexture9;
@@ -495,12 +493,6 @@ begin
     FPatternWidth := APatternWidth;
     FPatternHeight := APatternHeight;
   end;
-end;
-
-procedure TQuadTexture.LoadFromFileW(ARegister: Byte; AFilename: PWideChar;
-  APatternWidth, APatternHeight, AColorKey: Integer);
-begin
-  LoadFromFile(ARegister, PAnsiChar(AnsiString(AFilename)), APatternWidth, APatternHeight, AColorKey);
 end;
 
 //=============================================================================
