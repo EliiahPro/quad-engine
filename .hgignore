@@ -1,0 +1,4 @@
+syntax: glob
+__history
+*.dcu
+dll/qei.map

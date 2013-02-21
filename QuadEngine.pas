@@ -42,17 +42,17 @@ type
                     qbmInvertSrcColor = 8);    { Blend inverted source color }
 
   // Texture adressing mode
-  TQuadTextureAdressing = (qtaWrap       = 1,
-                           qtaMirror     = 2,
-                           qtaClamp      = 3,
-                           qtaBorder     = 4,
-                           qtaMirrorOnce = 5);
+  TQuadTextureAdressing = (qtaWrap       = 1,    {Repeat UV}
+                           qtaMirror     = 2,    {Repeat UV with mirroring}
+                           qtaClamp      = 3,    {Do not repeat UV}
+                           qtaBorder     = 4,    {Fill outranged UV with border}
+                           qtaMirrorOnce = 5);   {Mirror UV once}
 
   // Texture filtering mode
   TQuadTextureFiltering = (qtfNone            = 0,    { Filtering disabled (valid for mip filter only) }
                            qtfPoint           = 1,    { Nearest }
                            qtfLinear          = 2,    { Linear interpolation }
-                           qtfANisotropic     = 3,    { Aanisotropic }
+                           qtfAnisotropic     = 3,    { Anisotropic }
                            qtfPyramidalQuad   = 6,    { 4-sample tent }
                            qtfGaussianQuad    = 7,    { 4-sample gaussian }
                            qtfConvolutionMono = 8);   { Convolution filter for monochrome textures }
