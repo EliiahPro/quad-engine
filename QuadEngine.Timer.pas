@@ -175,7 +175,15 @@ end;
 //=============================================================================
 procedure TQuadTimer.SetState(AIsEnabled: Boolean);
 begin
+  if AIsEnabled = FIsEnabled then
+    Exit;
+
   FIsEnabled := AIsEnabled;
+  if AIsEnabled then
+  begin
+    QueryPerformanceCounter(FPerformanceLastCounter);
+    QueryPerformanceCounter(FPerformanceCounter);
+  end;
 end;
 
 //=============================================================================
