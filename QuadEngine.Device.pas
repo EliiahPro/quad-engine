@@ -30,6 +30,7 @@ type
     FRender: TQuadRender;
     FLastErrorText: PWideChar;
     FOnErrorFunction: TOnErrorFunction;
+    FMaxTimerID: Cardinal;
     procedure SetLastResultCode(const Value: HResult);
     procedure GetErrorTextByCode(AErrorCode: HResult);
     procedure SetOnErrorFunction(const Value: TOnErrorFunction);
@@ -120,6 +121,8 @@ begin
   {$ENDREGION}
 
   FRender := TQuadRender.Create;
+
+  FMaxTimerID := 0;
 end;
 
 destructor TQuadDevice.Destroy;
@@ -253,8 +256,13 @@ begin
 end;
 
 function TQuadDevice.CreateTimer(out pQuadTimer: IQuadTimer): HResult;
+var
+  Timer: TQuadTimer;
 begin
-  pQuadTimer := TQuadTimer.create;
+  inc(FMaxTimerID);
+  Timer := TQuadTimer.create;
+  Timer.Id := FMaxTimerID;
+  pQuadTimer := Timer;
 end;
 
 function TQuadDevice.CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar;

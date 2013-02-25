@@ -1354,6 +1354,9 @@ begin
   Device.LastResultCode := FD3DDevice.SetScissorRect(@R);
 end;
 
+//=============================================================================
+// Take Screenshot and save to file
+//=============================================================================
 procedure TQuadRender.TakeScreenshot(AFileName: PWideChar);
 var
   Surface: IDirect3DSurface9;
@@ -1388,7 +1391,7 @@ begin
 
   Png := TPngImage.Create;
   Png.Assign(Bitmap);
-  png.SaveToFile('test.png');
+  png.SaveToFile(AFileName);
   png.Free;
 
   Bitmap.Free;

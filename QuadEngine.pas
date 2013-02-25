@@ -266,7 +266,7 @@ type
 
   {Quad Timer}
 
-  TTimerProcedure = procedure(out delta: Double); stdcall;
+  TTimerProcedure = procedure(out delta: Double; Id: Cardinal); stdcall;
   { template:
     procedure OnTimer(out delta: Double); stdcall;
     begin
@@ -279,6 +279,7 @@ type
     function GetDelta: Double; stdcall;
     function GetFPS: Single; stdcall;
     function GetWholeTime: Double; stdcall;
+    function GetTimerID: Cardinal; stdcall;
     procedure ResetWholeTimeCounter; stdcall;
     procedure SetCallBack(AProc: TTimerProcedure); stdcall;
     procedure SetInterval(AInterval: Word); stdcall;

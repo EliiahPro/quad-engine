@@ -34,6 +34,7 @@ type
     FCPUTotalTime          : Int64;
     FFPS                   : Single;
     FFramesRendered        : Word;
+    FId                    : Cardinal;
     FIsEnabled             : Boolean;
     FOnTimer               : TTimerProcedure;
     FPerformanceFrequency  : Int64;
@@ -53,6 +54,7 @@ type
     function GetFPS: Single; stdcall;
     function GetDelta: Double; stdcall;
     function GetWholeTime: Double; stdcall;
+    function GetTimerID: Cardinal; stdcall;
     procedure ResetWholeTimeCounter; stdcall;
     procedure SetInterval(AInterval: Word); stdcall;
     procedure SetCallBack(AProc: TTimerProcedure); stdcall;
@@ -60,6 +62,7 @@ type
     procedure Timer;
     procedure Tick;
     property OnTimer: TTimerProcedure read FOnTimer write FOnTimer;
+    property Id: Cardinal read FId write FId;
   end;
 
 implementation
@@ -122,6 +125,14 @@ end;
 function TQuadTimer.GetFPS: single;
 begin
   Result := FFPS;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadTimer.GetTimerID: Cardinal;
+begin
+  Result := FId;
 end;
 
 //=============================================================================
@@ -220,7 +231,7 @@ begin
   if Assigned(FOnTimer) then
   begin
     try
-      FOnTimer(FTimeSpent);
+      FOnTimer(FTimeSpent, FId);
     except
       //
     end;
