@@ -165,6 +165,7 @@ type
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
+    procedure TakeScreenshot(AFileName: PWideChar); stdcall;
     procedure ResetDevice; stdcall;
     function GetD3DDevice: IDirect3DDevice9; stdcall;
   end;

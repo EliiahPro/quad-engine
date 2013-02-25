@@ -1,4 +1,4 @@
-﻿{﻿//=============================================================================
+﻿{//=============================================================================
 //             ╔═══════════╦═╗
 //             ║           ║ ║
 //             ║           ║ ║
@@ -7,14 +7,14 @@
 //             ║  ║ engine   ║
 //             ║  ║          ║
 //             ╚══╩══════════╝
-//=============================================================================  }
+//=============================================================================}
 
 unit QuadEngine.Render;
 
 interface
 
 uses
-  Winapi.Windows, Winapi.direct3d9, Winapi.DXTypes,
+  Winapi.Windows, Winapi.direct3d9, Winapi.DXTypes, graphics,
   QuadEngine.Utils, QuadEngine.Log, Vec2f, QuadEngine, IniFiles, System.SysUtils;
 
 const
@@ -106,6 +106,7 @@ type
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
+    procedure TakeScreenshot(AFileName: PWideChar); stdcall;
     procedure ResetDevice; stdcall;
     function GetD3DDevice: IDirect3DDevice9; stdcall;
 
@@ -1351,6 +1352,51 @@ begin
   R.Bottom := FHeight;
 
   Device.LastResultCode := FD3DDevice.SetScissorRect(@R);
+end;
+
+procedure TQuadRender.TakeScreenshot(AFileName: PWideChar);
+var
+  Surface: IDirect3DSurface9;
+  LockedRect: TD3DLockedRect;
+  Bitmap: TBitmap;
+  pbit: PByteArray;
+  psur: PByteArray;
+  i, j: Integer;
+  r: TRect;
+begin
+  Device.LastResultCode := FD3DDevice.CreateOffscreenPlainSurface(FD3DDM.Width, FD3DDM.Height, D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, Surface, nil);
+  Device.LastResultCode := FD3DDevice.GetFrontBufferData(0, Surface);
+  Device.LastResultCode := Surface.LockRect(LockedRect, nil, D3DLOCK_READONLY or D3DLOCK_NO_DIRTY_UPDATE or D3DLOCK_NOSYSLOCK);
+
+  Bitmap := TBitmap.Create;
+  Bitmap.PixelFormat := pf24bit;
+  Bitmap.Width := FWidth;
+  Bitmap.Height := FHeight;
+  Bitmap.Canvas.Brush.Color := clRed;
+  r.Left := 0;
+  r.Right := FWidth;
+  r.Top := 0;
+  r.Bottom := FHeight;
+  Bitmap.Canvas.FillRect(r);
+
+  for i := 0 to FHeight - 1 do
+  begin
+    pbit := Bitmap.ScanLine[i];
+    psur := Pointer(Cardinal(LockedRect.pBits) + i * FD3DDM.Width * 4);
+
+    for j := 0 to FWidth - 1 do
+    begin
+      pbit[j * 3] := psur[j * 4 + 0];
+      pbit[j * 3 + 1] := psur[j * 4 + 1];
+      pbit[j * 3 + 2] := psur[j * 4 + 2];
+    end;
+  end;
+
+  Bitmap.SaveToFile(AFileName);
+  Bitmap.Free;
+
+  Device.LastResultCode := Surface.UnlockRect;
+  Surface := nil;
 end;
 
 end.

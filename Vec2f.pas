@@ -13,9 +13,9 @@ type
     class operator Multiply(const a: TVec2i; X: Single): TVec2i;
     class operator Negative(const X: TVec2i): TVec2i;
     constructor Create(X, Y: Single);
-    function Distance(const X: TVec2i) : Single; inline;
+    function Distance(const X: TVec2i): Single; inline;
     function Dot(const X: TVec2i): Single; inline;
-    function Lerp(const X: TVec2i; dist: Single) : TVec2i; inline;
+    function Lerp(const X: TVec2i; dist: Single): TVec2i; inline;
         // data
     case Integer of
       0: (X, Y: Single);
@@ -33,10 +33,10 @@ type
     class operator Divide(const a, b: TVec2f): TVec2f;
     class operator Divide(const a: TVec2f; X: Single): TVec2f;
     class operator Negative(const X: TVec2f): TVec2f;
-    constructor Create(X, Y: Single); inline;
+    constructor Create(X, Y: Single);
     function Distance(const X: TVec2f) : Single; inline;
     function Dot(const X: TVec2f) : Single; inline;
-    function Lerp(const X: TVec2f; dist: Single) : TVec2f; inline;
+    function Lerp(const X: TVec2f; dist: Single): TVec2f; inline;
     function Normal: TVec2f; inline;
     function Normalize: TVec2f; inline;
         // data
