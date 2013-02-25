@@ -14,7 +14,7 @@ unit QuadEngine.Render;
 interface
 
 uses
-  Winapi.Windows, Winapi.direct3d9, Winapi.DXTypes, graphics,
+  Winapi.Windows, Winapi.direct3d9, Winapi.DXTypes, graphics, VCL.Imaging.pngimage,
   QuadEngine.Utils, QuadEngine.Log, Vec2f, QuadEngine, IniFiles, System.SysUtils;
 
 const
@@ -1359,10 +1359,10 @@ var
   Surface: IDirect3DSurface9;
   LockedRect: TD3DLockedRect;
   Bitmap: TBitmap;
+  Png: TPngImage;
   pbit: PByteArray;
   psur: PByteArray;
   i, j: Integer;
-  r: TRect;
 begin
   Device.LastResultCode := FD3DDevice.CreateOffscreenPlainSurface(FD3DDM.Width, FD3DDM.Height, D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, Surface, nil);
   Device.LastResultCode := FD3DDevice.GetFrontBufferData(0, Surface);
@@ -1372,12 +1372,6 @@ begin
   Bitmap.PixelFormat := pf24bit;
   Bitmap.Width := FWidth;
   Bitmap.Height := FHeight;
-  Bitmap.Canvas.Brush.Color := clRed;
-  r.Left := 0;
-  r.Right := FWidth;
-  r.Top := 0;
-  r.Bottom := FHeight;
-  Bitmap.Canvas.FillRect(r);
 
   for i := 0 to FHeight - 1 do
   begin
@@ -1392,7 +1386,11 @@ begin
     end;
   end;
 
-  Bitmap.SaveToFile(AFileName);
+  Png := TPngImage.Create;
+  Png.Assign(Bitmap);
+  png.SaveToFile('test.png');
+  png.Free;
+
   Bitmap.Free;
 
   Device.LastResultCode := Surface.UnlockRect;
