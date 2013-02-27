@@ -312,6 +312,8 @@ type
     procedure Zoom(AScale: Single); stdcall;
     procedure Rotate(AAngle: Single); stdcall;
     procedure Translate(AXDistance, AYDistance: Single); stdcall;
+    procedure Reset; stdcall;
+    procedure ApplyTransform; stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
