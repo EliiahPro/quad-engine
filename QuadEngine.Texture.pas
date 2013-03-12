@@ -15,7 +15,7 @@ interface
 
 uses
   QuadEngine.Render, graphics, VCL.Imaging.pngimage, JPEG, direct3d9, TGAReader,
-  QuadEngine.Log, QuadEngine;
+  QuadEngine.Log, QuadEngine, System.SyncObjs;
 
 type
   TQuadTextureItem = record
@@ -35,6 +35,7 @@ type
     FPatternWidth : Integer;
     FPatternHeight: Integer;
     FIsLoaded     : Boolean;
+    FSync: TCriticalSection;
     procedure LoadBMPTexture(const aFilename: String; var Texture: IDirect3DTexture9; ColorKey: Integer = -1);
     procedure LoadDDSTexture(const aFilename: String; var Texture: IDirect3DTexture9);
     procedure LoadJPGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
@@ -95,10 +96,14 @@ uses
 //=============================================================================
 procedure TQuadTexture.AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9);
 begin
+  FSync.Enter;
+
   Inc(FTexturesCount);
   SetLength(FTextures, FTexturesCount);
   FTextures[FTexturesCount - 1].Reg := ARegister;
   FTextures[FTexturesCount - 1].Texture := ATexture;
+
+  FSync.Leave;
 end;
 
 //=============================================================================
@@ -111,6 +116,7 @@ begin
   FIsLoaded := False;
   FPatternWidth := 0;
   FPatternHeight := 0;
+  FSync := TCriticalSection.Create;
 end;
 
 //=============================================================================
@@ -145,6 +151,8 @@ destructor TQuadTexture.Destroy;
 var
   i: Integer;
 begin
+  FSync.Free;
+
   for i := 0 to FTexturesCount - 1 do
     FTextures[i].Texture := nil;
 
