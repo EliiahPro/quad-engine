@@ -25,16 +25,16 @@ type
 
   TQuadTexture =  class(TInterfacedObject, IQuadTexture)
   private
-    FQuadRender   : TQuadRender;
-    FTextures     : array of TQuadTextureItem;
+    FQuadRender: TQuadRender;
+    FTextures: array of TQuadTextureItem;
     FTexturesCount: Byte;
-    FWidth        : Integer;
-    FHeight       : Integer;
-    FFrameWidth   : Integer;
-    FFrameHeight  : Integer;
-    FPatternWidth : Integer;
+    FWidth: Integer;
+    FHeight: Integer;
+    FFrameWidth: Integer;
+    FFrameHeight: Integer;
+    FPatternWidth: Integer;
     FPatternHeight: Integer;
-    FIsLoaded     : Boolean;
+    FIsLoaded: Boolean;
     FSync: TCriticalSection;
     procedure LoadBMPTexture(const aFilename: String; var Texture: IDirect3DTexture9; ColorKey: Integer = -1);
     procedure LoadDDSTexture(const aFilename: String; var Texture: IDirect3DTexture9);
@@ -382,7 +382,7 @@ begin
 
         Cardinal(aData.pBits^) := Cardinal(aData.pBits^) ;//and $FF000000 + $00FFFFFF;
 
-        Inc(Integer(aData.pBits), 3);
+        Inc(NativeInt(aData.pBits), 3);
 
         if ColorKey <> -1 then
         begin
@@ -395,9 +395,9 @@ begin
             Byte(aData.pBits^) := 255;
         end;
 
-        Inc(Integer(aData.pBits), 1);
+        Inc(NativeInt(aData.pBits), 1);
 
-        Inc(Integer(p), 3);
+        Inc(NativeInt(p), 3);
       end else
       if bmp.PixelFormat = pf32bit then
       begin
@@ -405,12 +405,12 @@ begin
 
         Cardinal(aData.pBits^) := Cardinal(aData.pBits^) and $FF000000 + $00FFFFFF;
 
-        Inc(Integer(aData.pBits), 4);
+        Inc(NativeInt(aData.pBits), 4);
 
-        Inc(Integer(p), 4);
+        Inc(NativeInt(p), 4);
       end;
     end;
-    Inc(Integer(aData.pBits), 4 * (FWidth - FFrameWidth));
+    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
   end;
 
   bmp.Free;
@@ -531,10 +531,10 @@ begin
     for j := 0 to FFrameWidth - 1 do
     begin
       Move(AData^, LockedRect.pBits^, 4);
-      Inc(Integer(LockedRect.pBits), 4);
-      Inc(Integer(AData), 4);
+      Inc(NativeInt(LockedRect.pBits), 4);
+      Inc(NativeInt(AData), 4);
     end;
-    Inc(Integer(LockedRect.pBits), 4 * (FWidth - FFrameWidth));
+    Inc(NativeInt(LockedRect.pBits), 4 * (FWidth - FFrameWidth));
   end;
 
   Device.LastResultCode := Texture.UnlockRect(0);
@@ -589,17 +589,17 @@ begin
     begin
       Move(p^, aData.pBits^, 3);
 
-      Inc(Integer(aData.pBits), 3);
+      Inc(NativeInt(aData.pBits), 3);
 
 //      if Byte(p^) + Byte(Pointer(Integer(p) + 1)^) + Byte(Pointer(Integer(p) + 2)^) < 128 then
 //      Byte(aData.pBits^) := 0 else
       Byte(aData.pBits^) := 255;
 
-      Inc(Integer(aData.pBits), 1);
+      Inc(NativeInt(aData.pBits), 1);
 
-      Inc(Integer(p), 3);
+      Inc(NativeInt(p), 3);
     end;
-    Inc(Integer(aData.pBits), 4 * (FWidth - FFrameWidth));
+    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
   end;
 
   bmp.Free;
@@ -634,18 +634,18 @@ begin
     for j:= 0 to FFrameWidth - 1 do
     begin
       Move(p^, aData.pBits^, 3);
-      Inc(Integer(aData.pBits), 3);
-      Inc(Integer(p), 3);
+      Inc(NativeInt(aData.pBits), 3);
+      Inc(NativeInt(p), 3);
 
       if pa <> nil then
       begin
         Move(pa^, aData.pBits^, 1);
-        Inc(Integer(pa), 1);
+        Inc(NativeInt(pa), 1);
       end;
-      Inc(Integer(aData.pBits), 1);
+      Inc(NativeInt(aData.pBits), 1);
 
     end;
-    Inc(Integer(aData.pBits), 4 * (FWidth - FFrameWidth));
+    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
   end;
 
   bmp.Free;
@@ -680,16 +680,16 @@ begin
     begin
       Move(p^, aData.pBits^, 4);
 
-      Inc(Integer(aData.pBits), 4);
+      Inc(NativeInt(aData.pBits), 4);
 
   {    if Byte(p^) + Byte(Pointer(Integer(p) + 1)^) + Byte(Pointer(Integer(p) + 2)^) < 128 then
       Byte(aData.pBits^) := 0 else
       Byte(aData.pBits^) := 255;
                                     }
 
-      Inc(Integer(p), 4);
+      Inc(NativeInt(p), 4);
     end;
-    Inc(Integer(aData.pBits), 4 * (FWidth - FFrameWidth));
+    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
   end;
 
   bmp.Free;
