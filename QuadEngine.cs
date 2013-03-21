@@ -1,8 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿/*==============================================================================
+
+  Quad engine 0.5.0 header file for Visual C#
+
+     ╔═══════════╦═╗
+     ║           ║ ║
+     ║           ║ ║
+     ║ ╔╗ ║║ ╔╗ ╔╣ ║
+     ║ ╚╣ ╚╝ ╚╩ ╚╝ ║
+     ║  ║ engine   ║
+     ║  ║          ║
+     ╚══╩══════════╝
+
+  For further information please visit:
+  http://quad-engine.com
+
+==============================================================================*/
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace QuadEngine
@@ -71,8 +85,7 @@ namespace QuadEngine
         uint CreateShader(out IQuadShader IQuadShader);
         uint CreateTexture(out IQuadTexture IQuadTexture);
         uint CreateTimer(out IQuadTimer IQuadTimer);
-        [PreserveSig]
-        IntPtr CreateRender(out IQuadRender Device);
+        uint CreateRender(out IQuadRender Device);
         void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadRender IQuadTexture, byte ARegister);
         [PreserveSig]
         bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);
@@ -81,7 +94,7 @@ namespace QuadEngine
         [PreserveSig]
         byte GetMonitorsCount();
         void SetActiveMonitor(byte AMonitorIndex);
-        void SetOnErrorCallBack(IntPtr TOnErrorFunction);
+        void SetOnErrorCallBack(IntPtr TOnErrorFunction);   // todo: Delegate
     }
  
     /* Quad Render */
@@ -113,7 +126,7 @@ namespace QuadEngine
         Byte GetVSVersionMajor();
         [PreserveSig] 
         Byte GetVSVersionMinor();
-        void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount);
+        void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
@@ -124,7 +137,7 @@ namespace QuadEngine
         void DrawRectRotAxis(double x, double y, double x2, double y2, double ang, double Scale, double xA, double yA, double u1, double v1, double u2, double v2, UInt32 Color);
         void DrawLine(float x, float y, float x2, float y2, UInt32 Color);
         void DrawPoint(float x, float y, UInt32 Color);
-        void EndRender();
+        void EndRender(); 
         void Finalize();
         void FlushBuffer();
         void Initialize(IntPtr AHandle, int AWidth, int AHeight, bool AIsFullscreen, bool AIsCreateLog = true);
@@ -144,8 +157,8 @@ namespace QuadEngine
         void SetBlendMode(TQuadBlendMode TQuadBlendMode);
         void SetClipRect(UInt32 X, UInt32 Y, UInt32 X2, UInt32 Y2);
         void SetTexture(byte ARegister, IntPtr ATexture);
-        void SetTextureAdressing(TQuadTextureAdressing ATextureAdressing);//ATextureAdressing: TQuadTextureAdressing); stdcall;
-        void SetTextureFiltering(TQuadTextureFiltering ATextureAdressing);//ATextureFiltering: TQuadTextureFiltering); stdcall;
+        void SetTextureAdressing(TQuadTextureAdressing ATextureAdressing);
+        void SetTextureFiltering(TQuadTextureFiltering ATextureAdressing);
         void SetPointSize(UInt32 ASize);
         void SkipClipRect();
         void TakeScreenshot(string AFileName);
@@ -179,7 +192,7 @@ namespace QuadEngine
         UInt16 GetTextureHeight();
         [PreserveSig] 
         UInt16 GetTextureWidth();
-        void AddTexture(byte ARegister, IntPtr ATexture);
+        void AddTexture(byte ARegister, IntPtr ATexture);  // todo: IDirect3DTexture9
         void Draw(double x, double y, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(double x, double y, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
@@ -203,10 +216,10 @@ namespace QuadEngine
     {
         void BindVariableToVS(byte ARegister, UIntPtr AVariable, byte ASize);
         void BindVariableToPS(byte ARegister, UIntPtr AVariable, byte ASize);
-        [PreserveSig] 
-        IntPtr GetVertexShader(out IntPtr Shader);
-        [PreserveSig] 
-        IntPtr GetPixelShader(out IntPtr Shader);
+        [PreserveSig]
+        IntPtr GetVertexShader(out IntPtr Shader); // todo: IDirect3DVertexShader9
+        [PreserveSig]
+        IntPtr GetPixelShader(out IntPtr Shader); // todo: IDirect3DPixelShader9
         void LoadVertexShader(string AVertexShaderFilename);
         void LoadPixelShader(string APixelShaderFilename);
         void LoadComplexShader(string AVertexShaderFilename, string APixelShaderFilename);
@@ -276,6 +289,18 @@ namespace QuadEngine
     /* Quad Timer */
 
     public delegate void TimerProcedure(ref double delta, UInt32 Id);
+
+    /* Use [MTAThread] insted of [STAThread] 
+      
+      template:
+    private void OnTimer(ref double delta, UInt32 Id)
+    {
+
+    }
+      
+      setting callback:
+    QuadTimer.SetCallBack(Marshal.GetFunctionPointerForDelegate((TimerProcedure) OnTimer));
+    */
 
     [ComImport]
     [Guid("EA3BD116-01BF-4E12-B504-07D5E3F3AD35")]
