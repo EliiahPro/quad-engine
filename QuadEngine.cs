@@ -68,7 +68,11 @@ namespace QuadEngine
         TVector tangent;            /* Tangent vector */
         TVector binormal;           /* Binormal vector */
     }
- 
+
+    public struct TCoord {
+        ushort X;
+        ushort Y;
+    }
  
     /* Quad Device */
  
@@ -77,8 +81,8 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadDevice
     {
-        uint CreateAndLoadFont(string AFontTextureFilename, string AUVFilename, out IQuadRender IQuadFont);
-        uint CreateAndLoadTexture(byte ARegister, string AFilename, out IQuadRender IQuadTexture,
+        uint CreateAndLoadFont(string AFontTextureFilename, string AUVFilename, out IQuadFont IQuadFont);
+        uint CreateAndLoadTexture(byte ARegister, string AFilename, out IQuadTexture IQuadTexture,
                                   int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
         uint CreateCamera(out IQuadCamera IQuadCamera);
         uint CreateFont(out IQuadFont IQuadFont);
@@ -93,6 +97,7 @@ namespace QuadEngine
         string GetLastError();
         [PreserveSig]
         byte GetMonitorsCount();
+        void GetSupportedScreenResolution(int index, out TCoord Resolution); 
         void SetActiveMonitor(byte AMonitorIndex);
         void SetOnErrorCallBack(IntPtr TOnErrorFunction);   // todo: Delegate
     }
