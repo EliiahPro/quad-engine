@@ -30,22 +30,22 @@ type
 
   TQuadTimer = class(TInterfacedObject, IQuadTimer)
   private
-    FCPULoad               : Single;
-    FCPUTotalTime          : Int64;
-    FFPS                   : Single;
-    FFramesRendered        : Word;
-    FId                    : Cardinal;
-    FIsEnabled             : Boolean;
-    FOnTimer               : TTimerProcedure;
-    FPerformanceFrequency  : Int64;
+    FCPULoad: Single;
+    FCPUTotalTime: Int64;
+    FFPS: Single;
+    FFramesRendered: Word;
+    FId: Cardinal;
+    FIsEnabled: Boolean;
+    FOnTimer: TTimerProcedure;
+    FPerformanceFrequency: Int64;
     FPerformanceLastCounter: Int64;
-    FPerformanceCounter    : Int64;
-    FThread                : TTimerThread;
-    FTimeSpent             : Double;
-    FTime                  : Double;
-    FTimeDeltaFPSCounter   : Double;
-    FTimeSpentOnTick       : Double;
-    FWholeTime             : Double;
+    FPerformanceCounter: Int64;
+    FThread: TTimerThread;
+    FTimeSpent: Double;
+    FTime: Double;
+    FTimeDeltaFPSCounter: Double;
+    FTimeSpentOnTick: Double;
+    FWholeTime: Double;
   public
     constructor Create;
     destructor Destroy; override;
@@ -66,6 +66,9 @@ type
   end;
 
 implementation
+
+uses
+  Math;
 
 { TQuadTimer }
 
@@ -108,7 +111,7 @@ end;
 //=============================================================================
 function TQuadTimer.GetCPUload: Single;
 begin
-  Result := FCPULoad;
+  Result := Min(FCPULoad, 100.0); // This prevent getting values more than 100.0
 end;
 
 //=============================================================================
