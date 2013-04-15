@@ -14,8 +14,8 @@ unit QuadEngine.Texture;
 interface
 
 uses
-  QuadEngine.Render, graphics, VCL.Imaging.pngimage, JPEG, direct3d9, TGAReader,
-  QuadEngine.Log, QuadEngine, System.SyncObjs;
+  QuadEngine.Render, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, direct3d9,
+  TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs;
 
 type
   TQuadTextureItem = record
@@ -70,7 +70,7 @@ type
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
-    
+
     property Texture[i: Byte]: IDirect3DTexture9 read GetTexture;
     property TextureWidth: Integer read FWidth;
     property TextureHeight: Integer read FHeight;
@@ -187,8 +187,7 @@ begin
   SetTextureStages;
 
   FQuadRender.DrawDistort(x1 - 0.5, y1 - 0.5, x2 - 0.5, y2 - 0.5, x3 - 0.5, y3 - 0.5, x4 - 0.5, y4 - 0.5,
-                          0, 0, FFrameWidth / FWidth, FFrameHeight / FHeight,
-                          Color);
+                          0, 0, FFrameWidth / FWidth, FFrameHeight / FHeight, Color);
 end;
 
 //=============================================================================

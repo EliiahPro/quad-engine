@@ -14,14 +14,14 @@ unit QuadEngine.Shader;
 interface
 
 uses
-  windows, direct3d9, QuadEngine.Render, QuadEngine.Utils, QuadEngine;
+  windows, direct3d9, QuadEngine.Render, QuadEngine.Utils, QuadEngine, System.SysUtils;
 
 type
   TBindedVariable = packed record
-    variable : Pointer;
-    register : Byte;
-    Size : Byte;
-    IsVS : Boolean;
+    Variable: Pointer;
+    RegisterIndex: Byte;
+    Size: Byte;
+    IsVS: Boolean;
   end;
 
   TQuadShader = class(TInterfacedObject, IQuadShader)
@@ -33,6 +33,7 @@ type
     FBindedVariableCount: Byte;
   public
     constructor Create(AQuadRender: TQuadRender); reintroduce;
+    procedure LoadFromResource(AResourceName: PWideChar);
 
     procedure BindVariableToVS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
     procedure BindVariableToPS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
@@ -42,6 +43,8 @@ type
     procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
+  class var
+    DistantField: TQuadShader;
   end;
 
 implementation
@@ -62,10 +65,10 @@ begin
 
   with FBindedVariables[FBindedVariableCount - 1] do
   begin
-    register := aRegister;
-    variable := aVariable;
-    Size     := aSize;
-    isVS     := True;
+    RegisterIndex := ARegister;
+    Variable := AVariable;
+    Size := ASize;
+    isVS := True;
   end;
 end;
 
@@ -80,10 +83,10 @@ begin
 
   with FBindedVariables[FBindedVariableCount - 1] do
   begin
-    register := aRegister;
-    variable := aVariable;
-    Size     := aSize;
-    isVS     := False;
+    RegisterIndex := ARegister;
+    Variable := AVariable;
+    Size := ASize;
+    isVS := False;
   end;
 
 end;
@@ -124,6 +127,30 @@ procedure TQuadShader.LoadComplexShader(AVertexShaderFilename, APixelShaderFilen
 begin
   LoadVertexShader(AVertexShaderFilename);
   LoadPixelShader(APixelShaderFilename);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadShader.LoadFromResource(AResourceName: PWideChar);
+var
+  hFind, hRes: THandle;
+  size: Cardinal;
+  Data: Pointer;
+begin
+  hFind := FindResource(HInstance, AResourceName, RT_RCDATA);
+  if hFind <> 0 then
+  begin
+    hRes := LoadResource(HInstance, hFind);
+    if hRes <> 0  then
+    begin
+      size := SizeofResource(HInstance, hFind);
+      Data := LockResource(hRes);
+      Device.LastResultCode := FQuadRender.D3DDevice.CreatePixelShader(Data, Fps);
+      UnlockResource(hRes);
+    end;
+  end;
+  FreeResource(hFind);
 end;
 
 //=============================================================================
@@ -185,9 +212,9 @@ begin
     for i := 0 to FBindedVariableCount - 1 do
     begin
       if FBindedVariables[i].isVS then
-        Device.LastResultCode := FQuadRender.D3DDevice.SetVertexShaderConstantF(FBindedVariables[i].register, FBindedVariables[i].variable, FBindedVariables[i].Size)
+        Device.LastResultCode := FQuadRender.D3DDevice.SetVertexShaderConstantF(FBindedVariables[i].RegisterIndex, FBindedVariables[i].Variable, FBindedVariables[i].Size)
       else
-        Device.LastResultCode := FQuadRender.D3DDevice.SetPixelShaderConstantF(FBindedVariables[i].register, FBindedVariables[i].variable, FBindedVariables[i].Size);
+        Device.LastResultCode := FQuadRender.D3DDevice.SetPixelShaderConstantF(FBindedVariables[i].RegisterIndex, FBindedVariables[i].Variable, FBindedVariables[i].Size);
     end;
   end
   else

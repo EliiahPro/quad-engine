@@ -18,7 +18,7 @@ uses
   QuadEngine.Render, System.IniFiles, QuadEngine;
 
 const
-  QuadVersion: PWideChar = 'Quad Engine v0.5.0';
+  QuadVersion: PWideChar = 'Quad Engine v0.5.1';
 
 type
   TQuadDevice = class(TInterfacedObject, IQuadDevice)
@@ -43,6 +43,7 @@ type
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
+    function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
@@ -92,7 +93,7 @@ begin
 
   {$REGION 'Aspect Ratio'}
   if FLog <> nil then
-  FLog.Write('Monitors Count: ' + IntToStr(MonitorsCount));
+  FLog.Write(PChar('Monitors Count: ' + IntToStr(MonitorsCount)));
 
   for i := 0 to MonitorsCount - 1 do
   begin
@@ -116,7 +117,7 @@ begin
       AspectString := AspectString + ' (FullHD)';
 
     if FLog <> nil then
-      FLog.Write('Monitor #' + IntToStr(i + 1) + ': ' + AspectString);
+      FLog.Write(PChar('Monitor #' + IntToStr(i + 1) + ': ' + AspectString));
   end;
   {$ENDREGION}
 
@@ -211,7 +212,7 @@ begin
   end;
 
   if FLog <> nil then        {todo : why that?}
-    FLog.Write('Error: ' + FLastErrorText);
+    FLog.Write(PChar('Error: ' + FLastErrorText));
 end;
 
 procedure TQuadDevice.SetOnErrorFunction(const Value: TOnErrorFunction);
@@ -243,6 +244,14 @@ end;
 function TQuadDevice.CreateFont(out pQuadFont: IQuadFont): HResult;
 begin
   pQuadFont := TQuadFont.Create(FRender);
+end;
+
+function TQuadDevice.CreateLog(out pQuadLog: IQuadLog): HResult;
+begin
+  if not Assigned(FLog) then
+    FLog := TQuadLog.Create;
+
+  pQuadLog := FLog;
 end;
 
 function TQuadDevice.CreateShader(out pQuadShader: IQuadShader): HResult;

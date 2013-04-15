@@ -21,9 +21,9 @@ type
   private
     FFilename: string;
   public
-    constructor Create(const aFilename: string = 'log.txt'); reintroduce;
-    
-    procedure Write(const aString: string); stdcall;
+    constructor Create(const AFilename: string = 'log.txt'); reintroduce;
+
+    procedure Write(const AString: PWideChar); stdcall;
   end;
 
 implementation
@@ -35,7 +35,7 @@ implementation
 //=============================================================================
 //
 //=============================================================================
-constructor TQuadLog.Create(const aFilename: string);
+constructor TQuadLog.Create(const AFilename: string);
 var
   f: TextFile;
 begin
@@ -54,7 +54,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadLog.Write(const aString: string);
+procedure TQuadLog.Write(const AString: PWideChar);
 var
   f: TextFile;
 begin

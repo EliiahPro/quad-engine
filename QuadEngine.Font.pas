@@ -15,17 +15,17 @@ interface
 
 uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Texture, QuadEngine.Log,
-  QuadEngine;
+  QuadEngine, QuadEngine.Shader;
 
 const
   CHAR_SPACE = 32;
 
 type
   TLetterUV = record
-    id             : Byte;     { Letter uniq ID }
-    U1, V1, U2, V2 : Double;   { Texture UV coords }
-    X, Y           : Word;     { X, Y position }
-    H, W           : Byte;     { Height and width }
+    id            : Byte;     { Letter uniq ID }
+    U1, V1, U2, V2: Double;   { Texture UV coords }
+    X, Y          : Word;     { X, Y position }
+    H, W          : Byte;     { Height and width }
   end;
 
   TQuadChar = packed record
@@ -48,28 +48,28 @@ type
 
   TQuadFont = class(TInterfacedObject, IQuadFont)
   private
-    FColors          : array [Word] of Cardinal;
-    FHeight          : Word;
-    FIsSmartColoring : Boolean;
-    FKerning         : Single;
-    FLetters         : array [Byte] of TLetterUV;
-    FLog             : TQuadLog;
-    FQuadRender      : TQuadRender;
-    FTexture         : TQuadTexture;
-    FWidth           : Word;
+    FColors: array [Word] of Cardinal;
+    FHeight: Word;
+    FIsSmartColoring: Boolean;
+    FKerning: Single;
+    FLetters: array [Byte] of TLetterUV;
+    FLog: TQuadLog;
+    FQuadRender: TQuadRender;
+    FTexture: TQuadTexture;
+    FWidth: Word;
 
     //v2.0
-    FIsDistanceField : Boolean;
-    FQuadFontHeader  : TQuadFontHeader;
-    FQuadChars       : array [Word] of TQuadChar;
-    FKerningPairs    : array of tagKERNINGPAIR;
+    FIsDistanceField: Boolean;
+    FQuadFontHeader: TQuadFontHeader;
+    FQuadChars: array [Word] of TQuadChar;
+    FKerningPairs: array of tagKERNINGPAIR;
     function TextWidthEx(AText: PWideChar; AScale: Single = 1.0; IsIncludeSpaces: Boolean = True) : Single;
   public
     constructor Create(AQuadRender : TQuadRender);
     destructor Destroy; override;
 
-    function  GetIsLoaded: Boolean; stdcall;
-    function  GetKerning: Single; stdcall;
+    function GetIsLoaded: Boolean; stdcall;
+    function GetKerning: Single; stdcall;
     procedure SetKerning(AValue: Single); stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename: PWideChar); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
@@ -92,6 +92,7 @@ uses
 constructor TQuadFont.Create(AQuadRender: TQuadRender);
 var
   i: Integer;
+
 begin
   FQuadRender := AQuadRender;
   FLog := Device.Log;
@@ -192,7 +193,7 @@ begin
     BlockRead(f, FQuadChars, Size);
 
      for Size := 0 to 255 do
-                                       FLog.Write(IntToStr(FQuadChars[Size].Xpos));
+
     // kerning pairs
     BlockRead(f, c, 4);
     BlockRead(f, Size, 4);
@@ -295,6 +296,7 @@ begin
     begin
       if FIsDistanceField then
       begin
+        TQuadShader.DistantField.SetShaderState(True);
         c := ord(l);
         for j := 0 to 255 do
           if c = FQuadChars[j].id then
@@ -317,6 +319,8 @@ begin
                    $FFFFFFFF);
 
         sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
+
+        TQuadShader.DistantField.SetShaderState(False);
       end
       else
       begin

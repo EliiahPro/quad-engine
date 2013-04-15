@@ -155,7 +155,7 @@
                     <VersionInfo Name="MajorVer">0</VersionInfo>
                     <VersionInfo Name="MinorVer">4</VersionInfo>
                     <VersionInfo Name="Release">0</VersionInfo>
-                    <VersionInfo Name="Build">259</VersionInfo>
+                    <VersionInfo Name="Build">266</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -167,7 +167,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">0.4.0.259</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">0.4.0.266</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
@@ -391,6 +391,9 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <RcCompile Include="Shaders.rc">
+            <Form>Shaders.res</Form>
+        </RcCompile>
         <DCCReference Include="..\QuadEngine.pas"/>
         <DCCReference Include="..\QuadEngine.Device.pas"/>
         <DCCReference Include="..\QuadEngine.Font.pas"/>
@@ -403,6 +406,8 @@
         <DCCReference Include="..\QuadEngine.Utils.pas"/>
         <DCCReference Include="..\QuadEngine.Window.pas"/>
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
+        <None Include="..\QuadEngine.cs"/>
+        <None Include="..\quadengine.h"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

@@ -7,13 +7,9 @@ library qei;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
-{$IFDEF VER200}
-  {$IFDEF UNICODE}
+//{$DEFINE DEBUG}
 
-  {$ENDIF}
-{$ENDIF}
-
-{$DEFINE DEBUG}
+{$R 'Shaders.res' 'Shaders.rc'}
 
 uses
   QuadEngine in '..\QuadEngine.pas',

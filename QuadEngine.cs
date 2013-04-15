@@ -23,33 +23,36 @@ namespace QuadEngine
 {
     // Blending mode types
 
-    public enum TQuadBlendMode{qbmNone           = 0,     /* Without blending */
-                               qbmAdd            = 1,     /* Add source to dest */
-                               qbmSrcAlpha       = 2,     /* Blend dest with alpha to source */
-                               qbmSrcAlphaAdd    = 3,     /* Add source with alpha to dest */
-                               qbmSrcAlphaMul    = 4,     /* Multiply source alpha with dest */
-                               qbmMul            = 5,     /* Multiply Source with dest */
-                               qbmSrcColor       = 6,     /* Blend source with color weight to dest */
-                               qbmSrcColorAdd    = 7,     /* Blend source with color weight and alpha to dest */
-                               qbmInvertSrcColor = 8};    /* Blend inverted source color */
- 
+    public enum TQuadBlendMode{qbmInvalid        = 0,
+                               qbmNone           = 1,     /* Without blending */
+                               qbmAdd            = 2,     /* Add source to dest */
+                               qbmSrcAlpha       = 3,     /* Blend dest with alpha to source */
+                               qbmSrcAlphaAdd    = 4,     /* Add source with alpha to dest */
+                               qbmSrcAlphaMul    = 5,     /* Multiply source alpha with dest */
+                               qbmMul            = 6,     /* Multiply Source with dest */
+                               qbmSrcColor       = 7,     /* Blend source with color weight to dest */
+                               qbmSrcColorAdd    = 8,     /* Blend source with color weight and alpha to dest */
+                               qbmInvertSrcColor = 9};    /* Blend inverted source color */
+
     // Texture adressing mode
-    public enum TQuadTextureAdressing{qtaWrap       = 1,    /* Repeat UV */
+    public enum TQuadTextureAdressing{qtaInvalid    = 0,
+                                      qtaWrap       = 1,    /* Repeat UV */
                                       qtaMirror     = 2,    /* Repeat UV with mirroring */
                                       qtaClamp      = 3,    /* Do not repeat UV */
                                       qtaBorder     = 4,    /* Fill outranged UV with border */
                                       qtaMirrorOnce = 5};   /* Mirror UV once */
- 
+
     // Texture filtering mode
-    public enum TQuadTextureFiltering{qtfNone            = 0,    /* Filtering disabled (valid for mip filter only) */
-                                      qtfPoint           = 1,    /* Nearest */
-                                      qtfLinear          = 2,    /* Linear interpolation */
-                                      qtfAnisotropic     = 3,    /* Anisotropic */
-                                      qtfPyramidalQuad   = 6,    /* 4-sample tent */
-                                      qtfGaussianQuad    = 7,    /* 4-sample gaussian */
-                                      qtfConvolutionMono = 8};   /* Convolution filter for monochrome textures */
- 
- 
+    public enum TQuadTextureFiltering{qtfInvalid         = 0,
+                                      qtfNone            = 1,    /* Filtering disabled (valid for mip filter only) */
+                                      qtfPoint           = 2,    /* Nearest */
+                                      qtfLinear          = 3,    /* Linear interpolation */
+                                      qtfAnisotropic     = 4,    /* Anisotropic */
+                                      qtfPyramidalQuad   = 5,    /* 4-sample tent */
+                                      qtfGaussianQuad    = 6,    /* 4-sample gaussian */
+                                      qtfConvolutionMono = 7};   /* Convolution filter for monochrome textures */
+
+
     // Vector record declaration
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TVector{
@@ -57,7 +60,7 @@ namespace QuadEngine
         float y;
         float z;
     }
- 
+
      // vertex record declaration
      [StructLayout(LayoutKind.Sequential, Pack = 1)]
      public struct TVertex{
@@ -73,9 +76,9 @@ namespace QuadEngine
         ushort X;
         ushort Y;
     }
- 
+
     /* Quad Device */
- 
+
     [ComImport]
     [Guid("E28626FF-738F-43B0-924C-1AFC7DEC26C7")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -86,11 +89,12 @@ namespace QuadEngine
                                   int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
         uint CreateCamera(out IQuadCamera IQuadCamera);
         uint CreateFont(out IQuadFont IQuadFont);
+        uint CreateLog(out IQuadLog IQuadLog);
         uint CreateShader(out IQuadShader IQuadShader);
         uint CreateTexture(out IQuadTexture IQuadTexture);
         uint CreateTimer(out IQuadTimer IQuadTimer);
         uint CreateRender(out IQuadRender Device);
-        void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadRender IQuadTexture, byte ARegister);
+        void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister);
         [PreserveSig]
         bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);
         [PreserveSig] 
@@ -256,10 +260,11 @@ namespace QuadEngine
     ** Do not override "!" char **  */
  
     // font alignments
-    public enum TqfAlign {qfaLeft    = 0,      /* Align by left */
-                          qfaRight   = 1,      /* Align by right */
-                          qfaCenter  = 2,      /* Align by center */
-                          qfaJustify = 3};     /* Align by both sides */
+    public enum TqfAlign {qfaInvalid = 0,
+                          qfaLeft    = 1,      /* Align by left */
+                          qfaRight   = 2,      /* Align by right */
+                          qfaCenter  = 3,      /* Align by center */
+                          qfaJustify = 4};     /* Align by both sides */
 
     [ComImport]
     [Guid("A47417BA-27C2-4DE0-97A9-CAE546FABFBA")]

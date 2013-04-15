@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.5.0 header file for CodeGear™ Delphi®
+  Quad engine 0.5.1 header file for CodeGear™ Delphi®
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -31,31 +31,34 @@ const
 
 type
   // Blending mode types
-  TQuadBlendMode = (qbmNone           = 0,     { Without blending }
-                    qbmAdd            = 1,     { Add source to dest }
-                    qbmSrcAlpha       = 2,     { Blend dest with alpha to source }
-                    qbmSrcAlphaAdd    = 3,     { Add source with alpha to dest }
-                    qbmSrcAlphaMul    = 4,     { Multiply source alpha with dest }
-                    qbmMul            = 5,     { Multiply Source with dest }
-                    qbmSrcColor       = 6,     { Blend source with color weight to dest }
-                    qbmSrcColorAdd    = 7,     { Blend source with color weight and alpha to dest }
-                    qbmInvertSrcColor = 8);    { Blend inverted source color }
+  TQuadBlendMode = (qbmInvalid        = 0,
+                    qbmNone           = 1,     { Without blending }
+                    qbmAdd            = 2,     { Add source to dest }
+                    qbmSrcAlpha       = 3,     { Blend dest with alpha to source }
+                    qbmSrcAlphaAdd    = 4,     { Add source with alpha to dest }
+                    qbmSrcAlphaMul    = 5,     { Multiply source alpha with dest }
+                    qbmMul            = 6,     { Multiply Source with dest }
+                    qbmSrcColor       = 7,     { Blend source with color weight to dest }
+                    qbmSrcColorAdd    = 8,     { Blend source with color weight and alpha to dest }
+                    qbmInvertSrcColor = 9);    { Blend inverted source color }
 
   // Texture adressing mode
-  TQuadTextureAdressing = (qtaWrap       = 1,    {Repeat UV}
+  TQuadTextureAdressing = (qtaInvalid    = 0,
+                           qtaWrap       = 1,    {Repeat UV}
                            qtaMirror     = 2,    {Repeat UV with mirroring}
                            qtaClamp      = 3,    {Do not repeat UV}
                            qtaBorder     = 4,    {Fill outranged UV with border}
                            qtaMirrorOnce = 5);   {Mirror UV once}
 
   // Texture filtering mode
-  TQuadTextureFiltering = (qtfNone            = 0,    { Filtering disabled (valid for mip filter only) }
-                           qtfPoint           = 1,    { Nearest }
-                           qtfLinear          = 2,    { Linear interpolation }
-                           qtfAnisotropic     = 3,    { Anisotropic }
-                           qtfPyramidalQuad   = 6,    { 4-sample tent }
-                           qtfGaussianQuad    = 7,    { 4-sample gaussian }
-                           qtfConvolutionMono = 8);   { Convolution filter for monochrome textures }
+  TQuadTextureFiltering = (qtfInvalid         = 0,
+                           qtfNone            = 1,    { Filtering disabled (valid for mip filter only) }
+                           qtfPoint           = 2,    { Nearest }
+                           qtfLinear          = 3,    { Linear interpolation }
+                           qtfAnisotropic     = 4,    { Anisotropic }
+                           qtfPyramidalQuad   = 5,    { 4-sample tent }
+                           qtfGaussianQuad    = 6,    { 4-sample gaussian }
+                           qtfConvolutionMono = 7);   { Convolution filter for monochrome textures }
 
 
   // Vector record declaration
@@ -67,12 +70,12 @@ type
 
   // vertex record declaration
   TVertex = packed record
-    x, y, z : Single;         { X, Y of vertex. Z not used }
-    normal  : TVector;        { Normal vector }
-    color   : Cardinal;       { Color }
+    x, y, z : Single;         { X, Y of vertex. Z is not used }
+    Normal  : TVector;        { Normal vector }
+    Color   : Cardinal;       { Color }
     u, v    : Single;         { Texture UV coord }
-    tangent : TVector;        { Tangent vector }
-    binormal: TVector;        { Binormal vector }
+    Tangent : TVector;        { Tangent vector }
+    Binormal: TVector;        { Binormal vector }
   end;
 
   // forward interfaces declaration
@@ -98,6 +101,7 @@ type
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
+    function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
@@ -138,8 +142,8 @@ type
     procedure DrawRect(x, y, x2, y2: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRectRot(x, y, x2, y2, ang, Scale: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawLine(x, y, x2, y2 : Single; Color: Cardinal); stdcall;
-    procedure DrawPoint(x, y : Single; Color : Cardinal); stdcall;
+    procedure DrawLine(x, y, x2, y2: Single; Color: Cardinal); stdcall;
+    procedure DrawPoint(x, y: Single; Color: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
@@ -238,10 +242,11 @@ type
     ** Do not override "!" char **  }
 
   // font alignments
-  TqfAlign = (qfaLeft    = 0,      { Align by left }
-              qfaRight   = 1,      { Align by right }
-              qfaCenter  = 2,      { Align by center }
-              qfaJustify = 3);     { Align by both sides}
+  TqfAlign = (qfaInvalid = 0,
+              qfaLeft    = 1,      { Align by left }
+              qfaRight   = 2,      { Align by right }
+              qfaCenter  = 3,      { Align by center }
+              qfaJustify = 4);     { Align by both sides}
 
   IQuadFont = interface(IUnknown)
     ['{A47417BA-27C2-4DE0-97A9-CAE546FABFBA}']
@@ -261,14 +266,14 @@ type
 
   IQuadLog = interface(IUnknown)
     ['{7A4CE319-C7AF-4BF3-9218-C2A744F915E6}']
-    procedure Write(const aString: string); stdcall;
+    procedure Write(const aString: PWideChar); stdcall;
   end;
 
   {Quad Timer}
 
   TTimerProcedure = procedure(out delta: Double; Id: Cardinal); stdcall;
   { template:
-    procedure OnTimer(out delta: Double); stdcall;
+    procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
     begin
 
     end;

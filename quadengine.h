@@ -1,22 +1,22 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.5.0 header file for Visual C++
+  Quad engine 0.5.1 header file for Visual C++
 
-     ╔═══════════╦═╗
-     ║           ║ ║
-     ║           ║ ║
-     ║ ╔╗ ║║ ╔╗ ╔╣ ║
-     ║ ╚╣ ╚╝ ╚╩ ╚╝ ║
-     ║  ║ engine   ║
-     ║  ║          ║
-     ╚══╩══════════╝
+	 ╔═══════════╦═╗
+	 ║           ║ ║
+	 ║           ║ ║
+	 ║ ╔╗ ║║ ╔╗ ╔╣ ║
+	 ║ ╚╣ ╚╝ ╚╩ ╚╝ ║
+	 ║  ║ engine   ║
+	 ║  ║          ║
+	 ╚══╩══════════╝
 
   For further information please visit:
   http://quad-engine.com
 
 ==============================================================================*/
 
-#ifndef _QUAD_ENGINE_WRAPPER 
+#ifndef _QUAD_ENGINE_WRAPPER
 #define _QUAD_ENGINE_WRAPPER
 
 #include <windows.h>
@@ -28,33 +28,36 @@ static const char* QUAD_DLL = "qei.dll";
 
 // Blending mode types
 
-typedef enum QuadBlendMode{qbmNone           = 0,     /* Without blending */
-                           qbmAdd            = 1,     /* Add source to dest */
-                           qbmSrcAlpha       = 2,     /* Blend dest with alpha to source */
-                           qbmSrcAlphaAdd    = 3,     /* Add source with alpha to dest */
-                           qbmSrcAlphaMul    = 4,     /* Multiply source alpha with dest */
-                           qbmMul            = 5,     /* Multiply Source with dest */
-                           qbmSrcColor       = 6,     /* Blend source with color weight to dest */
-                           qbmSrcColorAdd    = 7,     /* Blend source with color weight and alpha to dest */
-                           qbmInvertSrcColor = 8};    /* Blend inverted source color */
+typedef enum QuadBlendMode{qbmInvalid        = 0,
+						   qbmNone           = 1,     /* Without blending */
+						   qbmAdd            = 2,     /* Add source to dest */
+						   qbmSrcAlpha       = 3,     /* Blend dest with alpha to source */
+						   qbmSrcAlphaAdd    = 4,     /* Add source with alpha to dest */
+						   qbmSrcAlphaMul    = 5,     /* Multiply source alpha with dest */
+						   qbmMul            = 6,     /* Multiply Source with dest */
+						   qbmSrcColor       = 7,     /* Blend source with color weight to dest */
+						   qbmSrcColorAdd    = 8,     /* Blend source with color weight and alpha to dest */
+						   qbmInvertSrcColor = 9};    /* Blend inverted source color */
 
 
 // Texture adressing mode
-typedef enum TQuadTextureAdressing{qtaWrap       = 1,    /* Repeat UV */
-                                   qtaMirror     = 2,    /* Repeat UV with mirroring */
-                                   qtaClamp      = 3,    /* Do not repeat UV */
-                                   qtaBorder     = 4,    /* Fill outranged UV with border */
-                                   qtaMirrorOnce = 5};   /* Mirror UV once */
- 
+typedef enum TQuadTextureAdressing{qtaInvalid    = 0,
+								   qtaWrap       = 1,    /* Repeat UV */
+								   qtaMirror     = 2,    /* Repeat UV with mirroring */
+								   qtaClamp      = 3,    /* Do not repeat UV */
+								   qtaBorder     = 4,    /* Fill outranged UV with border */
+								   qtaMirrorOnce = 5};   /* Mirror UV once */
+
 // Texture filtering mode
-typedef enum TQuadTextureFiltering{qtfNone            = 0,    /* Filtering disabled (valid for mip filter only) */
-                                   qtfPoint           = 1,    /* Nearest */
-                                   qtfLinear          = 2,    /* Linear interpolation */
-                                   qtfAnisotropic     = 3,    /* Anisotropic */
-                                   qtfPyramidalQuad   = 6,    /* 4-sample tent */
-                                   qtfGaussianQuad    = 7,    /* 4-sample gaussian */
-                                   qtfConvolutionMono = 8};   /* Convolution filter for monochrome textures */
- 
+typedef enum TQuadTextureFiltering{qtfInvalid         = 0,
+								   qtfNone            = 1,    /* Filtering disabled (valid for mip filter only) */
+								   qtfPoint           = 2,    /* Nearest */
+								   qtfLinear          = 3,    /* Linear interpolation */
+								   qtfAnisotropic     = 4,    /* Anisotropic */
+								   qtfPyramidalQuad   = 5,    /* 4-sample tent */
+								   qtfGaussianQuad    = 6,    /* 4-sample gaussian */
+								   qtfConvolutionMono = 7};   /* Convolution filter for monochrome textures */
+
 // Vector record declaration
 typedef struct QuadVec
 {
@@ -94,6 +97,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 	virtual HRESULT CALLBACK CreateAndLoadTexture(unsigned char ARegister, char* AFilename, IQuadTexture* &pQuadTexture, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1) = 0;
 	virtual HRESULT CALLBACK CreateCamera(IQuadCamera* &pQuadCamera) = 0;
 	virtual HRESULT CALLBACK CreateFont(IQuadFont* &pQuadFont) = 0;
+	virtual HRESULT CALLBACK CreateFont(IQuadLog* &pQuadLog) = 0;
 	virtual HRESULT CALLBACK CreateShader(IQuadShader* &pQuadShader) = 0;
 	virtual HRESULT CALLBACK CreateTexture(IQuadTexture* &pQuadTexture) = 0;
 	virtual HRESULT CALLBACK CreateTimer(IQuadTimer* &pQuadTimer) = 0;
@@ -109,7 +113,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 
 	/* Quad Render */
 
-DECLARE_INTERFACE_(IQuadRender, IUnknown) 
+DECLARE_INTERFACE_(IQuadRender, IUnknown)
 {
 	virtual unsigned int CALLBACK GetAvailableTextureMemory() = 0;
 	virtual unsigned int CALLBACK GetMaxAnisotropy() = 0;
@@ -122,7 +126,7 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual char* CALLBACK GetVertexShaderVersionString() = 0;
 	virtual unsigned char CALLBACK GetVSVersionMajor() = 0;
 	virtual unsigned char CALLBACK GetVSVersionMinor() = 0;
-	virtual void CALLBACK AddTrianglesToBuffer(const QuadVert* AVertexes, unsigned int ACount) = 0; 
+	virtual void CALLBACK AddTrianglesToBuffer(const QuadVert* AVertexes, unsigned int ACount) = 0;
 	virtual void CALLBACK BeginRender() = 0;
 	virtual void CALLBACK ChangeResolution(unsigned short AWidth, unsigned short AHeight) = 0;
 	virtual void CALLBACK Clear(unsigned int AColor) = 0;
@@ -156,7 +160,7 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	/* Quad Texture */
 
 DECLARE_INTERFACE_(IQuadTexture, IUnknown)
-{	
+{
 	virtual bool CALLBACK GetIsLoaded() = 0;
 	virtual int CALLBACK GetPatternCount() = 0;
 	virtual unsigned short CALLBACK GetPatternWidth() = 0;
@@ -195,34 +199,35 @@ DECLARE_INTERFACE_(IQuadShader, IUnknown)
 	virtual void CALLBACK SetShaderState(bool AIsEnabled) = 0;
 };
 
-    /* Quad Font */
- 
+	/* Quad Font */
+
 /* Predefined colors for SmartColoring:
-    W - white
-    Z - black (zero)
-    R - red
-    L - lime
-    B - blue
-    M - maroon
-    G - green
-    N - Navy
-    Y - yellow
-    F - fuchsia
-    A - aqua
-    O - olive
-    P - purple
-    T - teal
-    D - gray (dark)
-    S - silver
- 
-    ! - default DrawText color
+	W - white
+	Z - black (zero)
+	R - red
+	L - lime
+	B - blue
+	M - maroon
+	G - green
+	N - Navy
+	Y - yellow
+	F - fuchsia
+	A - aqua
+	O - olive
+	P - purple
+	T - teal
+	D - gray (dark)
+	S - silver
+
+	! - default DrawText color
 ** Do not override "!" char **  */
 
 // font alignments
-typedef enum QuadFontAlign{qfaLeft    = 0,      /* Align by left */
-                           qfaRight   = 1,      /* Align by right */
-                           qfaCenter  = 2,      /* Align by center */
-                           qfaJustify = 3};     /* Align by both sides */
+typedef enum QuadFontAlign{qfaInvalid = 0,
+						   qfaLeft    = 1,      /* Align by left */
+						   qfaRight   = 2,      /* Align by right */
+						   qfaCenter  = 3,      /* Align by center */
+						   qfaJustify = 4};     /* Align by both sides */
 
 DECLARE_INTERFACE_(IQuadFont, IUnknown)
 {

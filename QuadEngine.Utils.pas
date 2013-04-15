@@ -16,10 +16,17 @@ interface
 uses
   Winapi.Windows, Winapi.PSApi;
 
+type
+  TCPUExtensions = record
+    CPUName : array[0..95] of AnsiChar;
+    MMX, SSE, SSE2, SSE3, HT: Boolean;
+  end;
+
   function GetAppMemoryUsed: Cardinal;
   function GetMemoryStatus: _MEMORYSTATUS;
   function NormalizeSize(int: Integer): Integer; assembler;
-  function IsSingleIn(AValue, Amin, Amax: Single): Boolean;
+  function IsSingleIn(AValue, Amin, Amax: Single): Boolean; inline;
+  function GetCPUInfo: TCPUExtensions;
 
 implementation
 
@@ -66,6 +73,14 @@ end;
 function IsSingleIn(AValue, Amin, Amax: Single): Boolean;
 begin
   Result := (AValue > Amin) and (AValue < Amax);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function GetCPUInfo: TCPUExtensions;
+begin
+
 end;
 
 end.

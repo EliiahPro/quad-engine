@@ -68,8 +68,8 @@ begin
   FViewMatrix._33 := 1;
   FViewMatrix._34 := 0;
 
-  FViewMatrix._41 := -1 - FXTranslation/FRender.Width;
-  FViewMatrix._42 := 1 - FYTranslation/FRender.Height;
+  FViewMatrix._41 := -1 - FXTranslation / FRender.Width;
+  FViewMatrix._42 := 1 - FYTranslation / FRender.Height;
   FViewMatrix._43 := 0;
   FViewMatrix._44 := 1;
 

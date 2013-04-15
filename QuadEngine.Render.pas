@@ -34,35 +34,35 @@ const
 type
   TQuadRender = class(TInterfacedObject, IQuadRender)
   private
-    FActiveTexture      : array of IDirect3DTexture9;
-    FBackBuffer         : IDirect3DSurface9;
-    FCount              : Cardinal;
-    FD3DDM              : TD3DDisplayMode;
-    FD3DAI              : TD3DAdapterIdentifier9;
-    FD3DCaps            : TD3DCaps9;
-    FD3DDevice          : IDirect3DDevice9;
-    FD3DPP              : TD3DPresentParameters;
-    FD3DVB              : IDirect3DVertexBuffer9;
-    FD3DVD              : IDirect3DVertexDeclaration9;
-    FHandle             : THandle;
-    FHeight             : Integer;
+    FActiveTexture: array of IDirect3DTexture9;
+    FBackBuffer: IDirect3DSurface9;
+    FCount: Cardinal;
+    FD3DDM: TD3DDisplayMode;
+    FD3DAI: TD3DAdapterIdentifier9;
+    FD3DCaps: TD3DCaps9;
+    FD3DDevice: IDirect3DDevice9;
+    FD3DPP: TD3DPresentParameters;
+    FD3DVB: IDirect3DVertexBuffer9;
+    FD3DVD: IDirect3DVertexDeclaration9;
+    FHandle: THandle;
+    FHeight: Integer;
     FIsAutoCalculateTBN : Boolean;
-    FIsDeviceLost       : Boolean;
-    FIsEnabledBlending  : Boolean;
+    FIsDeviceLost: Boolean;
+    FIsEnabledBlending: Boolean;
     FIsRenderIntoTexture: Boolean;
-    Fqbm                : TQuadBlendMode;
-    FVertexBuffer       : array [0..MaxBufferCount - 1] of TVertex;
-    FTextureAdressing   : TQuadTextureAdressing;
-    FTextureFiltering   : TQuadTextureFiltering;
-    FViewMatrix         : TD3DMatrix;
-    FWidth              : Integer;
-    FTimer              : IQuadTimer;
-    FRenderMode         : TD3DPrimitiveType;
+    Fqbm: TQuadBlendMode;
+    FVertexBuffer: array [0..MaxBufferCount - 1] of TVertex;
+    FTextureAdressing: TQuadTextureAdressing;
+    FTextureFiltering: TQuadTextureFiltering;
+    FViewMatrix: TD3DMatrix;
+    FWidth: Integer;
+    FTimer: IQuadTimer;
+    FRenderMode: TD3DPrimitiveType;
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure DoInitialize(AHandle : THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate : Integer;
-      AIsFullscreen, AIsCreateLog, AIsSoftwareVertexPprocessing, AIsMultiThreaded, AIsVerticalSync : Boolean);
+      AIsFullscreen, AIsCreateLog, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync : Boolean);
   public
     constructor Create;
     function GetAvailableTextureMemory: Cardinal; stdcall;
@@ -131,7 +131,7 @@ type
     property VSVersionMinor: Byte read GetVSVersionMinor;
     property Width: Integer read FWidth;
   end;
-                                
+
 implementation
 
 uses
@@ -164,7 +164,7 @@ begin
 end;
 
 //=============================================================================
-// Calculate Tangen,Binormal, Normal
+// Calculate Tangent, Binormal, Normal
 //=============================================================================
 procedure CalcTBN(var t, b, n: TVector; const p1, p2, p3: TVertex);
 var
@@ -180,8 +180,8 @@ begin
 
   Cross(s2, s1, crs);
 
-  tangent.x := -crs.y/crs.x;
-  binormal.x := -crs.z/crs.x;
+  tangent.x := -crs.y / crs.x;
+  binormal.x := -crs.z / crs.x;
 
   s1.x := p2.y - p1.y;
   s2.x := p3.y - p1.y;
@@ -848,13 +848,13 @@ end;
 //=============================================================================
 procedure TQuadRender.Rectangle(x, y, x2, y2: Double; Color: Cardinal);
 var
-  ver : array [0..5] of TVertex;
-  i : Integer;
+  ver: array [0..5] of TVertex;
+  i: Integer;
 begin
   RenderMode := D3DPT_TRIANGLELIST;
 
   for i := 0 to MaxTextureStages - 1 do
-  SetTexture(i, nil);
+    SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
   ver[0].color := Color;
@@ -928,7 +928,7 @@ begin
     ChangeResolution(ADesc.Width, ADesc.Height);
     Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
 
-    for i := 0 to FD3DCaps.NumSimultaneousRTs - 1 do
+    for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
       Device.LastResultCode := FD3DDevice.SetRenderTarget(0, nil);
   end;
 end;
@@ -990,19 +990,19 @@ end;
 //=============================================================================
 procedure TQuadRender.SetBlendMode(qbm: TQuadBlendMode);
 begin
-  if qbm = Fqbm then           
+  if qbm = Fqbm then
     Exit;
 
   FlushBuffer;
 
   Fqbm := qbm;
   case qbm of
-    qbmNone :
+    qbmNone:
     begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iFalse);
       FIsEnabledBlending := False;
     end;
-    qbmAdd :
+    qbmAdd:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1011,7 +1011,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
       FIsEnabledBlending := True;
     end;
-    qbmSrcAlpha :
+    qbmSrcAlpha:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1020,7 +1020,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
       FIsEnabledBlending := True;
     end;
-    qbmSrcAlphaAdd :
+    qbmSrcAlphaAdd:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1029,7 +1029,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
       FIsEnabledBlending := True;
     end;
-    qbmSrcAlphaMul :
+    qbmSrcAlphaMul:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1038,7 +1038,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
       FIsEnabledBlending := True;
     end;
-    qbmMul :
+    qbmMul:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1047,7 +1047,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
       FIsEnabledBlending := True;
     end;
-    qbmSrcColor :
+    qbmSrcColor:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1056,7 +1056,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
       FIsEnabledBlending := True;
     end;
-    qbmSrcColorAdd :
+    qbmSrcColorAdd:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1065,7 +1065,7 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
       FIsEnabledBlending := True;
     end;
-    qbmInvertSrcColor :
+    qbmInvertSrcColor:
     begin
       if not FIsEnabledBlending then
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
@@ -1116,7 +1116,7 @@ end;
 // Main initialization routine
 //=============================================================================
 procedure TQuadRender.DoInitialize(AHandle: THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate: Integer;
-  AIsFullscreen, AIsCreateLog, AIsSoftwareVertexPprocessing, AIsMultiThreaded, AIsVerticalSync: Boolean);
+  AIsFullscreen, AIsCreateLog, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync: Boolean);
 var
   i: Integer;
   winrect : TRect;
@@ -1126,9 +1126,9 @@ begin
   if Device.Log <> nil then
   begin
     Device.Log.Write('QuadRender Initialization');
-    Device.Log.Write('Resolution: ' + IntToStr(aWidth) + 'x' + IntToStr(aHeight));
+    Device.Log.Write(PChar('Resolution: ' + IntToStr(aWidth) + 'x' + IntToStr(aHeight)));
   end;
-  {$ENDREGION}  
+  {$ENDREGION}
 
   FWidth := AWidth;
   FHeight := AHeight;
@@ -1151,9 +1151,9 @@ begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write('Driver: ' + FD3DAI.Driver);
-    Device.Log.Write('Description: ' + FD3DAI.Description);
-    Device.Log.Write('Device: ' + FD3DAI.DeviceName);
+    Device.Log.Write(PChar('Driver: ' + FD3DAI.Driver));
+    Device.Log.Write(PChar('Description: ' + FD3DAI.Description));
+    Device.Log.Write(PChar('Device: ' + FD3DAI.DeviceName));
   end;
   {$ENDREGION}
 
@@ -1207,7 +1207,7 @@ begin
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
 
   // set VB source
-  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * sizeOf(TVertex),
+  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
                                                          0,
                                                          0,
                                                          D3DPOOL_MANAGED,
@@ -1219,12 +1219,12 @@ begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write('Max VB count: ' + IntToStr(MaxBufferCount));   {todo: switch}
-    Device.Log.Write('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight));   {todo: switch}
-    Device.Log.Write('Max Texture stages: ' + IntToStr(MaxTextureStages));   {todo: switch}
-    Device.Log.Write('Max Anisotropy: ' + IntToStr(MaxAnisotropy));   {todo: switch}
-    Device.Log.Write('Vertex shaders: ' + PixelShaderVersionString);
-    Device.Log.Write('Pixel shaders: ' + PixelShaderVersionString);
+    Device.Log.Write(PChar('Max VB count: ' + IntToStr(MaxBufferCount)));   {todo: switch}
+    Device.Log.Write(PChar('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight)));   {todo: switch}
+    Device.Log.Write(PChar('Max Texture stages: ' + IntToStr(MaxTextureStages)));   {todo: switch}
+    Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));   {todo: switch}
+    Device.Log.Write(PChar('Vertex shaders: ' + PixelShaderVersionString));
+    Device.Log.Write(PChar('Pixel shaders: ' + PixelShaderVersionString));
   end;
   {$ENDREGION}
 
@@ -1264,6 +1264,9 @@ begin
   SetLength(FActiveTexture, MaxTextureStages);
 
   FD3DDevice.GetRenderTarget(0, FBackBuffer);
+
+  TQuadShader.DistantField := TQuadShader.Create(Self);
+  TQuadShader.DistantField.LoadFromResource('DistantField');
 end;
 
 //=============================================================================
