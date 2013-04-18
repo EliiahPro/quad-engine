@@ -24,21 +24,31 @@ type
   end;
 
   TVec2f = record
-    class operator Add(const a, b: TVec2f): TVec2f;
-    class operator Implicit(const X: TVec2i): TVec2f;
-    class operator Subtract(X: Single; const a: TVec2f): TVec2f;
-    class operator Subtract(const a, b : TVec2f): TVec2f;
-    class operator Multiply(const a, b : TVec2f): TVec2f;
-    class operator Multiply(const a: TVec2f; X: Single): TVec2f;
-    class operator Divide(const a, b: TVec2f): TVec2f;
-    class operator Divide(const a: TVec2f; X: Single): TVec2f;
-    class operator Negative(const X: TVec2f): TVec2f;
+  strict private
+    class var FZero: TVec2f;
+  public
+    class operator Add(const A, B: TVec2f): TVec2f;
+    class operator Implicit(const A: TVec2i): TVec2f;
+    class operator Subtract(X: Single; const A: TVec2f): TVec2f;
+    class operator Subtract(const A: TVec2f; X: Single): TVec2f;
+    class operator Subtract(const A, B : TVec2f): TVec2f;
+    class operator Multiply(const A, B : TVec2f): TVec2f;
+    class operator Multiply(const A: TVec2f; X: Single): TVec2f;
+    class operator Divide(const A, b: TVec2f): TVec2f;
+    class operator Divide(const A: TVec2f; X: Single): TVec2f;
+    class operator Negative(const A: TVec2f): TVec2f;
+    class operator Equal(const A, B: TVec2f): Boolean;
+    class operator NotEqual(const A, B: TVec2f): Boolean;
+    class operator GreaterThan(const A, B: TVec2f): Boolean;
+    class operator LessThan(const A, B: TVec2f): Boolean;
     constructor Create(X, Y: Single);
-    function Distance(const X: TVec2f) : Single; inline;
-    function Dot(const X: TVec2f) : Single; inline;
-    function Lerp(const X: TVec2f; dist: Single): TVec2f; inline;
+    function Length: Single; inline;
+    function Distance(const A: TVec2f): Single; inline;
+    function Dot(const A: TVec2f) : Single; inline;
+    function Lerp(const A: TVec2f; dist: Single): TVec2f; inline;
     function Normal: TVec2f; inline;
     function Normalize: TVec2f; inline;
+    class property Zero: TVec2f read FZero;
         // data
     case Integer of
       0: (X, Y: Single);
@@ -68,58 +78,79 @@ implementation
 
   {TVec2f}
 
-class operator TVec2f.Add(const a, b: TVec2f): TVec2f;
+class operator TVec2f.Add(const A, B: TVec2f): TVec2f;
 begin
-  Result.X := a.X + b.X;
-  Result.Y := a.Y + b.Y;
+  Result.X := A.X + B.X;
+  Result.Y := A.Y + B.Y;
 end;
 
-class operator TVec2f.Implicit(const X: TVec2i): TVec2f;
+class operator TVec2f.Implicit(const A: TVec2i): TVec2f;
 begin
-  Result.X := X.X;
-  Result.Y := X.Y;
+  Result.X := A.X;
+  Result.Y := A.Y;
 end;
 
-class operator TVec2f.Subtract(X: Single; const a: TVec2f): TVec2f;
+class operator TVec2f.Subtract(X: Single; const A: TVec2f): TVec2f;
 begin
-  Result.X := X - a.X;
-  Result.Y := X - a.Y;
+  Result.X := X - A.X;
+  Result.Y := X - A.Y;
 end;
 
-class operator TVec2f.Subtract(const a, b: TVec2f): TVec2f;
+class operator TVec2f.Subtract(const A: TVec2f; X: Single): TVec2f;
 begin
-  Result.X := a.X - b.X;
-  Result.Y := a.Y - b.Y;
+  Result.X := A.X - X;
+  Result.Y := A.Y - X;
 end;
 
-class operator TVec2f.Multiply(const a, b: TVec2f): TVec2f;
+class operator TVec2f.Subtract(const A, B: TVec2f): TVec2f;
 begin
-  Result.X := a.X * b.X;
-  Result.Y := a.Y * b.Y;
+  Result.X := A.X - B.X;
+  Result.Y := A.Y - B.Y;
 end;
 
-class operator TVec2f.Multiply(const a: TVec2f; X: Single): TVec2f;
+class operator TVec2f.Multiply(const A, B: TVec2f): TVec2f;
 begin
-  Result.X := a.X * X;
-  Result.Y := a.Y * X;
+  Result.X := A.X * B.X;
+  Result.Y := A.Y * B.Y;
 end;
 
-class operator TVec2f.Divide(const a, b: TVec2f): TVec2f;
+class operator TVec2f.Multiply(const A: TVec2f; X: Single): TVec2f;
 begin
-  Result.X := a.X / b.X;
-  Result.Y := a.Y / b.Y;
+  Result.X := A.X * X;
+  Result.Y := A.Y * X;
 end;
 
-class operator TVec2f.Divide(const a: TVec2f; X: Single): TVec2f;
+class operator TVec2f.Divide(const A, B: TVec2f): TVec2f;
 begin
-  Result.X := a.X / X;
-  Result.Y := a.Y / X;
+  Result.X := A.X / B.X;
+  Result.Y := A.Y / B.Y;
 end;
 
-class operator TVec2f.Negative(const X: TVec2f): TVec2f;
+class operator TVec2f.Divide(const A: TVec2f; X: Single): TVec2f;
 begin
-  Result.X := - X.X;
-  Result.Y := - X.Y;
+  Result.X := A.X / X;
+  Result.Y := A.Y / X;
+end;
+
+class operator TVec2f.Negative(const A: TVec2f): TVec2f;
+begin
+  Result.X := - A.X;
+  Result.Y := - A.Y;
+end;
+
+class operator TVec2f.Equal(const A, B: TVec2f): Boolean;
+begin
+  Result := (A.X = B.X) and (A.Y = B.Y);
+end;
+
+class operator TVec2f.GreaterThan(const A, B: TVec2f): Boolean;
+begin
+  Result := A.Length > B.Length;
+end;
+
+class operator TVec2f.NotEqual(const A, B: TVec2f): Boolean;
+begin
+  Result := (A.X <> B.X) or (A.Y <> B.Y);
 end;
 
 function TVec2f.Normal: TVec2f;
@@ -144,14 +175,14 @@ begin
   end;
 end;
 
-function TVec2f.Distance(const X: TVec2f): Single;
+function TVec2f.Distance(const A: TVec2f): Single;
 begin
-  Result := Sqrt(Sqr(X.X - Self.X) + Sqr(X.Y - Self.Y));
+  Result := (Self - A).Length;
 end;
 
-function TVec2f.Dot(const X: TVec2f): Single;
+function TVec2f.Dot(const A: TVec2f): Single;
 begin
-  Result := X.X * Self.X + X.Y * Self.Y;
+  Result := A.X * Self.X + A.Y * Self.Y;
 end;
 
 constructor TVec2f.Create(X, Y: Single);
@@ -160,12 +191,22 @@ begin
   Self.Y := Y;
 end;
 
-function TVec2f.Lerp(const X: TVec2f; dist: Single): TVec2f;
+function TVec2f.Length: Single;
 begin
-  Result := (X - Self) * dist + Self;
+  Result := Sqrt(Self.X * Self.X + Self.Y * Self.Y);
 end;
 
-  {TVec2i}
+function TVec2f.Lerp(const A: TVec2f; dist: Single): TVec2f;
+begin
+  Result := (A - Self) * dist + Self;
+end;
+
+class operator TVec2f.LessThan(const A, B: TVec2f): Boolean;
+begin
+  Result := A.Length < B.Length;
+end;
+
+{TVec2i}
 
 class operator TVec2i.Add(const a, b: TVec2i): TVec2i;
 begin

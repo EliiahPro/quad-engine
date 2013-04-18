@@ -21,7 +21,7 @@ unit QuadEngine;
 interface
 
 uses
-  Windows, Direct3D9;
+  Windows, Direct3D9, Vec2f;
 
 const
   LibraryName: PChar = 'qei.dll';
@@ -139,7 +139,7 @@ type
     procedure Clear(AColor: Cardinal); stdcall;
     procedure CreateOrthoMatrix; stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(x, y, x2, y2: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
+    procedure DrawRect(PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawRectRot(x, y, x2, y2, ang, Scale: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawLine(x, y, x2, y2: Single; Color: Cardinal); stdcall;
@@ -189,10 +189,10 @@ type
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure Draw(x, y: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawFrame(x, y: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure Draw(Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawFrame(Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawMap(x, y, x2, y2, u1, v1, u2, v2: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawMap(PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMapRotAxis(x, y, x2, y2, u1, v1, u2, v2, xA, yA, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRot(x, y, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;

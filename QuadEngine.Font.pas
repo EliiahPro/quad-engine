@@ -15,7 +15,7 @@ interface
 
 uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Texture, QuadEngine.Log,
-  QuadEngine, QuadEngine.Shader;
+  QuadEngine, QuadEngine.Shader, Vec2f;
 
 const
   CHAR_SPACE = 32;
@@ -308,14 +308,15 @@ begin
 
   //      FQuadRender.Rectangle(sx, y, sx+10, y+ 40, $FFFFFFFF);
         if l <> CHAR_SPACE then
-        FTexture.DrawMap((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
-                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + y,
-                   (FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
-                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + y,
-                   FQuadChars[l].Xpos / FTexture.TextureWidth,
-                   FQuadChars[l].YPos / FTexture.TextureHeight,
-                   FQuadChars[l].Xpos / FTexture.TextureWidth + FQuadChars[l].SizeX / FTexture.TextureWidth,
-                   FQuadChars[l].YPos / FTexture.TextureHeight + FQuadChars[l].SizeY / FTexture.TextureHeight,
+        FTexture.DrawMap(
+                   TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
+                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + y),
+                   TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
+                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + y),
+                   TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth,
+                   FQuadChars[l].YPos / FTexture.TextureHeight),
+                   TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth + FQuadChars[l].SizeX / FTexture.TextureWidth,
+                   FQuadChars[l].YPos / FTexture.TextureHeight + FQuadChars[l].SizeY / FTexture.TextureHeight),
                    $FFFFFFFF);
 
         sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
@@ -324,8 +325,9 @@ begin
       end
       else
       begin
-        FTexture.DrawMap(sx, y, sx + FLetters[l].W * AScale, y + FLetters[l].H * AScale,
-          FLetters[l].U1, FLetters[l].V1, FLetters[l].U2, FLetters[l].V2, CurrentColor);
+        FTexture.DrawMap(TVec2f.Create(sx, y), TVec2f.Create(sx + FLetters[l].W * AScale, y + FLetters[l].H * AScale),
+                         TVec2f.Create(FLetters[l].U1, FLetters[l].V1), TVec2f.Create(FLetters[l].U2, FLetters[l].V2),
+                         CurrentColor);
         sx := sx + FLetters[l].W * AScale + FKerning;
       end;
     end;

@@ -82,12 +82,12 @@ type
     procedure Clear(AColor: Cardinal); stdcall;
     procedure CreateOrthoMatrix; stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(x, y, x2, y2: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
+    procedure DrawRect(PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawRectRot(x, y, x2, y2, ang, Scale: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawLine(x, y, x2, y2 : Single; Color: Cardinal); stdcall;
     procedure DrawPoint(x, y: Single; Color: Cardinal); stdcall;
-    procedure DrawQuadLine(x1, x2, y1, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
+    procedure DrawQuadLine(x1, y1, x2, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
@@ -607,7 +607,7 @@ end;
 //=============================================================================
 // Draws textured rectangle
 //=============================================================================
-procedure TQuadRender.Drawrect(x, y, x2, y2: Double; u1, v1, u2, v2 : Double; Color : Cardinal);
+procedure TQuadRender.Drawrect(PointA, PointB, UVA, UVB: TVec2f; Color : Cardinal);
 var
   ver : array [0..5] of TVertex;
 begin
@@ -619,15 +619,15 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := u1;  ver[0].v := v1;
-  ver[1].u := u2;  ver[1].v := v1;
-  ver[2].u := u1;  ver[2].v := v2;
-  ver[5].u := u2;  ver[5].v := v2;
+  ver[0].u := UVA.X;  ver[0].v := UVA.Y;
+  ver[1].u := UVB.X;  ver[1].v := UVA.Y;
+  ver[2].u := UVA.X;  ver[2].v := UVB.Y;
+  ver[5].u := UVB.X;  ver[5].v := UVB.Y;
 
-  ver[0].x := x;     ver[0].y := y;     ver[0].z := 0.0;
-  ver[1].x := x2;    ver[1].y := y;     ver[1].z := 0.0;
-  ver[2].x := x;     ver[2].y := y2;    ver[2].z := 0.0;
-  ver[5].x := x2;    ver[5].y := y2;    ver[5].z := 0.0;
+  ver[0].x := PointA.X;    ver[0].y := PointA.Y;    ver[0].z := 0.0;
+  ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
+  ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
+  ver[5].x := PointB.X;    ver[5].y := PointB.Y;    ver[5].z := 0.0;
 
   AddQuadToBuffer(ver);
 end;

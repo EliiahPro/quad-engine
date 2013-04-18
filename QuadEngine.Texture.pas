@@ -15,7 +15,7 @@ interface
 
 uses
   QuadEngine.Render, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, direct3d9,
-  TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs;
+  TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs, Vec2f;
 
 type
   TQuadTextureItem = record
@@ -57,10 +57,10 @@ type
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure Draw(x, y: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawFrame(x, y: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure Draw(Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawFrame(Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawMap(x, y, x2, y2, u1, v1, u2, v2: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawMap(PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMapRotAxis(x, y, x2, y2, u1, v1, u2, v2, xA, yA, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRot(x, y, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -136,12 +136,13 @@ end;
 //=============================================================================
 // Draws sprite with [X, Y] position
 //=============================================================================
-procedure TQuadTexture.Draw(x, y: Double; Color: Cardinal);
+procedure TQuadTexture.Draw(Position: Tvec2f; Color: Cardinal);
 begin
   SetTextureStages;
 
-  FQuadRender.Drawrect(x - 0.5, y - 0.5, x - 0.5 + FFrameWidth, y - 0.5 + FFrameHeight,
-    0, 0, FFrameWidth / FWidth, FFrameHeight / FHeight, Color);
+  FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + TVec2f.Create(FFrameWidth, FFrameHeight),
+                       TVec2f.Zero, TVec2f.Create(FFrameWidth / FWidth, FFrameHeight / FHeight),
+                       Color);
 end;
 
 //=============================================================================
@@ -162,7 +163,7 @@ end;
 //=============================================================================
 // Draws sprite with [X, Y] position and pattern
 //=============================================================================
-procedure TQuadTexture.DrawFrame(x, y: Double; Pattern: Word; Color: Cardinal);
+procedure TQuadTexture.DrawFrame(Position: Tvec2f; Pattern: Word; Color: Cardinal);
 var
   px, py : Integer;
   px2, py2 : Integer;
@@ -174,8 +175,8 @@ begin
   px2 := px + FPatternWidth;
   py2 := py + FPatternHeight;
 
-  FQuadRender.Drawrect(x - 0.5, y - 0.5, x - 0.5 + FPatternWidth, y - 0.5 + FPatternHeight,
-                       px / FWidth, py / FHeight, px2 / FWidth, py2 / FHeight, Color);
+  FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
+                       TVec2f.Create(px / FWidth, py / FHeight), TVec2f.Create(px2 / FWidth, py2 / FHeight), Color);
 end;
 
 //=============================================================================
@@ -193,11 +194,11 @@ end;
 //=============================================================================
 // Draws sprite with [X, Y, X2, Y2] vertex pos, and [U1, V1, U2, V2] tex coods
 //=============================================================================
-procedure TQuadTexture.DrawMap(x, y, x2, y2, u1, v1, u2, v2: Double; Color : Cardinal);
+procedure TQuadTexture.DrawMap(PointA, PointB, UVA, UVB: TVec2f; Color : Cardinal);
 begin
   SetTextureStages;
 
-  FQuadRender.Drawrect(x - 0.5, y - 0.5, x2 - 0.5, y2 - 0.5, u1, v1, u2, v2, Color);
+  FQuadRender.Drawrect(PointA -0.5, PointB - 0.5, UVA, UVB, Color);
 end;
 
 //=============================================================================
