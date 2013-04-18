@@ -146,6 +146,7 @@ namespace QuadEngine
         void DrawRectRotAxis(double x, double y, double x2, double y2, double ang, double Scale, double xA, double yA, double u1, double v1, double u2, double v2, UInt32 Color);
         void DrawLine(float x, float y, float x2, float y2, UInt32 Color);
         void DrawPoint(float x, float y, UInt32 Color);
+        void DrawQuadLine(float x1, float y1, float x2, float y2, float width1, float width2, uint Color1, uint Color2);
         void EndRender(); 
         void Finalize();
         void FlushBuffer();

@@ -87,6 +87,7 @@ type
     procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawLine(x, y, x2, y2 : Single; Color: Cardinal); stdcall;
     procedure DrawPoint(x, y: Single; Color: Cardinal); stdcall;
+    procedure DrawQuadLine(x1, x2, y1, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
@@ -562,6 +563,45 @@ begin
 
   if FCount >= MaxBufferCount then
     FlushBuffer;
+end;
+
+//=============================================================================
+// Draws line using triangles
+//=============================================================================
+procedure TQuadRender.DrawQuadLine(x1, y1, x2, y2, width1, width2: Single; Color1, Color2: Cardinal);
+var
+  point1, point2: TVec2f;
+  line: TVec2f;
+  A, B, C, D: TVec2f;
+  perpendicular: TVec2f;
+  ver : array [0..5] of TVertex;
+begin
+  point1.Create(x1, y1);
+  point2.Create(x2, y2);
+
+  line := point2 - point1;
+
+  perpendicular := line.Normal.Normalize;
+
+  A := point1 + perpendicular * (width1 / 2);
+  B := point1 - perpendicular * (width1 / 2);
+
+  C := point2 + perpendicular * (width2 / 2);
+  D := point2 - perpendicular * (width2 / 2);
+
+  RenderMode := D3DPT_TRIANGLELIST;
+
+  ver[0].color := Color1;
+  ver[1].color := Color1;
+  ver[2].color := Color2;
+  ver[5].color := Color2;
+
+  ver[0].x := B.X;     ver[0].y := B.Y;     ver[0].z := 0.0;
+  ver[1].x := A.X;     ver[1].y := A.Y;     ver[1].z := 0.0;
+  ver[2].x := D.X;     ver[2].y := D.Y;     ver[2].z := 0.0;
+  ver[5].x := C.X;     ver[5].y := C.Y;     ver[5].z := 0.0;
+
+  AddQuadToBuffer(ver);
 end;
 
 //=============================================================================

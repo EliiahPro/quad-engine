@@ -137,6 +137,7 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual void CALLBACK DrawRectRotAxis(double x, double y, double x2, double y2, double Angle, double Scale, double xA, double yA, double u1, double v1, double u2, double v2, unsigned int Color) = 0;
 	virtual void CALLBACK DrawLine(float x1, float y1, float x2, float y2, unsigned int Color) = 0;
 	virtual void CALLBACK DrawPoint(float x, float y, unsigned int Color) = 0;
+    virtual	void CALLBACK DrawQuadLine(float x1, float y1, float x2, float y2, float width1, float width2, unsigned int Color1, unsigned int Color2) = 0;
 	virtual void CALLBACK EndRender() = 0;
 	virtual void CALLBACK Finalize() = 0;
 	virtual void CALLBACK FlushBuffer() = 0;

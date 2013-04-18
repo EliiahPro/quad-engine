@@ -124,8 +124,8 @@ end;
 
 function TVec2f.Normal: TVec2f;
 begin
-  Result.X := Self.X - Self.Y;
-  Result.Y := Self.Y - Self.X;
+  Result.X := Self.Y;
+  Result.Y := - Self.X;
 end;
 
 function TVec2f.Normalize: TVec2f;
@@ -133,8 +133,15 @@ var
   d: Double;
 begin
   d := Distance(TVec2f.Create(0, 0));
-  Result.X := Self.X / d;
-  Result.Y := Self.Y / d;
+  if d > 0 then
+  begin
+    Result.X := Self.X / d;
+    Result.Y := Self.Y / d;
+  end
+  else
+  begin
+    Result.Create(0, 0);
+  end;
 end;
 
 function TVec2f.Distance(const X: TVec2f): Single;
