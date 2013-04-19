@@ -23,7 +23,7 @@ type
       2: (a: array[0..1] of Single);
   end;
 
-  TVec2f = record
+  TVec2f = packed record
   strict private
     class var FZero: TVec2f;
   public
