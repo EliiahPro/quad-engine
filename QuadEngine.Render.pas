@@ -82,21 +82,21 @@ type
     procedure Clear(AColor: Cardinal); stdcall;
     procedure CreateOrthoMatrix; stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRot(x, y, x2, y2, ang, Scale: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawLine(x, y, x2, y2 : Single; Color: Cardinal); stdcall;
-    procedure DrawPoint(x, y: Single; Color: Cardinal); stdcall;
-    procedure DrawQuadLine(x1, y1, x2, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
+    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AIsCreateLog: Boolean = True); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
-    procedure Polygon(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal); stdcall;
-    procedure Rectangle(x, y, x2, y2: Double; Color: Cardinal); stdcall;
-    procedure RectangleEx(x, y, x2, y2: Double; Color1, Color2, Color3, Color4: Cardinal); stdcall;
+    procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
+    procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
+    procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
     procedure RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
       ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
@@ -333,48 +333,51 @@ end;
 //=============================================================================
 // Draws textured rotated rectangle along center
 //=============================================================================
-procedure TQuadRender.DrawrectRot(x, y, x2, y2, ang, Scale: Double;
-  u1, v1, u2, v2 : Double; Color : Cardinal);
+procedure TQuadRender.DrawrectRot(const PointA, PointB: TVec2f; Angle, Scale: Double;
+  const UVA, UVB: TVec2f; Color: Cardinal);
 var
   ver: array [0..5] of TVertex;
   xo, yo: Single;
+  Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Extended;
 begin
   RenderMode := D3DPT_TRIANGLELIST;
 
-  xo := (x2 - x) / 2 + x;
-  yo := (y2 - y) / 2 + y;
-  Alpha := ang * (pi / 180);
+  Origin := (PointB - PointA) / 2 + PointA;
+
+  Alpha := Angle * (pi / 180);
 
   SinCos(Alpha, SinA, CosA);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+
+  ver[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  ver[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  ver[0].z := 0;
+
+  ver[1].x := ((PointB.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  ver[1].y := ((PointB.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  ver[1].z := 0;
+
+  ver[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  ver[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  ver[2].z := 0;
+
+  ver[5].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  ver[5].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  ver[5].z := 0;
+
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := u1;   ver[0].v := v1;
-  ver[1].u := u2;   ver[1].v := v1;
-  ver[2].u := u1;   ver[2].v := v2;
-  ver[5].u := u2;   ver[5].v := v2;
+  ver[0].u := UVA.U;   ver[0].v := UVA.V;
+  ver[1].u := UVB.U;   ver[1].v := UVA.V;
+  ver[2].u := UVA.U;   ver[2].v := UVB.V;
+  ver[5].u := UVB.U;   ver[5].v := UVB.V;
 
-  ver[0].x := ((x - xo) * cosA - (y - yo) * sinA) * Scale + xo - (x2 - x) / 2;
-  ver[0].y := ((x - xo) * sinA + (y - yo) * cosA) * Scale + yo - (y2 - y) / 2;
-  ver[0].z := 0;
-
-  ver[1].x := ((x2 - xo) * cosA - (y - yo) * sinA) * Scale + xo - (x2 - x) / 2;
-  ver[1].y := ((x2 - xo) * sinA + (y - yo) * cosA) * Scale + yo - (y2 - y) / 2;
-  ver[1].z := 0;
-
-  ver[2].x := ((x - xo) * cosA - (y2 - yo) * sinA) * Scale + xo - (x2 - x) / 2;
-  ver[2].y := ((x - xo) * sinA + (y2 - yo) * cosA) * Scale + yo - (y2 - y) / 2;
-  ver[2].z := 0;
-
-  ver[5].x := ((x2 - xo) * cosA - (y2 - yo) * sinA) * Scale + xo - (x2 - x) / 2;
-  ver[5].y := ((x2 - xo) * sinA + (y2 - yo) * cosA) * Scale + yo - (y2 - y) / 2;
-  ver[5].z := 0;
 
   AddQuadToBuffer(ver);
 end;
@@ -382,48 +385,46 @@ end;
 //=============================================================================
 // Draws textured rotated rectangle along free axis
 //=============================================================================
-procedure TQuadRender.DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA, u1, v1,
-  u2, v2: Double; Color: Cardinal);
+procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double;
+  const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 var
   ver: array [0..5] of TVertex;
-  xo, yo: Single;
   Alpha: Single;
   SinA, CosA: Extended;
 begin
   RenderMode := D3DPT_TRIANGLELIST;
 
-  xo := xA;
-  yo := yA;
-  Alpha := ang * (pi / 180);
+  Alpha := Angle * (pi / 180);
 
   SinCos(Alpha, SinA, CosA);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+
+  ver[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  ver[0].x := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[0].z := 0;
+
+  ver[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  ver[1].x := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[1].z := 0;
+
+  ver[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  ver[2].x := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[2].z := 0;
+
+  ver[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  ver[5].x := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[5].z := 0;
+
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := u1;   ver[0].v := v1;
-  ver[1].u := u2;   ver[1].v := v1;
-  ver[2].u := u1;   ver[2].v := v2;
-  ver[5].u := u2;   ver[5].v := v2;
-
-  ver[0].x := ((x - xo) * cosA - (y - yo) * sinA) * Scale + xo;// - (x2 - x) / 2;
-  ver[0].y := ((x - xo) * sinA + (y - yo) * cosA) * Scale + yo;// - (y2 - y) / 2;
-  ver[0].z := 0;
-
-  ver[1].x := ((x2 - xo) * cosA - (y - yo) * sinA) * Scale + xo;// - (x2 - x) / 2;
-  ver[1].y := ((x2 - xo) * sinA + (y - yo) * cosA) * Scale + yo;// - (y2 - y) / 2;
-  ver[1].z := 0;
-
-  ver[2].x := ((x - xo) * cosA - (y2 - yo) * sinA) * Scale + xo;// - (x2 - x) / 2;
-  ver[2].y := ((x - xo) * sinA + (y2 - yo) * cosA) * Scale + yo;// - (y2 - y) / 2;
-  ver[2].z := 0;
-
-  ver[5].x := ((x2 - xo) * cosA - (y2 - yo) * sinA) * Scale + xo;// - (x2 - x) / 2;
-  ver[5].y := ((x2 - xo) * sinA + (y2 - yo) * cosA) * Scale + yo;// - (y2 - y) / 2;
-  ver[5].z := 0;
+  ver[0].u := UVA.U;   ver[0].v := UVA.V;
+  ver[1].u := UVA.U;   ver[1].v := UVA.V;
+  ver[2].u := UVA.U;   ver[2].v := UVB.V;
+  ver[5].u := UVA.U;   ver[5].v := UVB.V;
 
   AddQuadToBuffer(ver);
 end;
@@ -526,17 +527,17 @@ end;
 //=============================================================================
 // Draws Line
 //=============================================================================
-procedure TQuadRender.DrawLine(x, y, x2, y2: Single; Color: Cardinal);
+procedure TQuadRender.DrawLine(const PointA, PointB: TVec2f; Color: Cardinal);
 var
   ver: array [0..1] of TVertex;
 begin
   RenderMode := D3DPT_LINELIST;
 
+  ver[0] := PointA;
+  ver[1] := PointB;
+
   ver[0].color := Color;
   ver[1].color := Color;
-
-  ver[0].x := x;     ver[0].y := y;     ver[0].z := 0;
-  ver[1].x := x2;    ver[1].y := y2;    ver[1].z := 0;
 
   Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
   inc(FCount, 2);
@@ -548,15 +549,14 @@ end;
 //=============================================================================
 // Draws Point
 //=============================================================================
-procedure TQuadRender.DrawPoint(x, y: Single; Color: Cardinal);
+procedure TQuadRender.DrawPoint(const Point: TVec2f; Color: Cardinal);
 var
   ver: array [0..0] of TVertex;
 begin
   RenderMode := D3DPT_POINTLIST;
 
+  ver[0] := Point;
   ver[0].color := Color;
-
-  ver[0].x := x;     ver[0].y := y;     ver[0].z := 0;
 
   Move(ver, FVertexBuffer[FCount], SizeOf(TVertex));
   inc(FCount, 1);
@@ -568,38 +568,27 @@ end;
 //=============================================================================
 // Draws line using triangles
 //=============================================================================
-procedure TQuadRender.DrawQuadLine(x1, y1, x2, y2, width1, width2: Single; Color1, Color2: Cardinal);
+procedure TQuadRender.DrawQuadLine(const PointA, PointB: TVec2f; width1, width2: Single; Color1, Color2: Cardinal);
 var
-  point1, point2: TVec2f;
   line: TVec2f;
-  A, B, C, D: TVec2f;
   perpendicular: TVec2f;
   ver : array [0..5] of TVertex;
 begin
-  point1.Create(x1, y1);
-  point2.Create(x2, y2);
-
-  line := point2 - point1;
+  line := pointA - pointB;
 
   perpendicular := line.Normal.Normalize;
 
-  A := point1 + perpendicular * (width1 / 2);
-  B := point1 - perpendicular * (width1 / 2);
-
-  C := point2 + perpendicular * (width2 / 2);
-  D := point2 - perpendicular * (width2 / 2);
-
   RenderMode := D3DPT_TRIANGLELIST;
+
+  ver[1] := pointA + perpendicular * (width1 / 2);
+  ver[0] := pointA - perpendicular * (width1 / 2);
+  ver[2] := pointB - perpendicular * (width2 / 2);
+  ver[5] := pointB + perpendicular * (width2 / 2);
 
   ver[0].color := Color1;
   ver[1].color := Color1;
   ver[2].color := Color2;
   ver[5].color := Color2;
-
-  ver[0].x := B.X;     ver[0].y := B.Y;     ver[0].z := 0.0;
-  ver[1].x := A.X;     ver[1].y := A.Y;     ver[1].z := 0.0;
-  ver[2].x := D.X;     ver[2].y := D.Y;     ver[2].z := 0.0;
-  ver[5].x := C.X;     ver[5].y := C.Y;     ver[5].z := 0.0;
 
   AddQuadToBuffer(ver);
 end;
@@ -607,13 +596,18 @@ end;
 //=============================================================================
 // Draws textured rectangle
 //=============================================================================
-procedure TQuadRender.Drawrect(PointA, PointB, UVA, UVB: TVec2f; Color : Cardinal);
+procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
   ver : array [0..5] of TVertex;
 begin
   RenderMode := D3DPT_TRIANGLELIST;
                                         { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+  ver[0] := PointA;
+  ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
+  ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
+  ver[5] := PointB;
+
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
@@ -624,10 +618,6 @@ begin
   ver[2].u := UVA.X;  ver[2].v := UVB.Y;
   ver[5].u := UVB.X;  ver[5].v := UVB.Y;
 
-  ver[0].x := PointA.X;    ver[0].y := PointA.Y;    ver[0].z := 0.0;
-  ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
-  ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
-  ver[5].x := PointB.X;    ver[5].y := PointB.Y;    ver[5].z := 0.0;
 
   AddQuadToBuffer(ver);
 end;
@@ -858,8 +848,7 @@ end;
 //=============================================================================
 // Draws Polygon
 //=============================================================================
-procedure TQuadRender.Polygon(x1, y1, x2, y2, x3, y3, x4, y4: Double;
-  Color: Cardinal);
+procedure TQuadRender.Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal);
 var
   ver : array [0..5] of TVertex;
   i : Integer;
@@ -870,15 +859,15 @@ begin
   SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+  ver[0] := PointA;
+  ver[1] := PointB;
+  ver[2] := PointC;
+  ver[5] := PointD;
+
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
   ver[5].color := Color;
-
-  ver[0].x := x1;    ver[0].y := y1;    ver[0].z := 0;
-  ver[1].x := x2;    ver[1].y := y2;    ver[1].z := 0;
-  ver[2].x := x3;    ver[2].y := y3;    ver[2].z := 0;
-  ver[5].x := x4;    ver[5].y := y4;    ver[5].z := 0;
 
   AddQuadToBuffer(ver);
 end;
@@ -886,7 +875,7 @@ end;
 //=============================================================================
 // Draws rectangle
 //=============================================================================
-procedure TQuadRender.Rectangle(x, y, x2, y2: Double; Color: Cardinal);
+procedure TQuadRender.Rectangle(const PointA, PointB: TVec2f; Color: Cardinal);
 var
   ver: array [0..5] of TVertex;
   i: Integer;
@@ -897,15 +886,15 @@ begin
     SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+  ver[0] := PointA;
+  ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
+  ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
+  ver[5] := PointB;
+
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
   ver[5].color := Color;
-
-  ver[0].x := x;     ver[0].y := y;     ver[0].z := 0;
-  ver[1].x := x2;    ver[1].y := y;     ver[1].z := 0;
-  ver[2].x := x;     ver[2].y := y2;    ver[2].z := 0;
-  ver[5].x := x2;    ver[5].y := y2;    ver[5].z := 0;
 
   AddQuadToBuffer(ver);
 end;
@@ -913,8 +902,8 @@ end;
 //=============================================================================
 // Draws rectangle
 //=============================================================================
-procedure TQuadRender.RectangleEx(x, y, x2, y2: Double; Color1, Color2, Color3,
-  Color4: Cardinal);
+procedure TQuadRender.RectangleEx(const PointA, PointB: TVec2f; Color1, Color2,
+  Color3, Color4: Cardinal);
 var
   ver : array [0..5] of TVertex;
   i : Integer;
@@ -925,15 +914,15 @@ begin
   SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+  ver[0] := PointA;
+  ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
+  ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
+  ver[5] := PointB;
+
   ver[0].color := Color1;
   ver[1].color := Color2;
   ver[2].color := Color3;
   ver[5].color := Color4;
-
-  ver[0].x := x;     ver[0].y := y;     ver[0].z := 0;
-  ver[1].x := x2;    ver[1].y := y;     ver[1].z := 0;
-  ver[2].x := x;     ver[2].y := y2;    ver[2].z := 0;
-  ver[5].x := x2;    ver[5].y := y2;    ver[5].z := 0;
 
   AddQuadToBuffer(ver);
 end;

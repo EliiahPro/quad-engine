@@ -141,20 +141,20 @@ namespace QuadEngine
         void Clear(UInt32 AColor);
         void CreateOrthoMatrix();
         void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, double u1, double v1, double u2, double v2, UInt32 Color);
-        void DrawRect(double x, double y, double x2, double y2, double u1, double v1, double u2, double v2, UInt32 Color);
-        void DrawRectRot(double x, double y, double x2, double y2, double ang, double Scale, double u1, double v1, double u2, double v2, UInt32 Color);
-        void DrawRectRotAxis(double x, double y, double x2, double y2, double ang, double Scale, double xA, double yA, double u1, double v1, double u2, double v2, UInt32 Color);
-        void DrawLine(float x, float y, float x2, float y2, UInt32 Color);
-        void DrawPoint(float x, float y, UInt32 Color);
-        void DrawQuadLine(float x1, float y1, float x2, float y2, float width1, float width2, uint Color1, uint Color2);
-        void EndRender(); 
+        void DrawRect(Vec2f PointA, Vec2f PointB, Vec2f UVA, Vec2f UVB, UInt32 Color);
+        void DrawRectRot(Vec2f PointA, Vec2f PointB, double Angle, double Scale, Vec2f UVA, Vec2f UVB, UInt32 Color);
+        void DrawRectRotAxis(Vec2f PointA, Vec2f PointB, double Angle, double Scale, Vec2f Axis, Vec2f UVA, Vec2f UVB, UInt32 Color);
+        void DrawLine(Vec2f PointA, Vec2f PointB, UInt32 Color);
+        void DrawPoint(Vec2f Point, UInt32 Color);
+        void DrawQuadLine(Vec2f PointA, Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
+        void EndRender();
         void Finalize();
         void FlushBuffer();
         void Initialize(IntPtr AHandle, int AWidth, int AHeight, bool AIsFullscreen, bool AIsCreateLog = true);
         void InitializeFromIni(IntPtr AHandle, string AFilename);
-        void Polygon(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color);
-        void Rectangle(double x, double y, double x2, double y2, UInt32 Color);
-        void RectangleEx(double x, double y, double x2, double y2, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4);
+        void Polygon(Vec2f PointA, Vec2f PointB, Vec2f PointC, Vec2f PointD, UInt32 Color);
+        void Rectangle(Vec2f PointA, Vec2f PointB, UInt32 Color);
+        void RectangleEx(Vec2f PointA, Vec2f PointB, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4);
         /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
         /// <param name="AIsRenderToTexture">Enable render to texture.</param>
         /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
@@ -173,7 +173,7 @@ namespace QuadEngine
         void SkipClipRect();
         void TakeScreenshot(string AFileName);
         void ResetDevice();
-        [PreserveSig] 
+        [PreserveSig]
         IntPtr GetD3DDevice();
     }
  
@@ -196,17 +196,17 @@ namespace QuadEngine
         UInt16 GetSpriteHeight();
         [PreserveSig] 
         UInt16 GetSpriteWidth();
-        [PreserveSig] 
+        [PreserveSig]
         IntPtr GetTexture(byte i);
-        [PreserveSig] 
+        [PreserveSig]
         UInt16 GetTextureHeight();
-        [PreserveSig] 
+        [PreserveSig]
         UInt16 GetTextureWidth();
         void AddTexture(byte ARegister, IntPtr ATexture);  // todo: IDirect3DTexture9
-        void Draw(double x, double y, UInt32 Color = 0xFFFFFFFF);
-        void DrawFrame(double x, double y, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
+        void Draw(Vec2f Position, UInt32 Color = 0xFFFFFFFF);
+        void DrawFrame(Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
-        void DrawMap(double x, double y, double x2, double y2, double u1, double v1, double u2, double v2, UInt32 Color = 0xFFFFFFFF);
+        void DrawMap(Vec2f PointA, Vec2f PointB, Vec2f UVA, Vec2f UVB, UInt32 Color = 0xFFFFFFFF);
         void DrawMapRotAxis(double x, double y, double x2, double y2, double u1, double v1, double u2, double v2, double xA, double yA, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
         void DrawRot(double x, double y, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
         void DrawRotFrame(double x, double y, double angle, double Scale, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
@@ -216,9 +216,9 @@ namespace QuadEngine
         void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight);
         void SetIsLoaded(UInt16 AWidth, UInt16 AHeight);
     }
- 
+
     /* Quad Shader */
- 
+
     [ComImport]
     [Guid("7B7F4B1C-7F05-4BC2-8C11-A99696946073")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -235,10 +235,10 @@ namespace QuadEngine
         void LoadComplexShader(string AVertexShaderFilename, string APixelShaderFilename);
         void SetShaderState(bool AIsEnabled);
     }
- 
- 
+
+
     /* Quad Font */
- 
+
     /* Predefined colors for SmartColoring:
       W - white
       Z - black (zero)
@@ -256,10 +256,10 @@ namespace QuadEngine
       T - teal
       D - gray (dark)
       S - silver
- 
+
       ! - default DrawText color
     ** Do not override "!" char **  */
- 
+
     // font alignments
     public enum TqfAlign {qfaInvalid = 0,
                           qfaLeft    = 1,      /* Align by left */
@@ -272,19 +272,19 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadFont
     {
-        [PreserveSig] 
+        [PreserveSig]
         bool GetIsLoaded();
-        [PreserveSig] 
+        [PreserveSig]
         float GetKerning();
         void LoadFromFile(string ATextureFilename, string AUVFilename);
         void SetSmartColor(string AColorChar, UInt32 AColor);
         void SetIsSmartColoring(bool Value);
         void SetKerning(float AValue);
-        [PreserveSig] 
+        [PreserveSig]
         float TextHeight(string AText, float AScale = 1.0F);
-        [PreserveSig] 
+        [PreserveSig]
         float TextWidth(string AText, float AScale = 1.0F);
-        void TextOut(float x, float y, float AScale, string AText, UInt32 AColor = 0xFFFFFFFF, TqfAlign AAlign = TqfAlign.qfaLeft);
+        void TextOut(Vec2f Position, float y, float AScale, string AText, UInt32 AColor = 0xFFFFFFFF, TqfAlign AAlign = TqfAlign.qfaLeft);
     }
  
     /* Quad Log */

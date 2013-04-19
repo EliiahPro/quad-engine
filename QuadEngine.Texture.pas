@@ -34,6 +34,7 @@ type
     FFrameHeight: Integer;
     FPatternWidth: Integer;
     FPatternHeight: Integer;
+    FPatternSize: TVec2f;
     FIsLoaded: Boolean;
     FSync: TCriticalSection;
     procedure LoadBMPTexture(const aFilename: String; var Texture: IDirect3DTexture9; ColorKey: Integer = -1);
@@ -57,15 +58,15 @@ type
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure Draw(Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawFrame(Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawMap(PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawMapRotAxis(x, y, x2, y2, u1, v1, u2, v2, xA, yA, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRot(x, y, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRotAxis(x, y, angle, Scale, xA, yA: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRotAxisFrame(x, y, angle, Scale, xA, yA: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f; Angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRot(const Center: TVec2f; angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRotFrame(const Center: TVec2f; angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRotAxisFrame(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure LoadFromFile(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
@@ -116,6 +117,7 @@ begin
   FIsLoaded := False;
   FPatternWidth := 0;
   FPatternHeight := 0;
+  FPatternSize := TVec2f.Zero;
   FSync := TCriticalSection.Create;
 end;
 
@@ -136,7 +138,7 @@ end;
 //=============================================================================
 // Draws sprite with [X, Y] position
 //=============================================================================
-procedure TQuadTexture.Draw(Position: Tvec2f; Color: Cardinal);
+procedure TQuadTexture.Draw(const Position: Tvec2f; Color: Cardinal);
 begin
   SetTextureStages;
 
@@ -163,7 +165,7 @@ end;
 //=============================================================================
 // Draws sprite with [X, Y] position and pattern
 //=============================================================================
-procedure TQuadTexture.DrawFrame(Position: Tvec2f; Pattern: Word; Color: Cardinal);
+procedure TQuadTexture.DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal);
 var
   px, py : Integer;
   px2, py2 : Integer;
@@ -194,7 +196,7 @@ end;
 //=============================================================================
 // Draws sprite with [X, Y, X2, Y2] vertex pos, and [U1, V1, U2, V2] tex coods
 //=============================================================================
-procedure TQuadTexture.DrawMap(PointA, PointB, UVA, UVB: TVec2f; Color : Cardinal);
+procedure TQuadTexture.DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color : Cardinal);
 begin
   SetTextureStages;
 
@@ -204,18 +206,19 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.DrawMapRotAxis(x, y, x2, y2, u1, v1, u2, v2, xA, yA, angle, Scale: Double; Color: Cardinal); stdcall;
+procedure TQuadTexture.DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f;
+  angle, Scale: Double; Color: Cardinal); stdcall;
 begin
   SetTextureStages;
 
-  FQuadRender.DrawRectRotAxis(x - 0.5, y - 0.5, x2 - 0.5, y2 - 0.5,
-                              angle, Scale, xA, yA, u1, v1, u2, v2, Color);
+  FQuadRender.DrawRectRotAxis(PointA - 0.5, PointB - 0.5, angle, Scale, Axis,
+                              UVA, UVB, Color);
 end;
 
 //=============================================================================
 // Draws sprite with [X, Y] center pos, angle, scale and pattern
 //=============================================================================
-procedure TQuadTexture.DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word;
+procedure TQuadTexture.DrawRotFrame(const Center: TVec2f; angle, Scale: Double; Pattern: Word;
   Color: Cardinal);
 var
   px, py : Integer;
@@ -227,27 +230,29 @@ begin
   py := (Pattern div (FFrameWidth div FPatternWidth)) * FPatternHeight;
   px2 := px + FPatternWidth;
   py2 := py + FPatternHeight;
-  
-  FQuadRender.Drawrectrot(x - 0.5, y - 0.5, x - 0.5 + FPatternWidth, y - 0.5 + FPatternHeight,
-                          angle, Scale, px / FWidth, py / FHeight, px2 / FWidth, py2 / FHeight, Color);
+
+  FQuadRender.Drawrectrot(Center - 0.5, Center - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
+                          angle, Scale, TVec2f.Create(px / FWidth, py / FHeight),
+                          TVec2f.Create(px2 / FWidth, py2 / FHeight), Color);
 end;
 
 //=============================================================================
 // Draws sprite with [X, Y] center pos, angle from [xA, yA] and scale
 //=============================================================================
-procedure TQuadTexture.DrawRotAxis(x, y, angle, Scale, xA, yA: Double; Color: Cardinal);
+procedure TQuadTexture.DrawRotAxis(const Position: TVec2f; angle, Scale: Double;
+  const Axis: TVec2f; Color: Cardinal);
 begin
   SetTextureStages;
 
-  FQuadRender.DrawRectRotAxis(x - 0.5, y - 0.5, x - 0.5 + FFrameWidth, y - 0.5 + FFrameHeight,
-                              angle, Scale, xA, yA, 0, 0, FFrameWidth / FWidth, FFrameHeight / FHeight, Color);
+  FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
+                              angle, Scale, Axis, TVec2f.Zero, TVec2f.Create(FFrameWidth / FWidth, FFrameHeight / FHeight), Color);
 end;
 
 //=============================================================================
 // Draws sprite with [X, Y] center pos, angle from [xA, yA], scale and pattern
 //=============================================================================
-procedure TQuadTexture.DrawRotAxisFrame(x, y, angle, Scale, xA, yA: Double; Pattern: Word;
-  Color: Cardinal);
+procedure TQuadTexture.DrawRotAxisFrame(const Position: TVec2f; angle, Scale: Double;
+  const Axis: TVec2f; Pattern: Word; Color: Cardinal);
 var
   px, py : Integer;
   px2, py2 : Integer;
@@ -259,19 +264,19 @@ begin
   px2 := px + FPatternWidth;
   py2 := py + FPatternHeight;
 
-  FQuadRender.DrawRectRotAxis(x - 0.5, y - 0.5, x - 0.5 + FPatternWidth, y - 0.5 + FPatternHeight,
-                              angle, Scale, xA, yA, px / FWidth, py / FHeight, px2 / FWidth, py2 / FHeight, Color);
+  FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
+                              angle, Scale, Axis, TVec2f.Create(px / FWidth, py / FHeight), TVec2f.Create(px2 / FWidth, py2 / FHeight), Color);
 end;
 
 //=============================================================================
 // Draws sprite with [X, Y] center pos, angle and scale
 //=============================================================================
-procedure TQuadTexture.DrawRot(x, y, angle, Scale: Double; Color : Cardinal);
+procedure TQuadTexture.DrawRot(const Center: TVec2f; angle, Scale: Double; Color : Cardinal);
 begin
   SetTextureStages;
 
-  FQuadRender.Drawrectrot(x - 0.5, y - 0.5, x - 0.5 + FFrameWidth, y - 0.5 + FFrameHeight,
-                          angle, Scale, 0, 0, FFrameWidth / FWidth, FFrameHeight / FHeight, Color);
+  FQuadRender.Drawrectrot(Center - 0.5, Center - 0.5 +TVec2f.Create(FFrameWidth, FFrameHeight),
+                          angle, Scale, TVec2f.Zero, TVec2f.Create(FFrameWidth / FWidth, FFrameHeight / FHeight), Color);
 end;
 
 //=============================================================================

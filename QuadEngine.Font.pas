@@ -74,7 +74,7 @@ type
     procedure LoadFromFile(ATextureFilename, AUVFilename: PWideChar); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
-    procedure TextOut(x, y, AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
+    procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
     function TextHeight(AText: PWideChar; AScale: Single = 1.0) : Single; stdcall;
     function TextWidth(AText: PWideChar; AScale: Single = 1.0) : Single; stdcall;
   end;
@@ -242,12 +242,13 @@ end;
 //=============================================================================
 // Draws aligned text with scaling and kerning
 //=============================================================================
-procedure TQuadFont.TextOut(x, y, AScale: Single; AText: PWideChar;
+procedure TQuadFont.TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar;
   AColor: Cardinal; AAlign: TqfAlign);
 var
   i: Integer;
   startX: Single;
   sx: Single;
+  ypos: Single;
   width: Single;
   l, c, j: Byte;
   CurrentColor: Cardinal;
@@ -260,11 +261,11 @@ begin
   CurrentAlpha := AColor and $FF000000;
 
   case AAlign of
-    qfaLeft   : sx := x;
-    qfaRight  : sx := Trunc(x - TextWidth(AText, AScale));
-    qfaCenter : sx := Trunc(x - TextWidth(AText, AScale) / 2);
+    qfaLeft   : sx := Position.X;
+    qfaRight  : sx := Trunc(Position.X - TextWidth(AText, AScale));
+    qfaCenter : sx := Trunc(Position.X - TextWidth(AText, AScale) / 2);
     qfaJustify: begin
-                  sx := x;
+                  sx := Position.X;
                   width := TextWidth(AText, AScale);
                 end;
   else
@@ -289,7 +290,7 @@ begin
 
     if l = Ord(#13) then
     begin
-      y := y + FLetters[CHAR_SPACE].H * AScale;
+      ypos := Position.Y + FLetters[CHAR_SPACE].H * AScale;
       sx := startX;
     end
     else
@@ -310,9 +311,9 @@ begin
         if l <> CHAR_SPACE then
         FTexture.DrawMap(
                    TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
-                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + y),
+                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
                    TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
-                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + y),
+                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
                    TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth,
                    FQuadChars[l].YPos / FTexture.TextureHeight),
                    TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth + FQuadChars[l].SizeX / FTexture.TextureWidth,
@@ -325,7 +326,7 @@ begin
       end
       else
       begin
-        FTexture.DrawMap(TVec2f.Create(sx, y), TVec2f.Create(sx + FLetters[l].W * AScale, y + FLetters[l].H * AScale),
+        FTexture.DrawMap(TVec2f.Create(sx, ypos), TVec2f.Create(sx + FLetters[l].W * AScale, ypos + FLetters[l].H * AScale),
                          TVec2f.Create(FLetters[l].U1, FLetters[l].V1), TVec2f.Create(FLetters[l].U2, FLetters[l].V2),
                          CurrentColor);
         sx := sx + FLetters[l].W * AScale + FKerning;
