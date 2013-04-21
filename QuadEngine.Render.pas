@@ -87,7 +87,7 @@ type
     procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawLine(x, y, x2, y2 : Single; Color: Cardinal); stdcall;
     procedure DrawPoint(x, y: Single; Color: Cardinal); stdcall;
-    procedure DrawQuadLine(x1, x2, y1, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
+    procedure DrawQuadLine(x1, y1, x2, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;

@@ -183,6 +183,7 @@ type
     function GetPatternCount: Integer; stdcall;
     function GetPatternHeight: Word; stdcall;
     function GetPatternWidth: Word; stdcall;
+    function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
     function GetTexture(i: Byte): IDirect3DTexture9; stdcall;
