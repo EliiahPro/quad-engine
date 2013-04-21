@@ -498,18 +498,36 @@ begin
 
 //  if copy(UpperCase(aFilename), length(aFilename) - 3, 4) = '.DDS' then
 //  LoadDDSTexture(aFilename, rect);
-  if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.BMP' then
-    LoadBMPTexture(AFilename, Texture, AColorKey);
-  if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.JPG' then
-    LoadJPGTexture(AFilename, Texture);
-  if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.TGA' then
-    LoadTGATexture(AFilename, Texture);
-  if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.PNG' then
-    LoadPNGTexture(AFilename, Texture);
 
-  Device.LastResultCode := Texture.UnlockRect(0);
+  if Assigned(Device.Log) then
+  begin
+    Device.Log.Write(PWideChar('Loading texture "' + AFilename + '"'));
 
-  AddTexture(ARegister, Texture);
+    if not FileExists(AFilename) then
+    begin
+      Device.Log.Write(PWideChar('Texture "' + AFilename + '" not found!'));
+      Exit;
+    end;
+  end;
+
+  try
+    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.BMP' then
+      LoadBMPTexture(AFilename, Texture, AColorKey);
+    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.JPG' then
+      LoadJPGTexture(AFilename, Texture);
+    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.TGA' then
+      LoadTGATexture(AFilename, Texture);
+    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.PNG' then
+      LoadPNGTexture(AFilename, Texture);
+
+    Device.LastResultCode := Texture.UnlockRect(0);
+
+    AddTexture(ARegister, Texture);
+  except
+    if Assigned(Device.Log) then
+      Device.Log.Write(PWideChar('Error loading texture "' + AFilename + '". Bad format.'));
+    Exit;
+  end;
 
   FIsLoaded := True;
 

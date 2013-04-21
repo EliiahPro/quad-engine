@@ -162,6 +162,17 @@ var
   filePS: THandle;
   mapPS : THandle;
 begin
+  if Assigned(Device.Log) then
+  begin
+    Device.Log.Write(PWideChar('Loading shader "' + APixelShaderFilename + '"'));
+
+    if not FileExists(APixelShaderFilename) then
+    begin
+      Device.Log.Write(PWideChar('Shader "' + APixelShaderFilename + '" not found!'));
+      Exit;
+    end;
+  end;
+
   filePS := CreateFile(APixelShaderFilename, GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   mapPS := CreateFileMapping(filePS, nil, PAGE_READONLY, 0, 0, nil);
 
@@ -183,6 +194,17 @@ var
   fileVS: THandle;
   mapVS: THandle;
 begin
+  if Assigned(Device.Log) then
+  begin
+    Device.Log.Write(PWideChar('Loading shader "' + AVertexShaderFilename + '"'));
+
+    if not FileExists(AVertexShaderFilename) then
+    begin
+      Device.Log.Write(PWideChar('Shader "' + AVertexShaderFilename + '" not found!'));
+      Exit;
+    end;
+  end;
+
   fileVS := CreateFile(AVertexShaderFilename, GENERIC_READ, 0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   mapVS := CreateFileMapping(fileVS, nil, PAGE_READONLY, 0, 0, nil);
 
