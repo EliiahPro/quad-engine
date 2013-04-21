@@ -52,6 +52,7 @@ type
     function GetPatternCount: Integer; stdcall;
     function GetPatternHeight: Word; stdcall;
     function GetPatternWidth: Word; stdcall;
+    function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
     function GetTexture(i: Byte): IDirect3DTexture9; stdcall;
@@ -325,6 +326,23 @@ end;
 function TQuadTexture.GetPatternWidth : Word;
 begin
   Result := FPatternWidth;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: byte): Cardinal; stdcall;
+var
+  aData : TD3DLockedRect;
+begin
+  Result := 0;
+  if (x > FWidth) or (y > FHeight) then
+    Exit;
+
+  Device.LastResultCode := Texture[ARegister].LockRect(0, aData, nil, D3DLOCK_READONLY);
+  Inc(NativeInt(aData.pBits), 4 * (y * FWidth + x));
+  Result := Cardinal(aData.pBits^);
+  Device.LastResultCode := Texture[ARegister].UnlockRect(0);
 end;
 
 //=============================================================================

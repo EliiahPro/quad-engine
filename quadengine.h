@@ -166,6 +166,7 @@ DECLARE_INTERFACE_(IQuadTexture, IUnknown)
 	virtual int CALLBACK GetPatternCount() = 0;
 	virtual unsigned short CALLBACK GetPatternWidth() = 0;
 	virtual unsigned short CALLBACK GetPatternHeight() = 0;
+	virtual unsigned int CALLBACK GetPixelColor(int x, int y, unsigned char ARegister = 0);
 	virtual unsigned short CALLBACK GetSpriteWidth() = 0;
 	virtual unsigned short CALLBACK GetSpriteHeight() = 0;
 	virtual IDirect3DTexture9* CALLBACK GetTexture(unsigned char i) = 0;

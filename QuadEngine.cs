@@ -192,7 +192,9 @@ namespace QuadEngine
         UInt16 GetPatternHeight();
         [PreserveSig] 
         UInt16 GetPatternWidth();
-        [PreserveSig] 
+        [PreserveSig]
+        UInt32 GetPixelColor(int x, int y, byte ARegister = 0);
+        [PreserveSig]
         UInt16 GetSpriteHeight();
         [PreserveSig] 
         UInt16 GetSpriteWidth();
