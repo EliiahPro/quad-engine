@@ -22,7 +22,7 @@ const
 
 type
   TLetterUV = record
-    id            : Byte;     { Letter uniq ID }
+    id            : Word;     { Letter uniq ID }
     U1, V1, U2, V2: Double;   { Texture UV coords }
     X, Y          : Word;     { X, Y position }
     H, W          : Byte;     { Height and width }
@@ -204,7 +204,7 @@ begin
   begin  // v1.0
     FIsDistanceField := False;
     repeat
-      BlockRead(f, TempUV.id, SizeOf(Byte));
+      BlockRead(f, TempUV.id, SizeOf(Word));
       BlockRead(f, TempUV.X, SizeOf(Word));
       BlockRead(f, TempUV.Y, Sizeof(Word));
       BlockRead(f, TempUV.W, SizeOf(Byte));
@@ -249,7 +249,7 @@ var
   startX: Single;
   sx: Single;
   width: Single;
-  l, c, j: Byte;
+  l, c, j: Word;
   CurrentColor: Cardinal;
   CurrentAlpha: Cardinal;
 begin
