@@ -268,7 +268,7 @@ type
 
   IQuadLog = interface(IUnknown)
     ['{7A4CE319-C7AF-4BF3-9218-C2A744F915E6}']
-    procedure Write(const aString: PWideChar); stdcall;
+    procedure Write(aString: PWideChar); stdcall;
   end;
 
   {Quad Timer}

@@ -1409,7 +1409,11 @@ var
   pbit: PByteArray;
   psur: PByteArray;
   i, j: Integer;
+  Point: TPoint;
 begin
+  Point.SetLocation(0, 0);
+  ClientToScreen(FHandle, Point);
+
   Device.LastResultCode := FD3DDevice.CreateOffscreenPlainSurface(FD3DDM.Width, FD3DDM.Height, D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, Surface, nil);
   Device.LastResultCode := FD3DDevice.GetFrontBufferData(0, Surface);
   Device.LastResultCode := Surface.LockRect(LockedRect, nil, D3DLOCK_READONLY or D3DLOCK_NO_DIRTY_UPDATE or D3DLOCK_NOSYSLOCK);
@@ -1422,13 +1426,13 @@ begin
   for i := 0 to FHeight - 1 do
   begin
     pbit := Bitmap.ScanLine[i];
-    psur := Pointer(Cardinal(LockedRect.pBits) + i * FD3DDM.Width * 4);
+    psur := Pointer(Cardinal(LockedRect.pBits) + (i + Point.Y) * FD3DDM.Width * 4);
 
     for j := 0 to FWidth - 1 do
     begin
-      pbit[j * 3] := psur[j * 4 + 0];
-      pbit[j * 3 + 1] := psur[j * 4 + 1];
-      pbit[j * 3 + 2] := psur[j * 4 + 2];
+      pbit[j * 3] := psur[(j + Point.X) * 4 + 0];
+      pbit[j * 3 + 1] := psur[(j + Point.X) * 4 + 1];
+      pbit[j * 3 + 2] := psur[(j + Point.X) * 4 + 2];
     end;
   end;
 

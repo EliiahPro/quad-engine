@@ -23,7 +23,7 @@ type
   public
     constructor Create(const AFilename: string = 'log.txt'); reintroduce;
 
-    procedure Write(const AString: PWideChar); stdcall;
+    procedure Write(AString: PWideChar); stdcall;
   end;
 
 implementation
@@ -54,7 +54,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadLog.Write(const AString: PWideChar);
+procedure TQuadLog.Write(AString: PWideChar);
 var
   f: TextFile;
 begin
