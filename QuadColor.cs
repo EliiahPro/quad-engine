@@ -113,11 +113,21 @@ namespace QuadEngine
 
         public static QuadColor operator /(QuadColor A, QuadColor B)
         {
-            return new QuadColor(A.A / B.A, A.R / B.R, A.G / B.G, A.B / B.B);
+            QuadColor quadColor = A;
+
+            quadColor.A = (B.A == 0) ? 1.0 : A.A / B.A;
+            quadColor.R = (B.R == 0) ? 1.0 : A.R / B.R;
+            quadColor.G = (B.G == 0) ? 1.0 : A.G / B.G;
+            quadColor.B = (B.B == 0) ? 1.0 : A.B / B.B;
+
+            return quadColor;
         }
 
         public static QuadColor operator /(QuadColor A, double B)
         {
+            if (B == 0.0)
+                return (White);
+
             return new QuadColor(A.A / B, A.R / B, A.G / B, A.B / B);
         }
 

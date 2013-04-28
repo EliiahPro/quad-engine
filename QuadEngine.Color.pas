@@ -75,6 +75,9 @@ end;
 
 class operator TQuadColor.Divide(A: TQuadColor; B: Double): TQuadColor;
 begin
+  if B = 0 then
+    Exit(TQuadColor.Create(1.0, 1.0, 1.0, 1.0));
+
   Result.A := A.A / B;
   Result.R := A.R / B;
   Result.G := A.G / B;
@@ -117,10 +120,25 @@ end;
 
 class operator TQuadColor.Divide(A, B: TQuadColor): TQuadColor;
 begin
-  Result.A := A.A / B.A;
-  Result.R := A.R / B.R;
-  Result.G := A.G / B.G;
-  Result.B := A.B / B.B;
+  if B.A = 0 then
+    Result.A = 1.0
+  else
+    Result.A := A.A / B.A;
+
+  if B.R = 0 then
+    Result.R = 1.0
+  else
+    Result.R := A.R / B.R;
+
+  if B.G = 0 then
+    Result.G = 1.0
+  else
+    Result.G := A.G / B.G;
+
+  if B.B = 0 then
+    Result.B = 1.0
+  else
+    Result.B := A.B / B.B;
 end;
 
 class operator TQuadColor.Explicit(A: TQuadColor): Cardinal;
