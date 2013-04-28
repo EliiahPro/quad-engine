@@ -23,7 +23,9 @@ uses
   QuadEngine.Timer in '..\QuadEngine.Timer.pas',
   QuadEngine.Utils in '..\QuadEngine.Utils.pas',
   QuadEngine.Window in '..\QuadEngine.Window.pas',
-  QuadEngine.Camera in '..\QuadEngine.Camera.pas';
+  QuadEngine.Camera in '..\QuadEngine.Camera.pas',
+  Vec2f in '..\Vec2f.pas',
+  QuadEngine.Color in '..\QuadEngine.Color.pas';
 
 {$R *.res}
 

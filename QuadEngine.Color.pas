@@ -1,0 +1,150 @@
+unit QuadEngine.Color;
+
+interface
+
+type
+  TQuadColor = record
+  private
+    procedure ClampToMin; inline;
+    procedure ClampToMax; inline;
+  public
+    class operator Implicit(ARGB: Cardinal): TQuadColor;
+    class operator Explicit(A: TQuadColor): Cardinal;
+    class operator Add(A, B: TQuadColor): TQuadColor;
+    class operator Subtract(A, B: TQuadColor): TQuadColor;
+    class operator Multiply(A, B: TQuadColor): TQuadColor;
+    class operator Multiply(A: TQuadColor; B: Double): TQuadColor;
+    class operator Divide(A, B: TQuadColor): TQuadColor;
+    class operator Divide(A: TQuadColor; B: Double): TQuadColor;
+    constructor Create(A, R, G, B: Double); overload;
+    constructor Create(A, R, G, B: Byte); overload;
+    constructor Create(ARGB: Cardinal); overload;
+    function Lerp(const A: TQuadColor; dist: Single): TQuadColor; inline;
+
+  case integer of
+    0: (A, R, G, B: Double);
+    1: (comp: array[0..3] of Double);
+  end;
+
+implementation
+
+{ TQuadColor }
+
+constructor TQuadColor.Create(A, R, G, B: Double);
+begin
+  Self.A := A;
+  Self.R := R;
+  Self.G := G;
+  Self.B := B;
+end;
+
+constructor TQuadColor.Create(A, R, G, B: Byte);
+begin
+  Self.A := A / 255;
+  Self.R := R / 255;
+  Self.G := G / 255;
+  Self.B := B / 255;
+end;
+
+constructor TQuadColor.Create(ARGB: Cardinal);
+begin
+  Self.A := (ARGB and $FF000000) shr 24 / 255;
+  Self.R := (ARGB and $00FF0000) shr 16 / 255;
+  Self.G := (ARGB and $0000FF00) shr 8 / 255;
+  Self.B := (ARGB and $000000FF) / 255;
+end;
+
+class operator TQuadColor.Divide(A: TQuadColor; B: Double): TQuadColor;
+begin
+  Result.A := A.A / B;
+  Result.R := A.R / B;
+  Result.G := A.G / B;
+  Result.B := A.B / B;
+end;
+
+class operator TQuadColor.Add(A, B: TQuadColor): TQuadColor;
+begin
+  Result.A := A.A + B.A;
+  Result.R := A.R + B.R;
+  Result.G := A.G + B.G;
+  Result.B := A.B + B.B;
+end;
+
+procedure TQuadColor.ClampToMax;
+begin
+  if Self.A > 1.0 then
+    Self.A := 1.0;
+  if Self.R > 1.0 then
+    Self.R := 1.0;
+  if Self.G > 1.0 then
+    Self.G := 1.0;
+  if Self.B > 1.0 then
+    Self.B := 1.0;
+end;
+
+procedure TQuadColor.ClampToMin;
+begin
+  if Self.A < 0.0 then
+    Self.A := 0.0;
+  if Self.R < 0.0 then
+    Self.R := 0.0;
+  if Self.G < 0.0 then
+    Self.G := 0.0;
+  if Self.B < 0.0 then
+    Self.B := 0.0;
+end;
+
+class operator TQuadColor.Divide(A, B: TQuadColor): TQuadColor;
+begin
+  Result.A := A.A / B.A;
+  Result.R := A.R / B.R;
+  Result.G := A.G / B.G;
+  Result.B := A.B / B.B;
+end;
+
+class operator TQuadColor.Explicit(A: TQuadColor): Cardinal;
+begin
+  Result := Trunc(A.A * 255) shl 24 +
+            Trunc(A.R * 255) shl 16 +
+            Trunc(A.G * 255) shl 8 +
+            Trunc(A.B * 255);
+end;
+
+class operator TQuadColor.Implicit(ARGB: Cardinal): TQuadColor;
+begin
+  Result := TQuadColor.create(ARGB);
+end;
+
+function TQuadColor.Lerp(const A: TQuadColor; dist: Single): TQuadColor;
+begin
+  Result := (A - Self) * dist + Self;
+end;
+
+class operator TQuadColor.Multiply(A: TQuadColor; B: Double): TQuadColor;
+begin
+  Result.A := A.A * B;
+  Result.R := A.R * B;
+  Result.G := A.G * B;
+  Result.B := A.B * B;
+  Result.ClampToMax;
+end;
+
+class operator TQuadColor.Multiply(A, B: TQuadColor): TQuadColor;
+begin
+  Result.A := A.A * B.A;
+  Result.R := A.R * B.R;
+  Result.G := A.G * B.G;
+  Result.B := A.B * B.B;
+  Result.ClampToMax;
+end;
+
+class operator TQuadColor.Subtract(A, B: TQuadColor): TQuadColor;
+begin
+  Result.A := A.A - B.A;
+  Result.R := A.R - B.R;
+  Result.G := A.G - B.G;
+  Result.B := A.B - B.B;
+  Result.ClampToMin;
+end;
+
+end.
