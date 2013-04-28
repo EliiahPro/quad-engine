@@ -13,6 +13,23 @@ namespace QuadEngine
         public double G;
         public double B;
 
+        public static readonly QuadColor White = new QuadColor(1.0, 1.0, 1.0, 1.0);
+        public static readonly QuadColor Black = new QuadColor(1.0, 0.0, 0.0, 0.0);
+        public static readonly QuadColor Red = new QuadColor(1.0, 1.0, 0.0, 0.0);
+        public static readonly QuadColor Lime = new QuadColor(1.0, 0.0, 1.0, 0.0);
+        public static readonly QuadColor Blue = new QuadColor(1.0, 0.0, 0.0, 1.0);
+        public static readonly QuadColor Maroon = new QuadColor(1.0, 0.5, 0.0, 0.0);
+        public static readonly QuadColor Green = new QuadColor(1.0, 0.0, 0.5, 0.0);
+        public static readonly QuadColor Navy = new QuadColor(1.0, 0.0, 0.0, 0.5);
+        public static readonly QuadColor Yellow = new QuadColor(1.0, 1.0, 1.0, 0.0);
+        public static readonly QuadColor Fuchsia = new QuadColor(1.0, 1.0, 0.0, 1.0);
+        public static readonly QuadColor Aqua = new QuadColor(1.0, 0.0, 1.0, 1.0);
+        public static readonly QuadColor Olive = new QuadColor(1.0, 0.5, 0.5, 0.0);
+        public static readonly QuadColor Purple = new QuadColor(1.0, 0.5, 0.0, 0.5);
+        public static readonly QuadColor Teal = new QuadColor(1.0, 0.0, 0.5, 0.5);
+        public static readonly QuadColor Gray = new QuadColor(1.0, 0.5, 0.5, 0.5);
+        public static readonly QuadColor Silver = new QuadColor(1.0, 0.75, 0.75, 0.75);
+
         public void ClampToMin()
         {
             if (this.A < 0.0) { this.A = 0.0; }
@@ -29,7 +46,7 @@ namespace QuadEngine
             if (this.B > 1.0) { this.B = 1.0; }
         }
 
-        public QuadColor(double A, double R, double G, double B)
+        public QuadColor(double R, double G, double B, double A = 1.0)
         {
             this.A = A;
             this.R = R;
@@ -37,7 +54,7 @@ namespace QuadEngine
             this.B = B;
         }
 
-        public QuadColor(byte A, byte R, byte G, byte B)
+        public QuadColor(byte R, byte G, byte B, byte A = 255)
         {
             this.A = A / 255.0;
             this.R = R / 255.0;

@@ -16,21 +16,40 @@ type
     class operator Multiply(A: TQuadColor; B: Double): TQuadColor;
     class operator Divide(A, B: TQuadColor): TQuadColor;
     class operator Divide(A: TQuadColor; B: Double): TQuadColor;
-    constructor Create(A, R, G, B: Double); overload;
-    constructor Create(A, R, G, B: Byte); overload;
+    constructor Create(R, G, B: Double; A: Double = 1.0); overload;
+    constructor Create(R, G, B: Byte; A: Byte = 255); overload;
     constructor Create(ARGB: Cardinal); overload;
     function Lerp(const A: TQuadColor; dist: Single): TQuadColor; inline;
-
   case integer of
     0: (A, R, G, B: Double);
     1: (comp: array[0..3] of Double);
+  end;
+
+  TQuadColorHelper = record helper for TQuadColor
+  public
+    const White: TQuadColor = (A: 1.0; R: 1.0; G: 1.0; B: 1.0);
+    const Black: TQuadColor = (A: 1.0; R: 0.0; G: 0.0; B: 0.0);
+    const Red: TQuadColor = (A: 1.0; R: 1.0; G: 0.0; B: 0.0);
+    const Lime: TQuadColor = (A: 1.0; R: 0.0; G: 1.0; B: 0.0);
+    const Blue: TQuadColor = (A: 1.0; R: 0.0; G: 0.0; B: 1.0);
+    const Maroon: TQuadColor = (A: 1.0; R: 0.5; G: 0.0; B: 0.0);
+    const Green: TQuadColor = (A: 1.0; R: 0.0; G: 0.5; B: 0.0);
+    const Navy: TQuadColor = (A: 1.0; R: 0.0; G: 0.0; B: 0.5);
+    const Yellow: TQuadColor = (A: 1.0; R: 1.0; G: 1.0; B: 0.0);
+    const Fuchsia: TQuadColor = (A: 1.0; R: 1.0; G: 0.0; B: 1.0);
+    const Aqua: TQuadColor = (A: 1.0; R: 0.0; G: 1.0; B: 1.0);
+    const Olive: TQuadColor = (A: 1.0; R: 0.5; G: 0.5; B: 0.0);
+    const Purple: TQuadColor = (A: 1.0; R: 0.5; G: 0.0; B: 0.5);
+    const Teal: TQuadColor = (A: 1.0; R: 0.0; G: 0.5; B: 0.5);
+    const Gray: TQuadColor = (A: 1.0; R: 0.5; G: 0.5; B: 0.5);
+    const Silver: TQuadColor = (A: 1.0; R: 0.75; G: 0.75; B: 0.75);
   end;
 
 implementation
 
 { TQuadColor }
 
-constructor TQuadColor.Create(A, R, G, B: Double);
+constructor TQuadColor.Create(R, G, B: Double; A: Double = 1.0);
 begin
   Self.A := A;
   Self.R := R;
@@ -38,7 +57,7 @@ begin
   Self.B := B;
 end;
 
-constructor TQuadColor.Create(A, R, G, B: Byte);
+constructor TQuadColor.Create(R, G, B: Byte; A: Byte = 255);
 begin
   Self.A := A / 255;
   Self.R := R / 255;
@@ -68,6 +87,8 @@ begin
   Result.R := A.R + B.R;
   Result.G := A.G + B.G;
   Result.B := A.B + B.B;
+
+  Result := TQuadColor.White;
 end;
 
 procedure TQuadColor.ClampToMax;
