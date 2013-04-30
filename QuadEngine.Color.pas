@@ -9,7 +9,7 @@ type
     procedure ClampToMax; inline;
   public
     class operator Implicit(ARGB: Cardinal): TQuadColor;
-    class operator Explicit(A: TQuadColor): Cardinal;
+    class operator Implicit(A: TQuadColor): Cardinal;
     class operator Add(A, B: TQuadColor): TQuadColor;
     class operator Subtract(A, B: TQuadColor): TQuadColor;
     class operator Multiply(A, B: TQuadColor): TQuadColor;
@@ -121,27 +121,27 @@ end;
 class operator TQuadColor.Divide(A, B: TQuadColor): TQuadColor;
 begin
   if B.A = 0 then
-    Result.A = 1.0
+    Result.A := 1.0
   else
     Result.A := A.A / B.A;
 
   if B.R = 0 then
-    Result.R = 1.0
+    Result.R := 1.0
   else
     Result.R := A.R / B.R;
 
   if B.G = 0 then
-    Result.G = 1.0
+    Result.G := 1.0
   else
     Result.G := A.G / B.G;
 
   if B.B = 0 then
-    Result.B = 1.0
+    Result.B := 1.0
   else
     Result.B := A.B / B.B;
 end;
 
-class operator TQuadColor.Explicit(A: TQuadColor): Cardinal;
+class operator TQuadColor.Implicit(A: TQuadColor): Cardinal;
 begin
   Result := Trunc(A.A * 255) shl 24 +
             Trunc(A.R * 255) shl 16 +

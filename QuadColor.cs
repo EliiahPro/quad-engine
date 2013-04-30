@@ -75,7 +75,7 @@ namespace QuadEngine
             return new QuadColor(ARGB);
         }
 
-        public static explicit operator uint(QuadColor quadColor)
+        public static implicit operator uint(QuadColor quadColor)
         {
             return ((uint)(quadColor.A * 255) << 24) +
                    ((uint)(quadColor.R * 255) << 16) +
