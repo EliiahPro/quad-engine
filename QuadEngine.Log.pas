@@ -62,7 +62,7 @@ begin
 
   try
     Append(f);
-    Writeln(f, {TimeToStr(Now) + ' : ' +} aString);
+    Writeln(f, PWideChar('[' + IntToStr(GetCurrentThreadId) + ']: ' + aString));
   finally
     CloseFile(f);
   end;
