@@ -63,6 +63,8 @@ type
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure DoInitialize(AHandle : THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate : Integer;
       AIsFullscreen, AIsCreateLog, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync : Boolean);
+    procedure InitializeVolatileResources;
+    procedure ReleaseVolatileResources;
   public
     constructor Create;
     function GetAvailableTextureMemory: Cardinal; stdcall;
@@ -249,15 +251,18 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.BeginRender;
+var
+  R: HRESULT;
 begin
   Device.LastResultCode := FD3DDevice.BeginScene;
 
-  ResetDevice;
-
-  if FIsDeviceLost then
-    Exit;
-
-//  Device.LastResultCode := FD3DDevice.BeginScene;
+  FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
+  while FIsDeviceLost do
+  begin
+    Sleep(1000);
+    if not FIsDeviceLost then
+      Device.LastResultCode := FD3DDevice.BeginScene;
+  end;
 
   FCount := 0;
 end;
@@ -644,7 +649,10 @@ begin
 
   Device.LastResultCode := FD3DDevice.EndScene;
   if not FIsRenderIntoTexture then
+  begin
     Device.LastResultCode := FD3DDevice.Present(nil, nil, 0, nil);
+//    ResetDevice;
+  end;
 end;
 
 //=============================================================================
@@ -712,7 +720,6 @@ end;
 function TQuadRender.GetAvailableTextureMemory: Cardinal;
 begin
   Result := FD3DDevice.GetAvailableTextureMem;
-  Device.LastResultCode := FD3DDevice.TestCooperativeLevel;
 end;
 
 //=============================================================================
@@ -850,9 +857,55 @@ begin
   finally
     AIniFile.Free;
   end;
-  
+
   DoInitialize(AHandle, AWidth, AHeight, ABackBufferCount, ARefreshRate, AIsFullscreen,
     True, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadRender.InitializeVolatileResources;
+var
+  i: Integer;
+begin
+  CreateOrthoMatrix;
+  Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
+
+  Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
+  FCount := 0;
+
+  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
+  Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
+  Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
+
+  // enable diffuse blending and set filtering for all texture stages
+  for i := 0 to MaxTextureStages - 1 do
+  begin
+    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
+    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+  end;
+
+  // disable culling
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+  FIsEnabledBlending := True;
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
+
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
+
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iTrue);
 end;
 
 //=============================================================================
@@ -939,6 +992,14 @@ begin
 end;
 
 //=============================================================================
+//
+//=============================================================================
+procedure TQuadRender.ReleaseVolatileResources;
+begin
+  FBackBuffer := nil;
+end;
+
+//=============================================================================
 // Enable/disable rendering into texture with index "Count"
 //=============================================================================
 procedure TQuadRender.RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
@@ -979,41 +1040,33 @@ end;
 procedure TQuadRender.ResetDevice;
 var
   R: HRESULT;
+  i: Integer;
 begin
   R := FD3DDevice.TestCooperativeLevel;
 
-  FIsDeviceLost := (R = D3DERR_DEVICELOST) or (R = D3DERR_DEVICENOTRESET);
- { if Failed(R) then
-    FIsDeviceLost := True;
-
-  if R = D3DERR_DEVICELOST then
-    Exit;
-
-  if (R = D3DERR_DEVICENOTRESET) and (GetForegroundWindow = FHandle) then
-  begin
-    R := FD3DDevice.Reset(FD3DPP);
-
-    if Failed(R) then
-      Exit;
-
-    FIsDeviceLost := False;
-  end;
-  }
-  {TODO : ???}
+  FIsDeviceLost := Failed(R);
 
   if FIsDeviceLost then
   begin
-    while (R <> D3DERR_DEVICENOTRESET) do
-    begin
-      WaitForSingleObject(Self.FHandle, 50);
-      R := FD3DDevice.TestCooperativeLevel;
-    end;
+    ReleaseVolatileResources;
 
-    if R = D3DERR_DEVICENOTRESET then
-    begin
-      R := FD3DDevice.Reset(FD3DPP);
-      FIsDeviceLost := False;
-    end;
+    repeat
+      Sleep(50);
+      R := D3DDevice.TestCooperativeLevel;
+
+      if R = D3DERR_DEVICELOST then
+        Continue;
+
+      if R = D3DERR_DEVICENOTRESET then
+      begin
+        Device.LastResultCode := FD3DDevice.Reset(FD3DPP);
+      end;
+
+    until Succeeded(R);
+
+    FIsDeviceLost := False;
+
+    InitializeVolatileResources;
   end;
 end;
 
@@ -1243,9 +1296,6 @@ begin
 
   Device.LastResultCode := Device.D3D.GetDeviceCaps(Device.ActiveMonitorIndex, D3DDEVTYPE_HAL, FD3DCaps);
 
-  CreateOrthoMatrix;
-  Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
-
   // set VB source
   Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
                                                          0,
@@ -1253,9 +1303,6 @@ begin
                                                          D3DPOOL_MANAGED,
                                                          FD3DVB,
                                                          nil);
-  Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
-  FCount := 0;
-
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
@@ -1268,37 +1315,7 @@ begin
   end;
   {$ENDREGION}
 
-  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
-  Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
-  Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
-
-  // enable diffuse blending and set filtering for all texture stages
-  for i := 0 to MaxTextureStages - 1 do
-  begin
-    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
-    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-    Device.LastResultCode := FD3DDevice.SetTextureStageState(i, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-    Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-  end;
-
-  // disable culling
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
-  FIsEnabledBlending := True;
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
-
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
-
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iTrue);
+  InitializeVolatileResources;
 
   // set length of possible texture stages
   SetLength(FActiveTexture, MaxTextureStages);
