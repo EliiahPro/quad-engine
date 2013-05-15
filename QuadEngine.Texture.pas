@@ -486,6 +486,8 @@ procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
   APatternWidth, APatternHeight: Integer; AColorKey: Integer);
 var
   Texture : IDirect3DTexture9;
+  f: file;
+  Signature: array[0..31] of AnsiChar;
 begin
   FIsLoaded := False;
 
@@ -511,14 +513,23 @@ begin
   end;
 
   try
-    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.BMP' then
+    AssignFile(f, AFilename);
+    Reset(f, 1);
+    BlockRead(f, Signature[0], 31);
+    CloseFile(f);
+
+    if Copy(Signature, 1, 2) = 'BM' then
       LoadBMPTexture(AFilename, Texture, AColorKey);
-    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.JPG' then
-      LoadJPGTexture(AFilename, Texture);
-    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.TGA' then
+
+    if Copy(Signature, 1, 16) = 'TRUEVISION-XFILE' then
       LoadTGATexture(AFilename, Texture);
-    if copy(UpperCase(AFilename), length(AFilename) - 3, 4) = '.PNG' then
+
+    if Copy(Signature, 2, 3) = 'PNG' then
       LoadPNGTexture(AFilename, Texture);
+
+    if (Signature[6] = 'J') and (Signature[7] = 'F') and (Signature[8] = 'I') and (Signature[9] = 'F') then
+      LoadJPGTexture(AFilename, Texture);
+
 
     Device.LastResultCode := Texture.UnlockRect(0);
 

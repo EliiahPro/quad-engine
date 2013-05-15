@@ -61,6 +61,7 @@ type
     property LastResultCode: HRESULT read FLastResultCode write SetLastResultCode;
     property Log: TQuadLog read FLog;
     property OnError: TOnErrorFunction read FOnErrorFunction write SetOnErrorFunction;
+    property Render: TQuadRender read FRender;
   end;
 
 var

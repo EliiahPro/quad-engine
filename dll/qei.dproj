@@ -155,7 +155,7 @@
                     <VersionInfo Name="MajorVer">0</VersionInfo>
                     <VersionInfo Name="MinorVer">4</VersionInfo>
                     <VersionInfo Name="Release">0</VersionInfo>
-                    <VersionInfo Name="Build">268</VersionInfo>
+                    <VersionInfo Name="Build">275</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -167,7 +167,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">0.4.0.268</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">0.4.0.275</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
@@ -406,6 +406,10 @@
         <DCCReference Include="..\QuadEngine.Utils.pas"/>
         <DCCReference Include="..\QuadEngine.Window.pas"/>
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
+        <DCCReference Include="..\Vec2f.pas">
+            <Form>$R *.res</Form>
+        </DCCReference>
+        <DCCReference Include="..\QuadEngine.Color.pas"/>
         <None Include="..\QuadEngine.cs"/>
         <None Include="..\quadengine.h"/>
         <BuildConfiguration Include="Debug">
