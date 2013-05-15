@@ -29,7 +29,7 @@ type
   end;
 
   TQuadTimer = class(TInterfacedObject, IQuadTimer)
-  private
+  strict private
     FCPULoad: Single;
     FCPUTotalTime: Int64;
     FFPS: Single;
@@ -44,8 +44,9 @@ type
     FTimeSpent: Double;
     FTime: Double;
     FTimeDeltaFPSCounter: Double;
-    FTimeSpentOnTick: Double;
     FWholeTime: Double;
+  private
+    FTimeSpentOnTick: Double;
   public
     constructor Create;
     destructor Destroy; override;
@@ -263,8 +264,6 @@ begin
 
   while not Terminated do
   begin
-//    FOwner.Tick;
-
     if (FInterval - Round(FOwner.FTimeSpentOnTick * 1000)) > 0 then
       WaitForSingleObject(Self.Handle, FInterval - Round(FOwner.FTimeSpentOnTick * 1000));
 

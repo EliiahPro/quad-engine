@@ -13,22 +13,22 @@ namespace QuadEngine
         public double G;
         public double B;
 
-        public static readonly QuadColor White = new QuadColor(1.0, 1.0, 1.0, 1.0);
-        public static readonly QuadColor Black = new QuadColor(1.0, 0.0, 0.0, 0.0);
-        public static readonly QuadColor Red = new QuadColor(1.0, 1.0, 0.0, 0.0);
-        public static readonly QuadColor Lime = new QuadColor(1.0, 0.0, 1.0, 0.0);
-        public static readonly QuadColor Blue = new QuadColor(1.0, 0.0, 0.0, 1.0);
-        public static readonly QuadColor Maroon = new QuadColor(1.0, 0.5, 0.0, 0.0);
-        public static readonly QuadColor Green = new QuadColor(1.0, 0.0, 0.5, 0.0);
-        public static readonly QuadColor Navy = new QuadColor(1.0, 0.0, 0.0, 0.5);
-        public static readonly QuadColor Yellow = new QuadColor(1.0, 1.0, 1.0, 0.0);
-        public static readonly QuadColor Fuchsia = new QuadColor(1.0, 1.0, 0.0, 1.0);
-        public static readonly QuadColor Aqua = new QuadColor(1.0, 0.0, 1.0, 1.0);
-        public static readonly QuadColor Olive = new QuadColor(1.0, 0.5, 0.5, 0.0);
-        public static readonly QuadColor Purple = new QuadColor(1.0, 0.5, 0.0, 0.5);
-        public static readonly QuadColor Teal = new QuadColor(1.0, 0.0, 0.5, 0.5);
-        public static readonly QuadColor Gray = new QuadColor(1.0, 0.5, 0.5, 0.5);
-        public static readonly QuadColor Silver = new QuadColor(1.0, 0.75, 0.75, 0.75);
+        public static readonly QuadColor White = new QuadColor(1.0, 1.0, 1.0);
+        public static readonly QuadColor Black = new QuadColor(0.0, 0.0, 0.0);
+        public static readonly QuadColor Red = new QuadColor(1.0, 0.0, 0.0);
+        public static readonly QuadColor Lime = new QuadColor(0.0, 1.0, 0.0);
+        public static readonly QuadColor Blue = new QuadColor(0.0, 0.0, 1.0);
+        public static readonly QuadColor Maroon = new QuadColor(0.5, 0.0, 0.0);
+        public static readonly QuadColor Green = new QuadColor(0.0, 0.5, 0.0);
+        public static readonly QuadColor Navy = new QuadColor(0.0, 0.0, 0.5);
+        public static readonly QuadColor Yellow = new QuadColor(1.0, 1.0, 0.0);
+        public static readonly QuadColor Fuchsia = new QuadColor(1.0, 0.0, 1.0);
+        public static readonly QuadColor Aqua = new QuadColor(0.0, 1.0, 1.0);
+        public static readonly QuadColor Olive = new QuadColor(0.5, 0.5, 0.0);
+        public static readonly QuadColor Purple = new QuadColor(0.5, 0.0, 0.5);
+        public static readonly QuadColor Teal = new QuadColor(0.0, 0.5, 0.5);
+        public static readonly QuadColor Gray = new QuadColor(0.5, 0.5, 0.5);
+        public static readonly QuadColor Silver = new QuadColor(0.75, 0.75, 0.75);
 
         public void ClampToMin()
         {
@@ -75,7 +75,7 @@ namespace QuadEngine
             return new QuadColor(ARGB);
         }
 
-        public static implicit operator uint(QuadColor quadColor)
+        public static implicit operator UInt32(QuadColor quadColor)
         {
             return ((uint)(quadColor.A * 255) << 24) +
                    ((uint)(quadColor.R * 255) << 16) +
@@ -133,7 +133,14 @@ namespace QuadEngine
 
         public QuadColor Lerp(QuadColor A, double dist)
         {
-            return (A - this) * dist + this;
+            QuadColor result = new QuadColor((A.A - this.A) * dist + this.A,
+                                 (A.R - this.R) * dist + this.R,
+                                 (A.G - this.G) * dist + this.G,
+                                 (A.B - this.B) * dist + this.B
+                                );
+            result.ClampToMin();
+            result.ClampToMax();
+            return result;
         }
     }
 }

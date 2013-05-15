@@ -91,7 +91,7 @@ begin
   Result.G := A.G + B.G;
   Result.B := A.B + B.B;
 
-  Result := TQuadColor.White;
+  Result.ClampToMax;
 end;
 
 procedure TQuadColor.ClampToMax;
@@ -156,7 +156,12 @@ end;
 
 function TQuadColor.Lerp(const A: TQuadColor; dist: Single): TQuadColor;
 begin
-  Result := (A - Self) * dist + Self;
+  Result.A := (A.A - Self.A) * dist + Self.A;
+  Result.R := (A.R - Self.R) * dist + Self.R;
+  Result.G := (A.G - Self.G) * dist + Self.G;
+  Result.B := (A.B - Self.B) * dist + Self.B;
+  Result.ClampToMin;
+  Result.ClampToMax;
 end;
 
 class operator TQuadColor.Multiply(A: TQuadColor; B: Double): TQuadColor;
