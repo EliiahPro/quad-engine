@@ -21,7 +21,7 @@ unit QuadEngine;
 interface
 
 uses
-  Windows, Direct3D9;
+  Windows, Direct3D9, Vec2f;
 
 const
   LibraryName: PChar = 'qei.dll';
@@ -76,6 +76,7 @@ type
     u, v    : Single;         { Texture UV coord }
     Tangent : TVector;        { Tangent vector }
     Binormal: TVector;        { Binormal vector }
+    class operator Implicit(const A: TVec2f): TVertex;
   end;
 
   // forward interfaces declaration
@@ -139,21 +140,21 @@ type
     procedure Clear(AColor: Cardinal); stdcall;
     procedure CreateOrthoMatrix; stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(x, y, x2, y2: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRectRot(x, y, x2, y2, ang, Scale: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRectRotAxis(x, y, x2, y2, ang, Scale, xA, yA : Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawLine(x, y, x2, y2: Single; Color: Cardinal); stdcall;
-    procedure DrawPoint(x, y: Single; Color: Cardinal); stdcall;
-    procedure DrawQuadLine(x1, y1, x2, y2, width1, width2: Single; Color1, Color2: Cardinal); stdcall;
+    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AIsCreateLog: Boolean = True); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
-    procedure Polygon(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal); stdcall;
-    procedure Rectangle(x, y, x2, y2: Double; Color: Cardinal); stdcall;
-    procedure RectangleEx(x, y, x2, y2: Double; Color1, Color2, Color3, Color4: Cardinal); stdcall;
+    procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
+    procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
+    procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
     /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
     /// <param name="AIsRenderToTexture">Enable render to texture.</param>
     /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
@@ -190,15 +191,15 @@ type
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure Draw(x, y: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawFrame(x, y: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawMap(x, y, x2, y2, u1, v1, u2, v2: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawMapRotAxis(x, y, x2, y2, u1, v1, u2, v2, xA, yA, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRot(x, y, angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRotFrame(x, y, angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRotAxis(x, y, angle, Scale, xA, yA: Double; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawRotAxisFrame(x, y, angle, Scale, xA, yA: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f; Angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRot(const Center: TVec2f; angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRotFrame(const Center: TVec2f; angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawRotAxisFrame(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure LoadFromFile(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
@@ -260,7 +261,7 @@ type
     procedure SetKerning(AValue: Single); stdcall;
     function TextHeight(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
     function TextWidth(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
-    procedure TextOut(x, y, AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF;
+    procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF;
       AAlign : TqfAlign = qfaLeft); stdcall;
   end;
 
@@ -354,6 +355,15 @@ begin
   Creator := GetProcAddress(h, CreateQuadWindowProcName);
   if Assigned(Creator) then
     Creator(Result);
+end;
+
+{ TVertex }
+
+class operator TVertex.Implicit(const A: TVec2f): TVertex;
+begin
+  Result.x := A.X;
+  Result.y := A.Y;
+  Result.z := 0.0;
 end;
 
 end.

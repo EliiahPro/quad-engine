@@ -579,7 +579,7 @@ var
   perpendicular: TVec2f;
   ver : array [0..5] of TVertex;
 begin
-  line := pointA - pointB;
+  line := pointB - pointA;
 
   perpendicular := line.Normal.Normalize;
 

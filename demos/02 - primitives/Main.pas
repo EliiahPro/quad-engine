@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, QuadEngine, QuadEngine.Color;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, QuadEngine, QuadEngine.Color, Vec2f;
 
 type
   TForm1 = class(TForm)
@@ -34,10 +34,10 @@ begin
   QuadRender.BeginRender;
   QuadRender.Clear(0);
 
-  QuadRender.Rectangle(100, 100, 400, 400, TQuadColor.Blue);
-  QuadRender.Rectangle(200, 200, 500, 500, TQuadColor.Lime.Lerp(TQuadColor.Red, Xpos/800));
+  QuadRender.Rectangle(TVec2f.Create(100, 100), TVec2f.Create(400, 400), TQuadColor.Blue);
+  QuadRender.Rectangle(TVec2f.Create(200, 200), TVec2f.Create(500, 500), TQuadColor.Lime.Lerp(TQuadColor.Red, Xpos/800));
 
-  QuadRender.DrawQuadLine(400, 400, Xpos, Ypos, 5, 5, TQuadColor.Blue, TQuadColor.Aqua);
+  QuadRender.DrawQuadLine(TVec2f.Create(400, 400), TVec2f.Create(Xpos, Ypos), 5, 5, TQuadColor.Blue, TQuadColor.Aqua);
 
   QuadRender.EndRender;
 end;

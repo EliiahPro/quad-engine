@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.5.2 header file for CodeGear™ Delphi®
+  Quad engine 0.6.0 header file for CodeGear™ Delphi®
 
      ╔═══════════╦═╗
      ║           ║ ║

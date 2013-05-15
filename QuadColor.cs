@@ -1,4 +1,22 @@
-﻿using System;
+﻿/*==============================================================================
+
+  Quad engine Color
+
+     ╔═══════════╦═╗
+     ║           ║ ║
+     ║           ║ ║
+     ║ ╔╗ ║║ ╔╗ ╔╣ ║
+     ║ ╚╣ ╚╝ ╚╩ ╚╝ ║
+     ║  ║ engine   ║
+     ║  ║          ║
+     ╚══╩══════════╝
+
+  For further information please visit:
+  http://quad-engine.com
+
+==============================================================================*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
