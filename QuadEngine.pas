@@ -78,6 +78,14 @@ type
     class operator Implicit(const A: TVec2f): TVertex;
   end;
 
+  TTimerProcedure = procedure(out delta: Double; Id: Cardinal); stdcall;
+  { template:
+    procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
+    begin
+
+    end;
+  }
+
   // forward interfaces declaration
   IQuadDevice  = interface;
   IQuadRender  = interface;
@@ -105,6 +113,7 @@ type
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
+    function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     /// <summary>Creates a rendertarget within specified <see cref="QuadEngine.IQuadTexture"/>.</summary>
     /// <param name="AWidth">Width of rendertarget.</param>
@@ -274,13 +283,6 @@ type
 
   {Quad Timer}
 
-  TTimerProcedure = procedure(out delta: Double; Id: Cardinal); stdcall;
-  { template:
-    procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
-    begin
-
-    end;
-  }
   IQuadTimer = interface(IUnknown)
     ['{EA3BD116-01BF-4E12-B504-07D5E3F3AD35}']
     function GetCPUload: Single; stdcall;

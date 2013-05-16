@@ -47,6 +47,7 @@ type
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
+    function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
@@ -276,14 +277,12 @@ begin
   pQuadTimer := Timer;
 end;
 
-function TQuadDevice.CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: ): HResult;
-var
-  Timer: TQuadTimer;
+function TQuadDevice.CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
 begin
-  inc(FMaxTimerID);
-  Timer := TQuadTimer.create;
-  Timer.Id := FMaxTimerID;
-  pQuadTimer := Timer;
+  CreateTimer(pQuadTimer);
+  pQuadTimer.SetCallBack(AProc);
+  pQuadTimer.SetInterval(AInterval);
+  pQuadTimer.SetState(IsEnabled);
 end;
 
 function TQuadDevice.CreateWindow(out pQuadWindow: IQuadWindow): HResult;
