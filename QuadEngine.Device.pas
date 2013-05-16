@@ -49,6 +49,7 @@ type
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
+    function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
     function GetLastError: PWideChar; stdcall;
     function GetMonitorsCount: Byte; stdcall;
@@ -71,7 +72,7 @@ implementation
 
 uses
   System.SysUtils, QuadEngine.Font, QuadEngine.Shader, QuadEngine.Timer,
-  QuadEngine.Texture, QuadEngine.Camera;
+  QuadEngine.Texture, QuadEngine.Camera, QuadEngine.Window;
 
 { TQuadDevice }
 
@@ -273,6 +274,21 @@ begin
   Timer := TQuadTimer.create;
   Timer.Id := FMaxTimerID;
   pQuadTimer := Timer;
+end;
+
+function TQuadDevice.CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: ): HResult;
+var
+  Timer: TQuadTimer;
+begin
+  inc(FMaxTimerID);
+  Timer := TQuadTimer.create;
+  Timer.Id := FMaxTimerID;
+  pQuadTimer := Timer;
+end;
+
+function TQuadDevice.CreateWindow(out pQuadWindow: IQuadWindow): HResult;
+begin
+  pQuadWindow := TQuadWindow.Create;
 end;
 
 function TQuadDevice.CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar;

@@ -26,7 +26,6 @@ uses
 const
   LibraryName: PChar = 'qei.dll';
   CreateQuadDeviceProcName: PChar = 'CreateQuadDevice';
-  CreateQuadWindowProcName: PChar = 'CreateQuadWindow';
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
 
 type
@@ -113,6 +112,7 @@ type
     /// <param name="AQuadTexture">Pointer to declared <see cref="QuadEngine.IQuadTexture"/>. If it not created this function will create, if not then it will use existing one.</param>
     /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
+    function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
     function GetLastError: PWideChar; stdcall;
     function GetMonitorsCount: Byte; stdcall;
@@ -303,13 +303,21 @@ type
     procedure SetVelocity(X, Y: Double); stdcall;
   end;
 
+  TOnKeyPress = procedure(Key: Word); stdcall;
+  TOnCreate = procedure; stdcall;
+
   {Quad Window}     {not implemented yet. do not use}
   IQuadWindow = interface(IUnknown)
-  ['{E8691EB1-4C5D-4565-8B78-3FC7C620DFFB}']
-    function GetHandle: Cardinal; stdcall;
-    procedure SetPosition(ATop, ALeft: Integer); stdcall;
-    procedure SetDimentions(AWidth, AHeight: Integer); stdcall;
-    procedure CreateWindow; stdcall;
+  ['{8EB98692-67B1-4E64-9090-B6A0F47054BA}']
+    procedure Start; stdcall;
+    procedure SetCaption(ACaption: PChar); stdcall;
+    procedure SetSize(AWidth, AHeight: Integer); stdcall;
+    procedure SetPosition(AXpos, AYPos: Integer); stdcall;
+    function GetHandle: THandle; stdcall;
+
+    procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
+    procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
+    procedure SetOnCreate(OnCreate: TOnCreate); stdcall;
   end;
 
   {Quad Camera}
@@ -325,11 +333,9 @@ type
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
-  TCreateQuadWindow    = function(out QuadWindow: IQuadWindow): HResult; stdcall;
   TSecretMagicFunction = function: PWideChar;
 
   function CreateQuadDevice: IQuadDevice;
-  function CreateWindow: IQuadWindow;
 
 implementation
 
@@ -341,18 +347,6 @@ var
 begin
   h := LoadLibrary(LibraryName);
   Creator := GetProcAddress(h, CreateQuadDeviceProcName);
-  if Assigned(Creator) then
-    Creator(Result);
-end;
-
-// Creating of Quad window interface object
-function CreateWindow: IQuadWindow;
-var
-  h: THandle;
-  Creator: TCreateQuadWindow;
-begin
-  h := LoadLibrary(LibraryName);
-  Creator := GetProcAddress(h, CreateQuadWindowProcName);
   if Assigned(Creator) then
     Creator(Result);
 end;

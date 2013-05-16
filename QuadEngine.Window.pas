@@ -18,177 +18,152 @@ uses
   messages,
   QuadEngine;
 
-const
-  WND_TITLE = 'QuadWindow';
-  APP_NAME = 'QuadWindow';
-  CLASS_NAME = APP_NAME;
-
-  W_WIDTH = 512 + 6;
-  W_HEIGHT = 512 + 32;
-
-
 type
   TQuadWindow = class(TInterfacedObject, IQuadWindow)
   private
-    FOnIdle : procedure;
+    FWndClass: TWndClassEx;
+    FHandle: THandle;
+    FOnKeyDown: TOnKeyPress;
+    FOnKeyUp: TOnKeyPress;
+    FOnCreate: TOnCreate;
+  protected
+    function WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
   public
-    procedure CreateWindow; stdcall;
-    function GetHandle: Cardinal; stdcall;
-    procedure SetDimentions(AWidth, AHeight: Integer); stdcall;
-    procedure SetPosition(ATop, ALeft: Integer); stdcall;
+    constructor Create;
+    procedure Start; stdcall;
+    procedure SetCaption(ACaption: PChar); stdcall;
+    procedure SetSize(AWidth, AHeight: Integer); stdcall;
+    procedure SetPosition(AXpos, AYPos: Integer); stdcall;
+    function GetHandle: THandle; stdcall;
+
+    procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
+    procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
+    procedure SetOnCreate(OnCreate: TOnCreate); stdcall;
   end;
 
-var
-  finished : boolean = False;
-  h_Wnd : HWND;
-  width, height : Integer;
-
-  procedure EnterMainCycle;
-  procedure CreateWindow;
-
+function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT; stdcall;
 
 implementation
 
-//=============================================================================
-//
-//=============================================================================
-function WndProc(hWnd: HWND; Msg: UINT;  wParam: WPARAM;  lParam: LPARAM): LRESULT; stdcall;
+function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
 begin
-  case Msg of
-    WM_CREATE :
+  Result := TQuadWindow(GetWindowLong(wnd, 0)).WindowProc(wnd, msg, wparam, lparam);
+end;
+
+function TQuadWindow.WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
+begin
+  Result := 0;
+
+  case msg of
+  WM_DESTROY:
+    begin
+      PostQuitMessage(0);
+      Result := 0;
+    end;
+  WM_KEYDOWN:
+    begin
+      if Assigned(FOnKeyDown) and (lparam and $FE = 0) then
       begin
-        SetWindowText(hWnd, PChar(WND_TITLE));
+        FOnKeyDown(wparam);
         Result := 0;
       end;
-    WM_DESTROY :
-      begin
-        PostQuitMessage(0);
-        Result:= 0;
-      end;
-    WM_SIZE :
-      begin
-        Height := lParam shr 16;
-        Width := lParam and $FFFF;
-      end;
-    WM_KEYDOWN :
-      begin
-        if wParam = VK_ESCAPE then
-          finished:= True;
-      end;
-  else
-    Result := DefWindowProc(hWnd, msg, wParam, lParam);
-  end;
-end;
-
-//=============================================================================
-//
-//=============================================================================
-Function WinMain(hInstance : HINST; hPrevInstance : HINST;
-                 lpCmdLine : PChar; nCmdShow : Integer) : Integer; stdcall;
-var
-  msg : TMsg;
-  wndClass : WndClassEx;
-  dwStyle, dwExStyle : DWORD;
-begin
-  wndClass.cbSize        := SizeOf(wndClass);
-  wndClass.style         := CS_HREDRAW or CS_VREDRAW;
-  wndClass.lpfnWndProc   := @WndProc;
-  wndClass.cbClsExtra    := 0;
-  wndClass.cbWndExtra    := 0;
-  wndClass.hInstance     := hInstance;
-  wndClass.hIcon         := LoadIcon(0, 'icon.ico');
-  wndClass.hIconSm       := LoadIcon(0, 'icon.ico');
-  wndClass.hCursor       := LoadCursor(0, IDC_ARROW);
-  wndClass.hbrBackground := CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
-  wndClass.lpszMenuName  := Nil;
-  wndClass.lpszClassName := CLASS_NAME;
-
-  RegisterClassEx(wndClass);
-
-  dwStyle := WS_CAPTION or WS_BORDER or WS_SYSMENU;
-  dwExStyle := WS_EX_APPWINDOW or WS_EX_WINDOWEDGE;
-
-  h_Wnd := CreateWindowEx(dwExStyle,
-                          CLASS_NAME,
-                          PChar(APP_NAME),
-                          dwStyle,
-                          (GetSystemMetrics(SM_CXSCREEN) - W_WIDTH) div 2,
-                          (GetSystemMetrics(SM_CYSCREEN) - W_HEIGHT) div 2,
-                          W_WIDTH,
-                          W_HEIGHT,
-                          0,
-                          0,
-                          hInstance,
-                          nil);
-
-  if h_Wnd = 0 then
-    Result := 0;
-
-  ShowWindow(h_Wnd, SW_SHOW);
-end;
-
-//=============================================================================
-//
-//=============================================================================
-procedure ProcessMessages;
-var
-  Msg : tagMSG;
-begin
-  if (PeekMessage(Msg, 0, 0, 0, PM_REMOVE)) then
-  begin
-    // если не получено сообщения выхода, обрабатываем сообщения
-    if (msg.message = WM_QUIT) then finished := True
-    else begin
-    	TranslateMessage(msg);
-      DispatchMessage(msg);
     end;
+  WM_KEYUP:
+    begin
+      if Assigned(FOnKeyUp) and (lparam and $FE = 1) then
+      begin
+        FOnKeyUp(wparam);
+        Result := 0;
+      end;
+    end;
+  else
+    Result := DefWindowProc(wnd, msg, wparam, lparam);
   end;
 end;
 
-//=============================================================================
-//
-//=============================================================================
-procedure CreateWindow;
+constructor TQuadWindow.Create;
 begin
-  Randomize;
-  WinMain(hInstance, hPrevInst, CmdLine, CmdShow);
+  FWndClass.cbSize := SizeOf(TWndClassEx);
+  FWndClass.style := CS_HREDRAW or CS_VREDRAW;
+  FWndClass.lpfnWndProc := @WinMain;
+  FWndClass.cbClsExtra := 0;
+  FWndClass.cbWndExtra := 4;
+  FWndClass.hInstance := HInstance;
+  FWndClass.hIcon := LoadIcon (0, IDI_APPLICATION);
+  FWndClass.hCursor := LoadCursor (0, IDC_ARROW);
+  FWndClass.hbrBackground := CreateSolidBrush(0);
+  FWndClass.lpszMenuName := nil;
+  FWndClass.lpszClassName := 'Main_Window';
+
+  RegisterClassEx(FWndClass);
+
+  FHandle := CreateWindowEx(0, 'Main_Window', 'Quad-engine window',
+                            WS_OVERLAPPEDWINDOW or WS_VISIBLE,
+                            100, 100,
+                            300, 300,
+                            0, 0,
+                            Hinstance, nil);
+
+  SetWindowLong(FHandle, 0, Integer(Self));
+
+  FOnKeyDown := nil;
+  FOnKeyUp := nil;
+  FOnCreate := nil;
 end;
 
-//=============================================================================
-//
-//=============================================================================
-procedure EnterMainCycle;
+function TQuadWindow.GetHandle: THandle;
 begin
-  while not finished do
+  Result := FHandle;
+end;
+
+procedure TQuadWindow.SetCaption(ACaption: PChar);
+begin
+  SetWindowText(FHandle, ACaption);
+end;
+
+procedure TQuadWindow.Start;
+var
+  Mmsg: MSG;
+begin
+  if Assigned(FOnCreate) then
+    FOnCreate;
+
+  while GetMessage(Mmsg, 0, 0, 0) do
+//  if PeekMessage(Mmsg, FHandle, 0, 0, PM_NOREMOVE) then
   begin
-    ProcessMessages;
-//    if Assigned(OnIdle) then
-//      OnIdle;
+    TranslateMessage(Mmsg);
+    DispatchMessage(Mmsg);
   end;
 end;
 
-
-{ TQuadWindowr }
-
-procedure TQuadWindow.CreateWindow;
+procedure TQuadWindow.SetSize(AWidth, AHeight: Integer);
+var
+  NewWidth, NewHeight: Integer;
 begin
-  WinMain(hInstance, hPrevInst, CmdLine, CmdShow);
-  EnterMainCycle;
+  NewWidth := AWidth;
+  NewHeight := AHeight;
+
+  SetWindowPos(FHandle, 0, 0, 0, NewWidth, NewHeight, SWP_NOMOVE or SWP_NOZORDER);
 end;
 
-function TQuadWindow.GetHandle: Cardinal;
+procedure TQuadWindow.SetPosition(AXpos, AYPos: Integer);
 begin
-  Result := h_Wnd;
+  SetWindowPos(FHandle, 0, AXpos, AYPos, 0, 0, SWP_NOSIZE or SWP_NOZORDER);
 end;
 
-procedure TQuadWindow.SetDimentions(AWidth, AHeight: Integer);
+procedure TQuadWindow.SetOnCreate(OnCreate: TOnCreate);
 begin
-  SetWindowPos(GetHandle, 0, 0, 0, AWidth, AHeight, SWP_NOMOVE);
+  FOnCreate := OnCreate;
 end;
 
-procedure TQuadWindow.SetPosition(ATop, ALeft: Integer);
+procedure TQuadWindow.SetOnKeyDown(OnKeyDown: TOnKeyPress);
 begin
-  SetWindowPos(GetHandle, 0, ATop, ALeft, 0, 0, SWP_NOSIZE);
+  FOnKeyDown := OnKeyDown;
+end;
+
+procedure TQuadWindow.SetOnKeyUp(OnKeyUp: TOnKeyPress);
+begin
+  FOnKeyUp := OnKeyUp;
 end;
 
 end.
