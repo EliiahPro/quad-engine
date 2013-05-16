@@ -45,6 +45,9 @@ function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESU
 
 implementation
 
+uses
+  QuadEngine.Device;
+
 function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
 begin
   Result := TQuadWindow(GetWindowLong(wnd, 0)).WindowProc(wnd, msg, wparam, lparam);
@@ -75,6 +78,20 @@ begin
         FOnKeyUp(wparam);
         Result := 0;
       end;
+    end;
+  WM_SIZE:
+    begin
+      if wparam = SIZE_MINIMIZED then
+        Result := 0;
+    end;
+  WM_ACTIVATEAPP:
+    begin
+     if wparam <> WA_INACTIVE then
+       if Assigned(Device) then
+        if Assigned(Device.Render) then
+          Device.Render.ResetDevice;
+
+     Result := 0;
     end;
   else
     Result := DefWindowProc(wnd, msg, wparam, lparam);

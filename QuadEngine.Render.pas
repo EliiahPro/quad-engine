@@ -1038,7 +1038,6 @@ begin
   if FIsDeviceLost then
   begin
     ReleaseVolatileResources;
-
     repeat
       Sleep(50);
       R := D3DDevice.TestCooperativeLevel;

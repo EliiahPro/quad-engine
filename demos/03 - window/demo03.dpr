@@ -30,7 +30,7 @@ begin
   QuadWindow.SetSize(800, 600);
 
   QuadDevice.CreateRender(QuadRender);
-  QuadRender.Initialize(QuadWindow.GetHandle, 800, 600, False);
+  QuadRender.Initialize(QuadWindow.GetHandle, 800, 600, True);
 
   QuadDevice.CreateTimer(QuadTimer);
   QuadTimer.SetInterval(200);
