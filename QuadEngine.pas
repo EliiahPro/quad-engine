@@ -311,7 +311,8 @@ type
   TOnKeyPress = procedure(Key: Word); stdcall;
   TOnCreate = procedure; stdcall;
 
-  {Quad Window}     {not implemented yet. do not use}
+  {Quad Window}
+
   IQuadWindow = interface(IUnknown)
   ['{8EB98692-67B1-4E64-9090-B6A0F47054BA}']
     procedure Start; stdcall;
@@ -326,6 +327,7 @@ type
   end;
 
   {Quad Camera}
+
   IQuadCamera = interface(IUnknown)
   ['{BBC0BBF2-7602-489A-BE2A-37D681B7A242}']
     procedure Shift(AXShift, AYShift: Single); stdcall;

@@ -245,7 +245,7 @@ procedure TQuadTexture.DrawRotAxis(const Position: TVec2f; angle, Scale: Double;
 begin
   SetTextureStages;
 
-  FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
+  FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + TVec2f.Create(FFrameWidth, FFrameHeight),
                               angle, Scale, Axis, TVec2f.Zero, TVec2f.Create(FFrameWidth / FWidth, FFrameHeight / FHeight), Color);
 end;
 
@@ -276,7 +276,7 @@ procedure TQuadTexture.DrawRot(const Center: TVec2f; angle, Scale: Double; Color
 begin
   SetTextureStages;
 
-  FQuadRender.Drawrectrot(Center - 0.5, Center - 0.5 +TVec2f.Create(FFrameWidth, FFrameHeight),
+  FQuadRender.Drawrectrot(Center - 0.5, Center - 0.5 + TVec2f.Create(FFrameWidth, FFrameHeight),
                           angle, Scale, TVec2f.Zero, TVec2f.Create(FFrameWidth / FWidth, FFrameHeight / FHeight), Color);
 end;
 

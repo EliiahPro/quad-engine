@@ -409,19 +409,19 @@ begin
                                                Vertex 3, 4 autocalculated}
 
   ver[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[0].x := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
   ver[0].z := 0;
 
   ver[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[1].x := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
   ver[1].z := 0;
 
   ver[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[2].x := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
   ver[2].z := 0;
 
   ver[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[5].x := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
   ver[5].z := 0;
 
   ver[0].color := Color;
@@ -430,9 +430,9 @@ begin
   ver[5].color := Color;
 
   ver[0].u := UVA.U;   ver[0].v := UVA.V;
-  ver[1].u := UVA.U;   ver[1].v := UVA.V;
+  ver[1].u := UVB.U;   ver[1].v := UVA.V;
   ver[2].u := UVA.U;   ver[2].v := UVB.V;
-  ver[5].u := UVA.U;   ver[5].v := UVB.V;
+  ver[5].u := UVB.U;   ver[5].v := UVB.V;
 
   AddQuadToBuffer(ver);
 end;
