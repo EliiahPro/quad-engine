@@ -2,8 +2,7 @@ program demo03;
 
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
-
-{$R *.res}
+{$SETPEFLAGS 1}
 
 uses
   QuadEngine;
@@ -32,10 +31,7 @@ begin
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, 800, 600, True);
 
-  QuadDevice.CreateTimer(QuadTimer);
-  QuadTimer.SetInterval(200);
-  QuadTimer.SetCallBack(OnTimer);
-  QuadTimer.SetState(True);
+  QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 200, True);
 
   QuadWindow.Start;
 end.

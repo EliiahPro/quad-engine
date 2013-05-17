@@ -20,8 +20,11 @@ unit QuadEngine;
 
 interface
 
+// Uncomment this define if Direct3D interfaces is needed
+{$DEFINE USED3D}
+
 uses
-  Windows, Direct3D9, Vec2f;
+  Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f;
 
 const
   LibraryName: PChar = 'qei.dll';
@@ -175,14 +178,14 @@ type
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
-    procedure SetTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure SetTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
     procedure ResetDevice; stdcall;
-    function GetD3DDevice: IDirect3DDevice9; stdcall;
+    function GetD3DDevice: {$IFDEF USED3D}IDirect3DDevice9{$ELSE}Pointer{$ENDIF} stdcall;
   end;
 
   { Quad Texture }
@@ -196,10 +199,10 @@ type
     function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
-    function GetTexture(i: Byte): IDirect3DTexture9; stdcall;
+    function GetTexture(i: Byte): {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}; stdcall;
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
-    procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure AddTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -221,8 +224,8 @@ type
     ['{7B7F4B1C-7F05-4BC2-8C11-A99696946073}']
     procedure BindVariableToVS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
     procedure BindVariableToPS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
-    function GetVertexShader(out Shader: IDirect3DVertexShader9): HResult; stdcall;
-    function GetPixelShader(out Shader: IDirect3DPixelShader9): HResult; stdcall;
+    function GetVertexShader(out Shader: {$IFDEF USED3D}IDirect3DVertexShader9{$ELSE}Pointer{$ENDIF}): HResult; stdcall;
+    function GetPixelShader(out Shader: {$IFDEF USED3D}IDirect3DPixelShader9{$ELSE}Pointer{$ENDIF}): HResult; stdcall;
     procedure LoadVertexShader(AVertexShaderFilename: PWideChar); stdcall;
     procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;

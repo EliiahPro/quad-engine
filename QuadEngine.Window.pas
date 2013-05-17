@@ -88,7 +88,7 @@ begin
     begin
      if wparam <> WA_INACTIVE then
        if Assigned(Device) then
-        if Assigned(Device.Render) then
+        if Device.Render.IsInitialized then
           Device.Render.ResetDevice;
 
      Result := 0;

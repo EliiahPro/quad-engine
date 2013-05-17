@@ -2,9 +2,6 @@ unit Vec2f;
 
 interface
 
-uses
-  Windows;
-
 type
   TVec2i = record
     class operator Add(const a, b: TVec2i): TVec2i;

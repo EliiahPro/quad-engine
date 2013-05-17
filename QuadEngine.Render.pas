@@ -49,6 +49,7 @@ type
     FIsAutoCalculateTBN : Boolean;
     FIsDeviceLost: Boolean;
     FIsEnabledBlending: Boolean;
+    FIsInitialized: Boolean;
     FIsRenderIntoTexture: Boolean;
     Fqbm: TQuadBlendMode;
     FVertexBuffer: array [0..MaxBufferCount - 1] of TVertex;
@@ -133,6 +134,7 @@ type
     property VSVersionMajor: Byte read GetVSVersionMajor;
     property VSVersionMinor: Byte read GetVSVersionMinor;
     property Width: Integer read FWidth;
+    property IsInitialized: Boolean read FIsInitialized;
   end;
 
 implementation
@@ -307,6 +309,7 @@ begin
 
   FIsDeviceLost := False;
   FIsAutoCalculateTBN := True;
+  FIsInitialized := False;
 end;
 
 //=============================================================================
@@ -1312,6 +1315,8 @@ begin
 
   TQuadShader.DistantField := TQuadShader.Create(Self);
   TQuadShader.DistantField.LoadFromResource('DistantField');
+
+  FIsInitialized := True;
 end;
 
 //=============================================================================
