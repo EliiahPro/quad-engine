@@ -151,10 +151,10 @@ namespace QuadEngine
 
         public QuadColor Lerp(QuadColor A, double dist)
         {
-            QuadColor result = new QuadColor((A.A - this.A) * dist + this.A,
-                                 (A.R - this.R) * dist + this.R,
+            QuadColor result = new QuadColor((A.R - this.R) * dist + this.R,
                                  (A.G - this.G) * dist + this.G,
-                                 (A.B - this.B) * dist + this.B
+                                 (A.B - this.B) * dist + this.B,
+                                 (A.A - this.A) * dist + this.A
                                 );
             result.ClampToMin();
             result.ClampToMax();
