@@ -25,28 +25,31 @@ using System.Threading.Tasks;
 namespace QuadEngine
 {
     public struct QuadColor
-    {
+    {               
         public double A;
         public double R;
         public double G;
         public double B;
 
-        public static readonly QuadColor White = new QuadColor(1.0, 1.0, 1.0);
-        public static readonly QuadColor Black = new QuadColor(0.0, 0.0, 0.0);
-        public static readonly QuadColor Red = new QuadColor(1.0, 0.0, 0.0);
-        public static readonly QuadColor Lime = new QuadColor(0.0, 1.0, 0.0);
-        public static readonly QuadColor Blue = new QuadColor(0.0, 0.0, 1.0);
-        public static readonly QuadColor Maroon = new QuadColor(0.5, 0.0, 0.0);
-        public static readonly QuadColor Green = new QuadColor(0.0, 0.5, 0.0);
-        public static readonly QuadColor Navy = new QuadColor(0.0, 0.0, 0.5);
-        public static readonly QuadColor Yellow = new QuadColor(1.0, 1.0, 0.0);
-        public static readonly QuadColor Fuchsia = new QuadColor(1.0, 0.0, 1.0);
-        public static readonly QuadColor Aqua = new QuadColor(0.0, 1.0, 1.0);
-        public static readonly QuadColor Olive = new QuadColor(0.5, 0.5, 0.0);
-        public static readonly QuadColor Purple = new QuadColor(0.5, 0.0, 0.5);
-        public static readonly QuadColor Teal = new QuadColor(0.0, 0.5, 0.5);
-        public static readonly QuadColor Gray = new QuadColor(0.5, 0.5, 0.5);
-        public static readonly QuadColor Silver = new QuadColor(0.75, 0.75, 0.75);
+        public static readonly QuadColor White = new QuadColor(255, 255, 255);
+        public static readonly QuadColor Black = new QuadColor(0, 0, 0);
+        public static readonly QuadColor Red = new QuadColor(255, 0, 0);
+        public static readonly QuadColor Lime = new QuadColor(0, 255, 0);
+        public static readonly QuadColor Blue = new QuadColor(0, 0, 255);
+        public static readonly QuadColor Maroon = new QuadColor(128, 0, 0);
+        public static readonly QuadColor Green = new QuadColor(0, 128, 0);
+        public static readonly QuadColor Navy = new QuadColor(0, 0, 128);
+        public static readonly QuadColor Yellow = new QuadColor(256, 256, 0);
+        public static readonly QuadColor Fuchsia = new QuadColor(256, 0, 256);
+        public static readonly QuadColor Aqua = new QuadColor(0, 256, 256);
+        public static readonly QuadColor Olive = new QuadColor(128, 128, 0);
+        public static readonly QuadColor Purple = new QuadColor(128, 0, 128);
+        public static readonly QuadColor Teal = new QuadColor(0, 128, 128);
+        public static readonly QuadColor Gray = new QuadColor(128, 128, 128);
+        public static readonly QuadColor Silver = new QuadColor(192, 192, 192);
+        public static readonly QuadColor Orange = new QuadColor(256, 128, 0);
+        public static readonly QuadColor Brown = new QuadColor(128, 64, 0);
+        public static readonly QuadColor Violet = new QuadColor(128, 0, 256);
 
         public void ClampToMin()
         {
