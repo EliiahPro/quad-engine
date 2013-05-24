@@ -65,7 +65,7 @@ begin
     end;
   WM_KEYDOWN:
     begin
-      if Assigned(FOnKeyDown) and (lparam and $FE = 0) then
+      if Assigned(FOnKeyDown) {and (lparam and $FE = 0)} then
       begin
         FOnKeyDown(wparam);
         Result := 0;
@@ -73,7 +73,7 @@ begin
     end;
   WM_KEYUP:
     begin
-      if Assigned(FOnKeyUp) and (lparam and $FE = 1) then
+      if Assigned(FOnKeyUp) {and (lparam and $FE = 1)} then
       begin
         FOnKeyUp(wparam);
         Result := 0;

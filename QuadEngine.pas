@@ -309,6 +309,7 @@ type
   end;
 
   TOnKeyPress = procedure(Key: Word); stdcall;
+  TOnMouseEvent = procedure(X, Y: Integer; Key: Word);
   TOnCreate = procedure; stdcall;
 
   {Quad Window}
