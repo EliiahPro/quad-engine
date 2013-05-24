@@ -52,7 +52,7 @@ type
     FHeight: Word;
     FIsSmartColoring: Boolean;
     FKerning: Single;
-    FLetters: array [Byte] of TLetterUV;
+    FLetters: array [Word] of TLetterUV;
     FLog: TQuadLog;
     FQuadRender: TQuadRender;
     FTexture: TQuadTexture;
@@ -75,8 +75,8 @@ type
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
     procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
-    function TextHeight(AText: PWideChar; AScale: Single = 1.0) : Single; stdcall;
-    function TextWidth(AText: PWideChar; AScale: Single = 1.0) : Single; stdcall;
+    function TextHeight(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
+    function TextWidth(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
   end;
 
 implementation
@@ -369,7 +369,7 @@ function TQuadFont.TextWidthEx(AText: PWideChar; AScale: Single;
   IsIncludeSpaces: Boolean): Single;
 var
   i: Integer;
-  l: Byte;
+  l: Word;
   max: Single;
 begin
   Result := 0.0;
