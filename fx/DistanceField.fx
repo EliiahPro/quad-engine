@@ -39,10 +39,9 @@ vertexOutput std_VS(appdata Input) {
 
 
 sampler2D DiffuseMap    : register(s0);
-float4 Params           : register(c0);
-float4 Color            : register(c1);  // do not used
-float4 OutlineColor     : register(c2);
-float4 Options          : register(c3);
+float4 Params           : register(c0); // edge1 min/max, edge2 min/max
+float4 OutlineColor     : register(c1); // OulineColor
+float4 Options          : register(c2); // Smoothed, TwoColored
 
 float4 std_PS(vertexOutput Input) : COLOR {  
     float4 Output;
