@@ -23,10 +23,10 @@ type
     FViewMatrix: D3DMATRIX;
     FAngle: Single;
     FScale: Single;
-    FXShear: Single;
-    FYShear: Single;
-    FXShift: Single;
-    FYShift: Single;
+//    FXShear: Single;
+//    FYShear: Single;
+//    FXShift: Single;
+//    FYShift: Single;
     FXTranslation: Single;
     FYTranslation: SIngle;
   public

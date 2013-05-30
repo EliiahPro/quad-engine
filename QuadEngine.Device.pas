@@ -176,7 +176,7 @@ begin
   i := 0;
   repeat
     GetSupportedScreenResolution(i, AResolution);
-    Result := (AResolution.X = AWidth) and (AResolution.Y = AHeight);
+    Result := (Integer(AResolution.X) = Integer(AWidth)) and (Integer(AResolution.Y) = Integer(AHeight));
     Inc(i);
   until Result or (AResolution.X = -1);
 end;
@@ -247,6 +247,11 @@ end;
 function TQuadDevice.CreateFont(out pQuadFont: IQuadFont): HResult;
 begin
   pQuadFont := TQuadFont.Create(FRender);
+
+  if Assigned(pQuadFont) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateLog(out pQuadLog: IQuadLog): HResult;
@@ -255,16 +260,31 @@ begin
     FLog := TQuadLog.Create;
 
   pQuadLog := FLog;
+
+  if Assigned(pQuadLog) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateShader(out pQuadShader: IQuadShader): HResult;
 begin
   pQuadShader := TQuadShader.create(FRender);
+
+  if Assigned(pQuadShader) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateTexture(out pQuadTexture: IQuadTexture): HResult;
 begin
   pQuadTexture := TQuadTexture.create(FRender);
+
+  if Assigned(pQuadTexture) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateTimer(out pQuadTimer: IQuadTimer): HResult;
@@ -275,11 +295,16 @@ begin
   Timer := TQuadTimer.create;
   Timer.Id := FMaxTimerID;
   pQuadTimer := Timer;
+
+  if Assigned(pQuadTimer) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
 begin
-  CreateTimer(pQuadTimer);
+  Result := CreateTimer(pQuadTimer);
   pQuadTimer.SetCallBack(AProc);
   pQuadTimer.SetInterval(AInterval);
   pQuadTimer.SetState(IsEnabled);
@@ -288,12 +313,17 @@ end;
 function TQuadDevice.CreateWindow(out pQuadWindow: IQuadWindow): HResult;
 begin
   pQuadWindow := TQuadWindow.Create;
+
+  if Assigned(pQuadWindow) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar;
   out pQuadFont: IQuadFont): HResult; stdcall;
 begin
-  pQuadFont := TQuadFont.Create(FRender);
+  Result := CreateFont(pQuadFont);
   pQuadFont.LoadFromFile(AFontTextureFilename, AUVFilename);
 end;
 
@@ -301,18 +331,28 @@ function TQuadDevice.CreateAndLoadTexture(ARegister: Byte;
   AFilename: PWideChar; out pQuadTexture: IQuadTexture; APatternWidth, APatternHeight,
   AColorKey: Integer): HResult;
 begin
-  pQuadTexture := TQuadTexture.Create(FRender);
+  Result := CreateTexture(pQuadTexture);
   pQuadTexture.LoadFromFile(ARegister, AFilename, APatternWidth, APatternHeight, AColorKey);
 end;
 
 function TQuadDevice.CreateCamera(out pQuadCamera: IQuadCamera): HResult;
 begin
   pQuadCamera := TQuadCamera.Create(FRender);
+
+  if Assigned(pQuadCamera) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadDevice.CreateRender(out pQuadRender: IQuadRender): HResult;
 begin
   pQuadRender := FRender;
+
+  if Assigned(pQuadRender) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 //=============================================================================

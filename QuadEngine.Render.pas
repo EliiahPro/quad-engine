@@ -57,7 +57,6 @@ type
     FTextureFiltering: TQuadTextureFiltering;
     FViewMatrix: TD3DMatrix;
     FWidth: Integer;
-    FTimer: IQuadTimer;
     FRenderMode: TD3DPrimitiveType;
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
@@ -253,8 +252,6 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.BeginRender;
-var
-  R: HRESULT;
 begin
   Device.LastResultCode := FD3DDevice.BeginScene;
 
@@ -345,7 +342,6 @@ procedure TQuadRender.DrawrectRot(const PointA, PointB: TVec2f; Angle, Scale: Do
   const UVA, UVB: TVec2f; Color: Cardinal);
 var
   ver: array [0..5] of TVertex;
-  xo, yo: Single;
   Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Extended;
@@ -447,8 +443,8 @@ var
   cx, cy : Single;
   vec1, vec2, vec3, vec4 : TVec2f;
 //  res : TVec2f;
-  zn, ch1, ch2 : Single;
-  ua, ub : Single;
+//  zn, ch1, ch2 : Single;
+//  ua, ub : Single;
   i : Integer;
 begin
   RenderMode := D3DPT_TRIANGLELIST;
@@ -1032,7 +1028,6 @@ end;
 procedure TQuadRender.ResetDevice;
 var
   R: HRESULT;
-  i: Integer;
 begin
   R := FD3DDevice.TestCooperativeLevel;
 
@@ -1202,7 +1197,6 @@ end;
 procedure TQuadRender.DoInitialize(AHandle: THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate: Integer;
   AIsFullscreen, AIsCreateLog, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync: Boolean);
 var
-  i: Integer;
   winrect : TRect;
   winstyle : Integer;
 begin
@@ -1352,6 +1346,8 @@ begin
     qtaClamp:      Value := D3DTADDRESS_CLAMP ;
     qtaBorder:     Value := D3DTADDRESS_BORDER ;
     qtaMirrorOnce: Value := D3DTADDRESS_MIRRORONCE;
+  else
+    Value := D3DTADDRESS_CLAMP;
   end;
 
   for i := 0 to MaxTextureStages - 1 do
@@ -1382,6 +1378,8 @@ begin
     qtfPyramidalQuad:   Value := D3DTEXF_PYRAMIDALQUAD;
     qtfGaussianQuad:    Value := D3DTEXF_GAUSSIANQUAD;
     qtfConvolutionMono: Value := D3DTEXF_CONVOLUTIONMONO;
+  else
+    Value := D3DTEXF_LINEAR;
   end;
 
   for i := 0 to MaxTextureStages - 1 do
@@ -1436,7 +1434,7 @@ begin
   for i := 0 to FHeight - 1 do
   begin
     pbit := Bitmap.ScanLine[i];
-    psur := Pointer(Cardinal(LockedRect.pBits) + (i + Point.Y) * FD3DDM.Width * 4);
+    psur := Pointer(Cardinal(LockedRect.pBits) + Cardinal(i + Point.Y) * FD3DDM.Width * 4);
 
     for j := 0 to FWidth - 1 do
     begin

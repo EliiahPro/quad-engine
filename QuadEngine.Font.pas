@@ -247,7 +247,7 @@ var
   startX: Single;
   sx: Single;
   ypos: Single;
-  width: Single;
+//  width: Single;
   l, c, j: Word;
   CurrentColor: Cardinal;
   CurrentAlpha: Cardinal;
@@ -257,6 +257,7 @@ begin
 
   CurrentColor := AColor;
   CurrentAlpha := AColor and $FF000000;
+  ypos := 0;
 
   case AAlign of
     qfaLeft   : sx := Position.X;
@@ -264,7 +265,7 @@ begin
     qfaCenter : sx := Trunc(Position.X - TextWidth(AText, AScale) / 2);
     qfaJustify: begin
                   sx := Position.X;
-                  width := TextWidth(AText, AScale);
+//                  width := TextWidth(AText, AScale);
                 end;
   else
     sx := 0;

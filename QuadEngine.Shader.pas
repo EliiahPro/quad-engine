@@ -145,9 +145,12 @@ begin
     if hRes <> 0  then
     begin
       size := SizeofResource(HInstance, hFind);
-      Data := LockResource(hRes);
-      Device.LastResultCode := FQuadRender.D3DDevice.CreatePixelShader(Data, Fps);
-      UnlockResource(hRes);
+      if size > 0 then
+      begin
+        Data := LockResource(hRes);
+        Device.LastResultCode := FQuadRender.D3DDevice.CreatePixelShader(Data, Fps);
+        UnlockResource(hRes);
+      end;
     end;
   end;
   FreeResource(hFind);

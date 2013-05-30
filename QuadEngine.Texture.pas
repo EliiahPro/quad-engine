@@ -38,11 +38,9 @@ type
     FIsLoaded: Boolean;
     FSync: TCriticalSection;
     procedure LoadBMPTexture(const aFilename: String; var Texture: IDirect3DTexture9; ColorKey: Integer = -1);
-    procedure LoadDDSTexture(const aFilename: String; var Texture: IDirect3DTexture9);
     procedure LoadJPGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
     procedure LoadTGATexture(const aFilename: String; var Texture: IDirect3DTexture9);
     procedure LoadPNGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
-    procedure CreateFromRenderTarget(RenderTargetIndex: Byte; aRegister: Byte = 0);
     procedure SetTextureStages;
   public
     constructor Create(QuadRender: TQuadRender);
@@ -120,20 +118,6 @@ begin
   FPatternHeight := 0;
   FPatternSize := TVec2f.Zero;
   FSync := TCriticalSection.Create;
-end;
-
-//=============================================================================
-// Create sprite from rendertarget
-//=============================================================================
-procedure TQuadTexture.CreateFromRenderTarget(RenderTargetIndex,
-  aRegister: Byte);
-begin
-  FIsLoaded := False;
-  FWidth := FQuadRender.Width;
-  FHeight := FQuadRender.Height;
-  FFrameWidth := FQuadRender.Width;
-  FFrameHeight := FQuadRender.Height;
-  FIsLoaded := True;
 end;
 
 //=============================================================================
@@ -442,46 +426,6 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.LoadDDSTexture(const aFilename: String; var Texture: IDirect3DTexture9);
-type
-  DDSHEADER = packed record
-    dwSize             : Cardinal;
-    dwFlags            : Cardinal;
-    dwHeight           : Cardinal;
-    dwWidth            : Cardinal;
-    dwPitchOrLinearSize: Cardinal;
-    dwDepth            : Cardinal;
-    dwMipMapCount      : Cardinal;
-    dwReserved1        : array [0..10] of Cardinal;
-    ddspf              : Cardinal;
-    dwCaps             : Cardinal;
-    dwCaps2            : Cardinal;
-    dwCaps3            : Cardinal;
-    dwCaps4            : Cardinal;
-    dwReserved2        : Cardinal;
-  end;
-
-var
-  f : file;
-  header : DDSHEADER;
-  head : array[0..3] of Ansichar;
-  buf : PAnsiChar;
-begin
-  AssignFile(f, aFilename);
-  Reset(f, 1);
-
-  BlockRead(f, head[0], 4);
-  BlockRead(f, header, SizeOf(header));
-  GetMem(buf, header.dwPitchOrLinearSize);
-  BlockRead(f, buf, SizeOf(header.dwPitchOrLinearSize));
- //  Move(buf^, aData.pBits^, header.dwPitchOrLinearSize);
-   {todo : требует дебага}
-  CloseFile(f);
-end;
-
-//=============================================================================
-//
-//=============================================================================
 procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
   APatternWidth, APatternHeight: Integer; AColorKey: Integer);
 var
@@ -662,12 +606,12 @@ end;
 //=============================================================================
 procedure TQuadTexture.LoadPNGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
 var
-  bmp : TPNGObject;
+  bmp : TPngImage;
   i, j : Integer;
   p, pa : Pointer;
   aData : TD3DLockedRect;
 begin
-  bmp := TPNGObject.Create;
+  bmp := TPngImage.Create;
   bmp.LoadFromFile(aFilename);
 
   FWidth := NormalizeSize(bmp.Width);
