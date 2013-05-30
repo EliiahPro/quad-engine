@@ -133,6 +133,12 @@ type
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
   end;
 
+  // Shader model
+  TQuadShaderModel = (qsmInvalid = 0,
+                      qsmNone    = 1,   // do not use shaders
+                      qsm20      = 2,   // shader model 2.0
+                      qsm30      = 3);  // shader model 3.0
+
   IQuadRender = interface(IUnknown)
     ['{D9E9C42B-E737-4CF9-A92F-F0AE483BA39B}']
     function GetAvailableTextureMemory: Cardinal; stdcall;
@@ -162,7 +168,7 @@ type
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
-      AIsFullscreen: Boolean; AIsCreateLog: Boolean = True); stdcall;
+      AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;

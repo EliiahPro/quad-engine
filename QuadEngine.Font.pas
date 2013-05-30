@@ -187,39 +187,25 @@ begin
 
   AssignFile(f, String(AUVFilename));
   Reset(f, 1);
-    Device.Log.Write('sadff');
   BlockRead(f, c, 8);
-      Device.Log.Write('sadvcx');
   Seek(f, 0);
-      Device.Log.Write(c);
 
   if c = 'QEF2' then
   begin  // v2.0
-    Device.Log.Write('sad');
     FIsDistanceField := True;
     // header
     BlockRead(f, c, 8);
-    Device.Log.Write('sad1');
     BlockRead(f, Size, 4);
-        Device.Log.Write('sad2');
     BlockRead(f, FQuadFontHeader, Size);
-                                    Device.Log.Write('sad3');
     // chardata
     BlockRead(f, c, 8);
-        Device.Log.Write('sad4');
     BlockRead(f, Size, 4);
-        Device.Log.Write('sad5');
     BlockRead(f, FQuadChars, Size);
-                                    Device.Log.Write('sad6');
-//     for Size := 0 to 255 do
 
     // kerning pairs
     BlockRead(f, c, 8);
-        Device.Log.Write('sad7');
     BlockRead(f, Size, 4);
-        Device.Log.Write('sad8');
     SetLength(FKerningPairs, Size div SizeOf(tagKERNINGPAIR));
-        Device.Log.Write('sad9');
     BlockRead(f, FKerningPairs[0], Size);
   end
   else

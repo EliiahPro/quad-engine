@@ -6,7 +6,7 @@
         <DCC_DependencyCheckOutputName>qei.dll</DCC_DependencyCheckOutputName>
         <MainSource>qei.dpr</MainSource>
         <FrameworkType>None</FrameworkType>
-        <ProjectVersion>14.3</ProjectVersion>
+        <ProjectVersion>14.6</ProjectVersion>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -190,9 +190,6 @@
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment>
-                <DeployFile LocalName="qei.dll" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win32"/>
-                </DeployFile>
                 <DeployFile LocalName="qei.rsm" Configuration="Release" Class="DebugSymbols">
                     <Platform Name="Win32">
                         <RemoteName>qei.rsm</RemoteName>
@@ -202,6 +199,9 @@
                     <Platform Name="OSX32"/>
                     <Platform Name="iOSSimulator"/>
                     <Platform Name="iOSDevice"/>
+                </DeployFile>
+                <DeployFile LocalName="qei.dll" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="Win32"/>
                 </DeployFile>
                 <DeployClass Required="true" Name="DependencyPackage">
                     <Platform Name="iOSDevice">
@@ -407,8 +407,9 @@
         <DCCReference Include="..\QuadEngine.Window.pas"/>
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
         <DCCReference Include="..\Vec2f.pas"/>
-        <DCCReference Include="..\QuadEngine.Color.pas"/>
-        <DCCReference Include="..\QuadEngine.Profiler.pas"/>
+        <DCCReference Include="..\QuadEngine.Color.pas">
+            <Form>/  QuadEngine.Profiler in &apos;..\QuadEngine.Profiler.pas&apos;;</Form>
+        </DCCReference>
         <None Include="..\QuadEngine.cs"/>
         <None Include="..\quadengine.h"/>
         <BuildConfiguration Include="Debug">

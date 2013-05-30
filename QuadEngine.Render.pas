@@ -58,11 +58,12 @@ type
     FViewMatrix: TD3DMatrix;
     FWidth: Integer;
     FRenderMode: TD3DPrimitiveType;
+    FShaderModel: TQuadShaderModel;
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure DoInitialize(AHandle : THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate : Integer;
-      AIsFullscreen, AIsCreateLog, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync : Boolean);
+      AIsFullscreen, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync : Boolean; AShaderModel: TQuadShaderModel);
     procedure InitializeVolatileResources;
     procedure ReleaseVolatileResources;
   public
@@ -94,7 +95,7 @@ type
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
-      AIsFullscreen: Boolean; AIsCreateLog: Boolean = True); stdcall;
+      AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
@@ -811,9 +812,9 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.Initialize(AHandle: THandle; AWidth, AHeight: Integer;
-  AIsFullscreen : Boolean; AIsCreateLog : Boolean = True);
+  AIsFullscreen : Boolean; AShaderModel: TQuadShaderModel = qsm20);
 begin
-  DoInitialize(AHandle, AWidth, AHeight, 1, 0, AIsFullscreen, AIsCreateLog, True, True, False);
+  DoInitialize(AHandle, AWidth, AHeight, 1, 0, AIsFullscreen, True, True, False, AShaderModel);
 end;
 
 //=============================================================================
@@ -831,6 +832,7 @@ var
   AIsSoftwareVertexProcessing: Boolean;
   AIsMultiThreaded: Boolean;
   AIsVerticalSync: Boolean;
+  AShaderModel: TQuadShaderModel;
 begin
   AIniFile := TIniFile.Create(AFilename);
 
@@ -843,12 +845,13 @@ begin
     AIsSoftwareVertexProcessing := AIniFile.ReadBool(ASection, 'SoftwareVertexProcessing', True);
     AIsMultiThreaded := AIniFile.ReadBool(ASection, 'MultiThreaded', True);
     AIsVerticalSync := AIniFile.ReadBool(ASection, 'VerticalSync', False);
+    AShaderModel := TQuadShaderModel(AIniFile.ReadInteger(ASection, 'ShaderModel', Integer(qsm20)));
   finally
     AIniFile.Free;
   end;
 
   DoInitialize(AHandle, AWidth, AHeight, ABackBufferCount, ARefreshRate, AIsFullscreen,
-    True, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync);
+               AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync, AShaderModel);
 end;
 
 //=============================================================================
@@ -1195,7 +1198,17 @@ end;
 // Main initialization routine
 //=============================================================================
 procedure TQuadRender.DoInitialize(AHandle: THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate: Integer;
-  AIsFullscreen, AIsCreateLog, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync: Boolean);
+  AIsFullscreen, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync: Boolean; AShaderModel: TQuadShaderModel);
+
+  function CompleteBooleanText(AText: PChar; AState: Boolean): PChar; inline;
+  begin
+    Result := PChar(AText + ': ');
+    if AState then
+      Result := PChar(Result + 'Off')
+    else
+      Result := PChar(Result + 'On');
+  end;
+
 var
   winrect : TRect;
   winstyle : Integer;
@@ -1211,6 +1224,8 @@ begin
   FWidth := AWidth;
   FHeight := AHeight;
   FHandle := AHandle;
+
+  FShaderModel := AShaderModel;
 
   if AIsFullscreen then
   begin
@@ -1258,24 +1273,24 @@ begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write('Multisample: Off');
-    Device.Log.Write('Fullscreen: Off');
-    Device.Log.Write('Vsync: Off');         {todo: switch}
+    Device.Log.Write(CompleteBooleanText('Multisample', False));
+    Device.Log.Write(CompleteBooleanText('Fullscreen', AIsFullscreen));
+    Device.Log.Write(CompleteBooleanText('Vsync', AIsVerticalSync));
   end;
   {$ENDREGION}
 
   Device.LastResultCode := Device.D3D.CreateDevice(Device.ActiveMonitorIndex,
                                                    D3DDEVTYPE_HAL,
                                                    FHandle,
-                                                   D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_MULTITHREADED, //AIsSoftwareVertexPprocessing
+                                                   D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_MULTITHREADED,
                                                    @FD3DPP,
                                                    FD3DDevice);
 
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write('Vertex processing: Software');   {todo: switch}
-    Device.Log.Write('Thread model: Multithreaded');   {todo: switch}
+    Device.Log.Write('Vertex processing: Software');
+    Device.Log.Write('Thread model: Multithreaded');
   end;
   {$ENDREGION}
 
@@ -1291,10 +1306,10 @@ begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write(PChar('Max VB count: ' + IntToStr(MaxBufferCount)));   {todo: switch}
-    Device.Log.Write(PChar('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight)));   {todo: switch}
-    Device.Log.Write(PChar('Max Texture stages: ' + IntToStr(MaxTextureStages)));   {todo: switch}
-    Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));   {todo: switch}
+    Device.Log.Write(PChar('Max VB count: ' + IntToStr(MaxBufferCount)));
+    Device.Log.Write(PChar('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight)));
+    Device.Log.Write(PChar('Max Texture stages: ' + IntToStr(MaxTextureStages)));
+    Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));
     Device.Log.Write(PChar('Vertex shaders: ' + PixelShaderVersionString));
     Device.Log.Write(PChar('Pixel shaders: ' + PixelShaderVersionString));
   end;
@@ -1308,8 +1323,12 @@ begin
   FD3DDevice.GetRenderTarget(0, FBackBuffer);
 
   // ps2_0
-  TQuadShader.DistanceField := TQuadShader.Create(Self);
-  TQuadShader.DistanceField.LoadFromResource('DistantField');
+  case FShaderModel of
+    qsm20: begin
+      TQuadShader.DistanceField := TQuadShader.Create(Self);
+      TQuadShader.DistanceField.LoadFromResource('DistantField');
+    end;
+  end;
 
   FIsInitialized := True;
 end;
