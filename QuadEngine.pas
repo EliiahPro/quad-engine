@@ -263,12 +263,21 @@ type
               qfaCenter  = 3,      { Align by center }
               qfaJustify = 4);     { Align by both sides}
 
+  // distance field options
+  TDistanceFieldParams = record
+    Edges: array[0..3] of Single;
+    OuterColor: array[0..3] of single;
+    Params: array[0..3] of Single;
+    procedure SetColor(AColor: Cardinal); inline;
+  end;
+
   IQuadFont = interface(IUnknown)
     ['{A47417BA-27C2-4DE0-97A9-CAE546FABFBA}']
     function GetIsLoaded: Boolean; stdcall;
     function GetKerning: Single; stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename : PWideChar); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
+    procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
     procedure SetKerning(AValue: Single); stdcall;
     function TextHeight(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
@@ -366,6 +375,16 @@ begin
   Result.x := A.X;
   Result.y := A.Y;
   Result.z := 0.0;
+end;
+
+{ TDistanceFieldParams }
+
+procedure TDistanceFieldParams.SetColor(AColor: Cardinal);
+begin
+  Self.OuterColor[0] := (AColor and $00FF0000 shr 16) / 255;
+  Self.OuterColor[1] := (AColor and $0000FF00 shr 8) / 255;
+  Self.OuterColor[2] := (AColor and $000000FF) / 255;
+  Self.OuterColor[3] := (AColor and $FF000000 shr 24) / 255;
 end;
 
 end.

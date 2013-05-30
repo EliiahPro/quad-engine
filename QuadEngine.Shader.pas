@@ -44,7 +44,7 @@ type
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
   class var
-    DistantField: TQuadShader;
+    DistanceField: TQuadShader;
   end;
 
 implementation

@@ -47,6 +47,7 @@ type
     const CHAR_SPACE = 32;
   strict private
     FColors: array [Word] of Cardinal;
+    FDistanceFieldParams: TDistanceFieldParams;
     FHeight: Word;
     FIsSmartColoring: Boolean;
     FKerning: Single;
@@ -70,6 +71,7 @@ type
     function GetKerning: Single; stdcall;
     procedure SetKerning(AValue: Single); stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename: PWideChar); stdcall;
+    procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
     procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
@@ -116,6 +118,18 @@ begin
   SetSmartColor('T', $00008080);  // teal
   SetSmartColor('D', $00808080);  // gray (dark)
   SetSmartColor('S', $00C0C0C0);  // silver
+
+  FDistanceFieldParams.Edges[0] := 0.48;
+  FDistanceFieldParams.Edges[1] := 0.5;
+  FDistanceFieldParams.Edges[2] := 0.0;
+  FDistanceFieldParams.Edges[3] := 0.0;
+  FDistanceFieldParams.Params[0] := 1.0;
+  FDistanceFieldParams.Params[1] := 0.0;
+  FDistanceFieldParams.SetColor($FFFFFFFF);
+
+  TQuadShader.DistanceField.BindVariableToPS(0, @FDistanceFieldParams.Edges, 1);
+  TQuadShader.DistanceField.BindVariableToPS(1, @FDistanceFieldParams.OuterColor, 1);
+  TQuadShader.DistanceField.BindVariableToPS(2, @FDistanceFieldParams.Params, 1);
 end;
 
 //=============================================================================
@@ -173,29 +187,39 @@ begin
 
   AssignFile(f, String(AUVFilename));
   Reset(f, 1);
-
-  BlockRead(f, c, 4);
+    Device.Log.Write('sadff');
+  BlockRead(f, c, 8);
+      Device.Log.Write('sadvcx');
   Seek(f, 0);
+      Device.Log.Write(c);
 
   if c = 'QEF2' then
   begin  // v2.0
+    Device.Log.Write('sad');
     FIsDistanceField := True;
     // header
-    BlockRead(f, c, 4);
+    BlockRead(f, c, 8);
+    Device.Log.Write('sad1');
     BlockRead(f, Size, 4);
+        Device.Log.Write('sad2');
     BlockRead(f, FQuadFontHeader, Size);
-
+                                    Device.Log.Write('sad3');
     // chardata
-    BlockRead(f, c, 4);
+    BlockRead(f, c, 8);
+        Device.Log.Write('sad4');
     BlockRead(f, Size, 4);
+        Device.Log.Write('sad5');
     BlockRead(f, FQuadChars, Size);
-
-     for Size := 0 to 255 do
+                                    Device.Log.Write('sad6');
+//     for Size := 0 to 255 do
 
     // kerning pairs
-    BlockRead(f, c, 4);
+    BlockRead(f, c, 8);
+        Device.Log.Write('sad7');
     BlockRead(f, Size, 4);
+        Device.Log.Write('sad8');
     SetLength(FKerningPairs, Size div SizeOf(tagKERNINGPAIR));
+        Device.Log.Write('sad9');
     BlockRead(f, FKerningPairs[0], Size);
   end
   else
@@ -232,6 +256,15 @@ end;
 //=============================================================================
 //
 //=============================================================================
+procedure TQuadFont.SetDistanceFieldParams(
+  const ADistanceFieldParams: TDistanceFieldParams);
+begin
+  FDistanceFieldParams := ADistanceFieldParams;
+end;
+
+//=============================================================================
+//
+//=============================================================================
 procedure TQuadFont.SetIsSmartColoring(Value: Boolean); stdcall;
 begin
   FIsSmartColoring := Value;
@@ -257,7 +290,7 @@ begin
 
   CurrentColor := AColor;
   CurrentAlpha := AColor and $FF000000;
-  ypos := 0;
+  ypos := Position.Y;
 
   case AAlign of
     qfaLeft   : sx := Position.X;
@@ -296,7 +329,7 @@ begin
     begin
       if FIsDistanceField then
       begin
-        TQuadShader.DistantField.SetShaderState(True);
+        TQuadShader.DistanceField.SetShaderState(True);
         c := ord(l);
         for j := 0 to 255 do
           if c = FQuadChars[j].id then
@@ -306,7 +339,6 @@ begin
           end;
         l := c;
 
-  //      FQuadRender.Rectangle(sx, y, sx+10, y+ 40, $FFFFFFFF);
         if l <> CHAR_SPACE then
         FTexture.DrawMap(
                    TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
@@ -317,11 +349,11 @@ begin
                    FQuadChars[l].YPos / FTexture.TextureHeight),
                    TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth + FQuadChars[l].SizeX / FTexture.TextureWidth,
                    FQuadChars[l].YPos / FTexture.TextureHeight + FQuadChars[l].SizeY / FTexture.TextureHeight),
-                   $FFFFFFFF);
+                   AColor);
 
         sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
 
-        TQuadShader.DistantField.SetShaderState(False);
+        TQuadShader.DistanceField.SetShaderState(False);
       end
       else
       begin

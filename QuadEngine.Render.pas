@@ -1307,8 +1307,9 @@ begin
 
   FD3DDevice.GetRenderTarget(0, FBackBuffer);
 
-  TQuadShader.DistantField := TQuadShader.Create(Self);
-  TQuadShader.DistantField.LoadFromResource('DistantField');
+  // ps2_0
+  TQuadShader.DistanceField := TQuadShader.Create(Self);
+  TQuadShader.DistanceField.LoadFromResource('DistantField');
 
   FIsInitialized := True;
 end;
