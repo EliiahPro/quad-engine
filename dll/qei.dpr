@@ -12,6 +12,7 @@ library qei;
 {$R 'Shaders.res' 'Shaders.rc'}
 
 uses
+  Windows,
   QuadEngine in '..\QuadEngine.pas',
   QuadEngine.Device in '..\QuadEngine.Device.pas',
   QuadEngine.Font in '..\QuadEngine.Font.pas',
@@ -25,19 +26,10 @@ uses
   QuadEngine.Window in '..\QuadEngine.Window.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
   Vec2f in '..\Vec2f.pas',
-  QuadEngine.Color in '..\QuadEngine.Color.pas';
+  QuadEngine.Color in '..\QuadEngine.Color.pas',
+  QuadEngine.Profiler in '..\QuadEngine.Profiler.pas';
 
 {$R *.res}
-
-procedure CreateQuadWindowEx(out AWindow: Pointer); stdcall;
-var
-  QW: IQuadWindow;
-begin
-  QW := TQuadWindow.Create;
-  QW._AddRef;
-  AWindow := Pointer(QW);
-end;
-
 
 procedure CreateQuadDeviceEx(out ADevice: Pointer); stdcall;
 var
@@ -53,13 +45,13 @@ function CreateQuadDevice(out AQuadDevice: IQuadDevice): HResult; stdcall;
 begin
   Device := TQuadDevice.Create;
   AQuadDevice := Device;
+
+  if Assigned(Device) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
-
-function CreateQuadWindow(out AQuadWindow: IQuadWindow): HResult; stdcall;
-begin
-  AQuadWindow := TQuadWindow.Create;
-end;
 
 function SecretMagicFunction: PWideChar; stdcall;
 begin
@@ -69,10 +61,8 @@ begin
 end;
 
 exports
-  CreateQuadWindowEx,
   CreateQuadDeviceEx,
   CreateQuadDevice,
-  CreateQuadWindow,
   SecretMagicFunction;
 
 begin
