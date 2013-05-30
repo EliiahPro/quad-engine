@@ -17,9 +17,6 @@ uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Texture, QuadEngine.Log,
   QuadEngine, QuadEngine.Shader, Vec2f;
 
-const
-  CHAR_SPACE = 32;
-
 type
   TLetterUV = record
     id            : Word;     { Letter uniq ID }
@@ -47,7 +44,8 @@ type
   end;
 
   TQuadFont = class(TInterfacedObject, IQuadFont)
-  private
+    const CHAR_SPACE = 32;
+  strict private
     FColors: array [Word] of Cardinal;
     FHeight: Word;
     FIsSmartColoring: Boolean;

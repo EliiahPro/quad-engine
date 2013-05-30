@@ -60,7 +60,7 @@ type
     const Purple: TQuadColor = (A: 1.0; R: 128/255; G: 0.0; B: 128/255);
     const Teal: TQuadColor = (A: 1.0; R: 0.0; G: 128/255; B: 128/255);
     const Gray: TQuadColor = (A: 1.0; R: 128/255; G: 128/255; B: 128/255);
-    const Silver: TQuadColor = (A: 1.0; R: 192/255; G: 192/255; B: 192/255;
+    const Silver: TQuadColor = (A: 1.0; R: 192/255; G: 192/255; B: 192/255);
     const Orange: TQuadColor = (A: 1.0; R: 1.0; G: 128/255; B: 0.0);
     const Brown: TQuadColor = (A: 1.0; R: 128/255; G: 64/255; B: 0.0);
     const Violet: TQuadColor = (A: 1.0; R: 128/255; G: 0; B: 1.0);

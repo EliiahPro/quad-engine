@@ -19,11 +19,11 @@ uses
 type
   TQuadSprite = class(TInterfacedObject, IQuadSprite)
   private
-    FTexture : IQuadTexture;
-    FPosition : TVec2f;
-    FVelocity : TVec2f;
-    FAngle : Single;
-    FScale : Single;
+//    FTexture : IQuadTexture;
+//    FPosition : TVec2f;
+//    FVelocity : TVec2f;
+//    FAngle : Single;
+//    FScale : Single;
   public
     constructor Create(aTexture : IQuadTexture);
     procedure SetPosition(X, Y : double); stdcall;
