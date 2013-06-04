@@ -1195,7 +1195,8 @@ begin
 end;
 
 //=============================================================================
-// Main initialization routine
+// Main initialization routine.
+// Yes, it's long. Yes, I know it. And yes, I know it's not good at all!!!
 //=============================================================================
 procedure TQuadRender.DoInitialize(AHandle: THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate: Integer;
   AIsFullscreen, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync: Boolean; AShaderModel: TQuadShaderModel);
@@ -1325,9 +1326,23 @@ begin
   // ps2_0
   case FShaderModel of
     qsm20: begin
+      if Device.Log <> nil then
+        Device.Log.Write('Shader model 2.0');
+
       TQuadShader.DistanceField := TQuadShader.Create(Self);
       TQuadShader.DistanceField.LoadFromResource('DistantField');
     end;
+    qsm30: begin
+      if Device.Log <> nil then
+        Device.Log.Write('Shader model 3.0');
+
+      TQuadShader.DistanceField := TQuadShader.Create(Self);
+      TQuadShader.DistanceField.LoadFromResource('DistantFieldVS30');
+      TQuadShader.DistanceField.LoadFromResource('DistantFieldPS30');
+    end;
+    qsmNone:
+      if Device.Log <> nil then
+        Device.Log.Write('Samder model not specified');
   end;
 
   FIsInitialized := True;

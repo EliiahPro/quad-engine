@@ -33,7 +33,7 @@ type
     FBindedVariableCount: Byte;
   public
     constructor Create(AQuadRender: TQuadRender); reintroduce;
-    procedure LoadFromResource(AResourceName: PWideChar);
+    procedure LoadFromResource(AResourceName: PWideChar; AIsPixelShader: Boolean = True);
 
     procedure BindVariableToVS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
     procedure BindVariableToPS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
@@ -132,7 +132,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadShader.LoadFromResource(AResourceName: PWideChar);
+procedure TQuadShader.LoadFromResource(AResourceName: PWideChar; AIsPixelShader: Boolean = True);
 var
   hFind, hRes: THandle;
   size: Cardinal;
@@ -148,7 +148,10 @@ begin
       if size > 0 then
       begin
         Data := LockResource(hRes);
-        Device.LastResultCode := FQuadRender.D3DDevice.CreatePixelShader(Data, Fps);
+        if AIsPixelShader then
+          Device.LastResultCode := FQuadRender.D3DDevice.CreatePixelShader(Data, Fps)
+        else
+          Device.LastResultCode := FQuadRender.D3DDevice.CreateVertexShader(Data, Fvs);
         UnlockResource(hRes);
       end;
     end;
