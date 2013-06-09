@@ -1,1 +1,3 @@
-DistantField RCDATA "DistantField.bin"
+DistantFieldPS20 RCDATA "DistantFieldPS20.bin"
+DistantFieldVS30 RCDATA "DistantFieldVS30.bin"
+DistantFieldPS30 RCDATA "DistantFieldPS30.bin"
