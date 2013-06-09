@@ -164,9 +164,10 @@ end;
 //=============================================================================
 procedure TQuadShader.LoadPixelShader(APixelShaderFilename: PWideChar);
 var
-  dwpPS : PDWORD;
+  dwpPS: PDWORD;
   filePS: THandle;
-  mapPS : THandle;
+  mapPS: THandle;
+  Version: Word;
 begin
   if Assigned(Device.Log) then
   begin
@@ -184,6 +185,16 @@ begin
 
   dwpPS := MapViewOfFile(mapPS, FILE_MAP_READ, 0, 0, 0);
 
+  //  todo:
+  {
+  if Assigned(dwpPS) then
+  begin
+    Version := Word(dwpPS^);
+    if ((Version and $FF) = 2) and Device.Render.ShaderModel <> qsm20 then
+    Device.Log.Write(PWideChar('Shader "' + APixelShaderFilename + '" have is ps_2_0 shader model'));
+
+  end;
+   }
   Device.LastResultCode := FQuadRender.D3DDevice.CreatePixelShader(dwpPS, Fps);
 
   UnmapViewOfFile(dwpPS);

@@ -79,6 +79,12 @@ begin
         Result := 0;
       end;
     end;
+  WM_MOUSEMOVE:
+    begin
+      // X: $FFFF and lParam
+      // Y: ($FFFF0000 and lparam) shr 16
+      Result := 0;
+    end;
   WM_SIZE:
     begin
       if wparam = SIZE_MINIMIZED then

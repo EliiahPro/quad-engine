@@ -135,6 +135,7 @@ type
     property VSVersionMinor: Byte read GetVSVersionMinor;
     property Width: Integer read FWidth;
     property IsInitialized: Boolean read FIsInitialized;
+    property ShaderModel: TQuadShaderModel read FShaderModel;
   end;
 
 implementation
@@ -1330,14 +1331,14 @@ begin
         Device.Log.Write('Shader model 2.0');
 
       TQuadShader.DistanceField := TQuadShader.Create(Self);
-      TQuadShader.DistanceField.LoadFromResource('DistantField');
+      TQuadShader.DistanceField.LoadFromResource('DistantFieldPS20');
     end;
     qsm30: begin
       if Device.Log <> nil then
         Device.Log.Write('Shader model 3.0');
 
       TQuadShader.DistanceField := TQuadShader.Create(Self);
-      TQuadShader.DistanceField.LoadFromResource('DistantFieldVS30');
+      TQuadShader.DistanceField.LoadFromResource('DistantFieldVS30', False);
       TQuadShader.DistanceField.LoadFromResource('DistantFieldPS30');
     end;
     qsmNone:
