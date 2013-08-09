@@ -109,7 +109,13 @@ namespace QuadEngine
     }
  
     /* Quad Render */
- 
+
+    // Shader model
+    public enum TQuadShaderModel{qsmInvalid = 0,
+                                 qsmNone    = 1,   // do not use shaders
+                                 qsm20      = 2,   // shader model 2.0
+                                 qsm30      = 3};  // shader model 3.0
+
     [ComImport]
     [Guid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -152,7 +158,7 @@ namespace QuadEngine
         void EndRender();
         void Finalize();
         void FlushBuffer();
-        void Initialize(IntPtr AHandle, int AWidth, int AHeight, bool AIsFullscreen, bool AIsCreateLog = true);
+        void Initialize(IntPtr AHandle, int AWidth, int AHeight, bool AIsFullscreen, TQuadShaderModel AShaderModel = TQuadShaderModel.qsm20);
         void InitializeFromIni(IntPtr AHandle, string AFilename);
         void Polygon(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f PointC, ref Vec2f PointD, UInt32 Color);
         void Rectangle(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
@@ -271,6 +277,14 @@ namespace QuadEngine
                           qfaCenter  = 3,      /* Align by center */
                           qfaJustify = 4};     /* Align by both sides */
 
+    // distance field options
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TDistanceFieldParams {
+        float[4] Edges;
+        float[4] OuterColor;
+        float[4] Params;
+    }
+
     [ComImport]
     [Guid("A47417BA-27C2-4DE0-97A9-CAE546FABFBA")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -282,17 +296,18 @@ namespace QuadEngine
         float GetKerning();
         void LoadFromFile(string ATextureFilename, string AUVFilename);
         void SetSmartColor(string AColorChar, UInt32 AColor);
+        void SetDistanceFieldParams(ref TDistanceFieldParams ADistanceFieldParam);
         void SetIsSmartColoring(bool Value);
         void SetKerning(float AValue);
         [PreserveSig]
         float TextHeight(string AText, float AScale = 1.0F);
         [PreserveSig]
         float TextWidth(string AText, float AScale = 1.0F);
-        void TextOut(ref Vec2f Position, float y, float AScale, string AText, UInt32 AColor = 0xFFFFFFFF, TqfAlign AAlign = TqfAlign.qfaLeft);
+        void TextOut(ref Vec2f Position, float AScale, string AText, UInt32 AColor = 0xFFFFFFFF, TqfAlign AAlign = TqfAlign.qfaLeft);
     }
- 
+
     /* Quad Log */
-   
+
     [ComImport]
     [Guid("7A4CE319-C7AF-4BF3-9218-C2A744F915E6")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -300,7 +315,7 @@ namespace QuadEngine
     {
         void Write(string aString);
     }
- 
+
     /* Quad Timer */
 
     public delegate void TimerProcedure(ref double delta, UInt32 Id);
