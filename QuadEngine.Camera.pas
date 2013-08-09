@@ -105,6 +105,9 @@ begin
   FViewMatrix._43 := 0;
   FViewMatrix._44 := 1;
 
+  FXTranslation := 0;
+  FYTranslation := 0;
+
   Device.LastResultCode := FRender.D3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
 end;
 

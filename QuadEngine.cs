@@ -372,6 +372,8 @@ namespace QuadEngine
         void Zoom(float AScale);
         void Rotate(float AAngle);
         void Translate(float AXDistance, float AYDistance);
+        void Reset();
+        void ApplyTransform();
     }
 
     public static class QuadEngine
