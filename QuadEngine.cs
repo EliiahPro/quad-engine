@@ -280,9 +280,16 @@ namespace QuadEngine
     // distance field options
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TDistanceFieldParams {
-        float[4] Edges;
-        float[4] OuterColor;
-        float[4] Params;
+        public float[] Edges;
+        public float[] OuterColor;
+        public float[] Params;
+
+        public TDistanceFieldParams()
+        {
+            Edges = new float[4];
+            OuterColor = new float[4];
+            Params = new float[4];
+        }
     }
 
     [ComImport]

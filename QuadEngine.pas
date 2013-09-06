@@ -62,7 +62,6 @@ type
                            qtfGaussianQuad    = 6,    { 4-sample gaussian }
                            qtfConvolutionMono = 7);   { Convolution filter for monochrome textures }
 
-
   // Vector record declaration
   TVector = packed record
     x: Single;

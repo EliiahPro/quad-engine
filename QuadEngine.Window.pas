@@ -162,11 +162,26 @@ end;
 procedure TQuadWindow.SetSize(AWidth, AHeight: Integer);
 var
   NewWidth, NewHeight: Integer;
+  Client, Window: TRect;
+  Diff: TPoint;
 begin
   NewWidth := AWidth;
   NewHeight := AHeight;
 
-  SetWindowPos(FHandle, 0, 0, 0, NewWidth, NewHeight, SWP_NOMOVE or SWP_NOZORDER);
+  GetClientRect(Self.FHandle, Client);
+  GetWindowRect(Self.FHandle, Window);
+
+  if (AHeight >= GetSystemMetrics(SM_CYSCREEN)) and
+     (AWidth >= GetSystemMetrics(SM_CXSCREEN)) then
+    SetWindowLong(FHandle, GWL_STYLE, GetWindowLong(FHandle, GWL_STYLE) and not WS_BORDER and not WS_SIZEBOX and not WS_DLGFRAME)
+  else
+  begin
+    Diff.X := Window.Right - Window.Left - Client.Right;
+    Diff.Y := Window.Bottom - Window.Top - Client.Bottom;
+  end;
+
+  MoveWindow(Self.FHandle, 0, 0, AWidth + Diff.X, AHeight + Diff.Y, True);
+//  SetWindowPos(FHandle, 0, 0, 0, NewWidth, NewHeight, SWP_NOMOVE or SWP_NOZORDER);
 end;
 
 procedure TQuadWindow.SetPosition(AXpos, AYPos: Integer);
