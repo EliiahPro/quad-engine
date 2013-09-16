@@ -29,7 +29,7 @@ type
     Reserved: Cardinal;
     Xpos: Word;
     YPos: Word;
-    id: Byte;
+    id: Word;
     SizeX: Byte;
     SizeY: Byte;
     OriginX: Smallint;
