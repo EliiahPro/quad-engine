@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.6.0 header file for CodeGear™ Delphi®
+  Quad engine 0.6.0 Umber header file for Embarcadero™ Delphi®
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -32,25 +32,39 @@ const
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
 
 type
-  // Blending mode types
+  ///<summary>Blending mode types.</summary>
+  ///<param name="qbmNone">Without blending</param>
+  ///<param name="qbmAdd">Add source to destination</param>
+  ///<param name="qbmSrcAlpha">Blend destination with alpha to source</param>
+  ///<param name="qbmSrcAlphaAdd">Add source with alpha to destination</param>
+  ///<param name="qbmSrcAlphaMul">Multiply source alpha with destination</param>
+  ///<param name="qbmMul">Multiply Source with destination</param>
+  ///<param name="qbmSrcColor">Blend source with color weight to destination</param>
+  ///<param name="qbmSrcColorAdd">Blend source with color weight and alpha to destination</param>
+  ///<param name="qbmInvertSrcColor">Blend inverted source color</param>
   TQuadBlendMode = (qbmInvalid        = 0,
-                    qbmNone           = 1,     { Without blending }
-                    qbmAdd            = 2,     { Add source to dest }
-                    qbmSrcAlpha       = 3,     { Blend dest with alpha to source }
-                    qbmSrcAlphaAdd    = 4,     { Add source with alpha to dest }
-                    qbmSrcAlphaMul    = 5,     { Multiply source alpha with dest }
-                    qbmMul            = 6,     { Multiply Source with dest }
-                    qbmSrcColor       = 7,     { Blend source with color weight to dest }
-                    qbmSrcColorAdd    = 8,     { Blend source with color weight and alpha to dest }
-                    qbmInvertSrcColor = 9);    { Blend inverted source color }
+                    qbmNone           = 1,
+                    qbmAdd            = 2,
+                    qbmSrcAlpha       = 3,
+                    qbmSrcAlphaAdd    = 4,
+                    qbmSrcAlphaMul    = 5,
+                    qbmMul            = 6,
+                    qbmSrcColor       = 7,
+                    qbmSrcColorAdd    = 8,
+                    qbmInvertSrcColor = 9);
 
-  // Texture adressing mode
+  ///<summary>Texture adressing mode</summary>
+  ///<param name="qtaWrap">Repeat UV</param>
+  ///<param name="qtaMirror">Repeat UV with mirroring</param>
+  ///<param name="qtaClamp">Do not repeat UV</param>
+  ///<param name="qtaBorder">Fill outranged UV with border</param>
+  ///<param name="qtaMirrorOnce">Mirror UV once</param>
   TQuadTextureAdressing = (qtaInvalid    = 0,
-                           qtaWrap       = 1,    {Repeat UV}
-                           qtaMirror     = 2,    {Repeat UV with mirroring}
-                           qtaClamp      = 3,    {Do not repeat UV}
-                           qtaBorder     = 4,    {Fill outranged UV with border}
-                           qtaMirrorOnce = 5);   {Mirror UV once}
+                           qtaWrap       = 1,
+                           qtaMirror     = 2,
+                           qtaClamp      = 3,
+                           qtaBorder     = 4,
+                           qtaMirrorOnce = 5);
 
   // Texture filtering mode
   TQuadTextureFiltering = (qtfInvalid         = 0,
@@ -80,6 +94,7 @@ type
     class operator Implicit(const A: TVec2f): TVertex;
   end;
 
+  /// <summary>OnTimer Callback function prototype</summary>
   TTimerProcedure = procedure(out delta: Double; Id: Cardinal); stdcall;
   { template:
     procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
@@ -104,23 +119,43 @@ type
   // OnError routine. Calls whenever error occurs
   TOnErrorFunction = procedure(Errorstring: PWideChar); stdcall;
 
+  ///<summary>This is main quad-engine interface. Use it methods to create resources, change states and draw primitives.</summary>
   IQuadDevice = interface(IUnknown)
     ['{E28626FF-738F-43B0-924C-1AFC7DEC26C7}']
     function CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar; out pQuadFont: IQuadFont): HResult; stdcall;
     function CreateAndLoadTexture(ARegister: Byte; AFilename: PWideChar; out pQuadTexture: IQuadTexture;
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
+    /// <summary>Return a QuadFont object.</summary>
+    /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
+    /// <summary>Return a QuadLog object.</summary>
+    /// <param name="pQuadLog">IQuadLog variable to recieve object.</param>
     function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;
+    /// <summary>Return a QuadShader object.</summary>
+    /// <param name="pQuadShader">IQuadShader variable to recieve object.</param>
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
+    /// <summary>Return a QuadTexture object.</summary>
+    /// <param name="pQuadTexure">IQuadTexture variable to recieve object.</param>
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
+    /// <summary>Return a QuadTimer object.</summary>
+    /// <param name="pQuadTimer">IQuadTimer variable to recieve object.</param>
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
+    /// <summary>Return a QuadTimer object with full initialization.</summary>
+    /// <param name="pQuadTimer">IQuadTimer variable to recieve object.</param>
+    /// <param name="AProc">Callback to onTimer procedure. <see cref="TTimerProcedure"/>
+    ///   <code>procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;</code>
+    /// </param>
+    /// <param name="AInterval">Timer interval in ms.</param>
+    /// <param name="IsEnabled">False if need to create in suspended state.</param>
     function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
+    /// <summary>Return a QuadRender object.</summary>
+    /// <param name="pQuadRender">IQuadRender variable to recieve object.</param>
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     /// <summary>Creates a rendertarget within specified <see cref="QuadEngine.IQuadTexture"/>.</summary>
     /// <param name="AWidth">Width of rendertarget.</param>
     /// <param name="AHeight">Height of rendertarget.</param>
-    /// <param name="AQuadTexture">Pointer to declared <see cref="QuadEngine.IQuadTexture"/>. If it not created this function will create, if not then it will use existing one.</param>
+    /// <param name="AQuadTexture">Pointer to declared <see cref="QuadEngine.IQuadTexture"/>. If it not created this function will create one. Otherwise it will use existing one.</param>
     /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
@@ -138,8 +173,12 @@ type
                       qsm20      = 2,   // shader model 2.0
                       qsm30      = 3);  // shader model 3.0
 
+  /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)
     ['{D9E9C42B-E737-4CF9-A92F-F0AE483BA39B}']
+    /// </summary>Retrieves the available texture memory.
+    /// This will return all available texture memory including AGP aperture.</summary>
+    /// <returns>Available memory size in bytes</returns>
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
@@ -224,7 +263,8 @@ type
   end;
 
   { Quad Shader }
-
+  /// <summary>This is quad-engine shader interface.
+  /// Use it methods to load shader into GPU, bind variables to shader, execute shader programs.</summary>
   IQuadShader = interface(IUnknown)
     ['{7B7F4B1C-7F05-4BC2-8C11-A99696946073}']
     procedure BindVariableToVS(ARegister: Byte; AVariable: Pointer; ASize: Byte); stdcall;
@@ -269,30 +309,55 @@ type
               qfaJustify = 4);     { Align by both sides}
 
   // distance field options
-  TDistanceFieldParams = record
-    Edges: array[0..3] of Single;
-    OuterColor: array[0..3] of single;
-    Params: array[0..3] of Single;
-    procedure SetColor(AColor: Cardinal); inline;
+  TDistanceFieldParams = packed record
+    Edge1X, Edge1Y: Single;
+    Edge2X, Edge2Y: Single;
+    OuterColor: Cardinal;
+    FirstEdge, SecondEdge: Boolean;
   end;
 
+  ///<summary>This is quad-engine textured fonts interface. Use it methods to render text.</summary>
   IQuadFont = interface(IUnknown)
     ['{A47417BA-27C2-4DE0-97A9-CAE546FABFBA}']
+    /// <summary>Check is QuadFont's loading of data from file.</summary>
+    /// <returns>True if data is loaded.</returns>
+    /// <remarks>This will be very helpfull for multithread applications.</remarks>
     function GetIsLoaded: Boolean; stdcall;
     function GetKerning: Single; stdcall;
+    /// <summary>Load font data from file.</summary>
+    /// <param name="ATextureFilename">Filename of texture file.</param>
+    /// <param name="AUVFilename">Filename of additional font data file.</param>
     procedure LoadFromFile(ATextureFilename, AUVFilename : PWideChar); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
+    /// <summary>Set kerning for this font.</summary>
+    /// <param name="AValue">Value to be set. 0.0f is default</param>
     procedure SetKerning(AValue: Single); stdcall;
+    /// <summary>Get current font height.</summary>
+    /// <param name="AText">Text to be measured.</param>
+    /// <param name="AScale">Scale of the measured text.</param>
+    /// <returns>Height in texels.</returns>
     function TextHeight(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
+    /// <summary>Get current font width.</summary>
+    /// <param name="AText">Text to be measured.</param>
+    /// <param name="AScale">Scale of the measured text.</param>
+    /// <returns>Width in texels.</returns>
     function TextWidth(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
+    /// <summary>Draw text.</summary>
+    /// <param name="Position">Position of text to be drawn.</param>
+    /// <param name="AScale">Scale of rendered text. Default is 1.0</param>
+    /// <param name="AText">Text to be drawn. #13 char is allowed.</param>
+    /// <param name="Color">Color of text to be drawn.</param>
+    /// <param name="AAlign">Text alignment.</param>
+    /// <remarks>Note that distancefield fonts will render with Y as baseline of the font instead top pixel in common fonts.</remarks>
     procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF;
       AAlign : TqfAlign = qfaLeft); stdcall;
   end;
 
   {Quad Log}
 
+  ///<summary>This interface will help to write any debug information to .log file.</summary>
   IQuadLog = interface(IUnknown)
     ['{7A4CE319-C7AF-4BF3-9218-C2A744F915E6}']
     procedure Write(aString: PWideChar); stdcall;
@@ -300,6 +365,8 @@ type
 
   {Quad Timer}
 
+  /// <summary>QuadTimer uses it's own thread. Be care of using multiple timers at once.
+  /// If do you must use synchronization methods or critical sections.</summary>
   IQuadTimer = interface(IUnknown)
     ['{EA3BD116-01BF-4E12-B504-07D5E3F3AD35}']
     function GetCPUload: Single; stdcall;
@@ -323,7 +390,7 @@ type
   end;
 
   TOnKeyPress = procedure(Key: Word); stdcall;
-  TOnMouseEvent = procedure(X, Y: Integer; Key: Word);
+  TOnMouseEvent = procedure(X, Y: Integer; Key: Word); stdcall;
   TOnCreate = procedure; stdcall;
 
   {Quad Window}
@@ -380,16 +447,6 @@ begin
   Result.x := A.X;
   Result.y := A.Y;
   Result.z := 0.0;
-end;
-
-{ TDistanceFieldParams }
-
-procedure TDistanceFieldParams.SetColor(AColor: Cardinal);
-begin
-  Self.OuterColor[0] := (AColor and $00FF0000 shr 16) / 255;
-  Self.OuterColor[1] := (AColor and $0000FF00 shr 8) / 255;
-  Self.OuterColor[2] := (AColor and $000000FF) / 255;
-  Self.OuterColor[3] := (AColor and $FF000000 shr 24) / 255;
 end;
 
 end.

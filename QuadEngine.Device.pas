@@ -18,7 +18,7 @@ uses
   QuadEngine.Render, System.IniFiles, QuadEngine;
 
 const
-  QuadVersion: PWideChar = 'Quad Engine v0.6.0';
+  QuadVersion: PWideChar = 'Quad Engine v0.6.0 (Quartz)';
 
 type
   TQuadDevice = class(TInterfacedObject, IQuadDevice)

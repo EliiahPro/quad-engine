@@ -43,11 +43,18 @@ type
     ScaleFactor: Byte;
   end;
 
+  TInternalDistanceFieldParams = record
+    Edges: array[0..3] of Single;
+    OuterColor: array[0..3] of Single;
+    Params: array[0..3] of Single;
+    procedure SetColor(AColor: Cardinal); inline;
+  end;
+
   TQuadFont = class(TInterfacedObject, IQuadFont)
     const CHAR_SPACE = 32;
   strict private
     FColors: array [Word] of Cardinal;
-    FDistanceFieldParams: TDistanceFieldParams;
+    FDistanceFieldParams: TInternalDistanceFieldParams;
     FHeight: Word;
     FIsSmartColoring: Boolean;
     FKerning: Single;
@@ -92,7 +99,6 @@ uses
 constructor TQuadFont.Create(AQuadRender: TQuadRender);
 var
   i: Integer;
-
 begin
   FQuadRender := AQuadRender;
   FLog := Device.Log;
@@ -245,7 +251,21 @@ end;
 procedure TQuadFont.SetDistanceFieldParams(
   const ADistanceFieldParams: TDistanceFieldParams);
 begin
-  FDistanceFieldParams := ADistanceFieldParams;
+  FDistanceFieldParams.SetColor(ADistanceFieldParams.OuterColor);
+  FDistanceFieldParams.Edges[0] := ADistanceFieldParams.Edge1X;
+  FDistanceFieldParams.Edges[1] := ADistanceFieldParams.Edge1Y;
+  FDistanceFieldParams.Edges[2] := ADistanceFieldParams.Edge2X;
+  FDistanceFieldParams.Edges[3] := ADistanceFieldParams.Edge2Y;
+
+  if ADistanceFieldParams.FirstEdge then
+    FDistanceFieldParams.Params[0] := 1.0
+  else
+    FDistanceFieldParams.Params[0] := 0.0;
+
+  if ADistanceFieldParams.SecondEdge then
+    FDistanceFieldParams.Params[1] := 1.0
+  else
+    FDistanceFieldParams.Params[1] := 0.0;
 end;
 
 //=============================================================================
@@ -316,8 +336,8 @@ begin
       if FIsDistanceField then
       begin
         TQuadShader.DistanceField.SetShaderState(True);
-        c := ord(l);
-        for j := 0 to 255 do
+        c := l;
+        for j := 0 to 65535 do
           if c = FQuadChars[j].id then
           begin
             c := j;
@@ -385,8 +405,8 @@ end;
 function TQuadFont.TextWidthEx(AText: PWideChar; AScale: Single;
   IsIncludeSpaces: Boolean): Single;
 var
-  i: Integer;
-  l: Word;
+  i, j: Integer;
+  l, c: Word;
   max: Single;
 begin
   Result := 0.0;
@@ -397,16 +417,32 @@ begin
   i := 0;
   repeat
     if (FIsSmartColoring) and (AText[i] = '^') and (AText[i + 1] = '$') then
-      Inc(I, 3);
+      Inc(i, 3);
 
     l := Ord(AText[i]);
     if IsIncludeSpaces or (l <> CHAR_SPACE) then
-      Result := Result + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+    begin
+      if FIsDistanceField then
+      begin
+        c := l;
+        for j := 0 to 65535 do
+        begin
+          if l = FQuadChars[j].id then
+          begin
+            c := j;
+            Break;
+          end;
+        end;
+        Result := Result + (FQuadChars[c].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning
+      end
+      else
+        Result := Result + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+    end;
 
     if l = Ord(#13) then
     begin
       if Result > max then
-      max := Result;
+        max := Result;
       Result := 0;
     end;
     Inc(i);
@@ -414,6 +450,16 @@ begin
 
   if Result < max then
     Result := max;
+end;
+
+{ TInternalDistanceFieldParams }
+
+procedure TInternalDistanceFieldParams.SetColor(AColor: Cardinal);
+begin
+  Self.OuterColor[0] := (AColor and $FF000000 shr 24) / 255;
+  Self.OuterColor[1] := (AColor and $00FF0000 shr 16) / 255;
+  Self.OuterColor[2] := (AColor and $0000FF00 shr 8) / 255;
+  Self.OuterColor[3] := (AColor and $000000FF) / 255;
 end;
 
 end.
