@@ -389,17 +389,21 @@ type
     procedure SetVelocity(X, Y: Double); stdcall;
   end;
 
-  TMouseButtons = (mbLeft, mbRight, mbMiddle, mbX1, mbX2);
-  TPressedMouseButtons = record
+  TMouseButtons = (mbLeft = 0,
+                   mbRight = 1,
+                   mbMiddle = 2,
+                   mbX1 = 3,
+                   mbX2 = 4);
+  TPressedMouseButtons = packed record
     case Integer of
       0: (Left, Right, Middle, X1, X2: Boolean);
-      2: (a: array[0..4] of Boolean);
+      2: (a: array[TMouseButtons] of Boolean);
   end;
 
   TOnKeyPress = procedure(Key: Word); stdcall;
-  TOnMouseMoveEvent = procedure(Position: TVec2i; PressedButtons: TPressedMouseButtons); stdcall;
-  TOnMouseEvent = procedure(Position: TVec2i; Buttons: TMouseButtons; PressedButtons: TPressedMouseButtons); stdcall;
-  TOnMouseWheelEvent = procedure(Position: TVec2i; Vector: TVec2i; PressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseMoveEvent = procedure(APosition: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseEvent = procedure(APosition: TVec2i; AButtons: TMouseButtons; APressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseWheelEvent = procedure(APosition: TVec2i; AVector: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
   TOnCreate = procedure; stdcall;
 
   {Quad Window}

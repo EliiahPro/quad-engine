@@ -28,12 +28,12 @@ type
     FOnKeyUp: TOnKeyPress;
     FOnCreate: TOnCreate;
     FOnMouseMove: TOnMouseMoveEvent;
-    FOnMousDown: TOnMouseEvent;
+    FOnMouseDown: TOnMouseEvent;
     FOnMouseUp: TOnMouseEvent;
     FOnMouseDblClick: TOnMouseEvent;
     FOnMouseWheel: TOnMouseWheelEvent;
 
-    function OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
+    procedure OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
   protected
     function WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
   public
@@ -98,7 +98,8 @@ begin
   WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, WM_XBUTTONDBLCLK,
   WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_MOUSEHWHEEL:
     begin
-      Result := OnMouseEvent(msg, wparam, lparam);
+      OnMouseEvent(msg, wparam, lparam);
+      Result := 0;
     end;
   WM_SIZE:
     begin
@@ -154,20 +155,20 @@ begin
   Result := FHandle;
 end;
 
-function TQuadWindow.OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
+procedure TQuadWindow.OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
 
-  function ParamToPressedMouseButtons(Param: Cardinal): TPressedMouseButtons;
+  function ParamToPressedMouseButtons(AParam: Cardinal): TPressedMouseButtons;
   begin
-    Result.Left := Param and MK_LBUTTON >= 1;
-    Result.Right := Param and MK_RBUTTON >= 1;
-    Result.Middle := Param and MK_MBUTTON >= 1;
-    Result.X1 := Param and $0020 >= 1;
-    Result.X2 := Param and $0040 >= 1;
+    Result.Left := AParam and MK_LBUTTON = MK_LBUTTON;
+    Result.Right := AParam and MK_RBUTTON = MK_RBUTTON;
+    Result.Middle := AParam and MK_MBUTTON = MK_MBUTTON;
+    Result.X1 := AParam and $0020 = $0040;
+    Result.X2 := AParam and $0040 = $0040;
   end;
 
-  function ParamToPosition(Param: Cardinal): TVec2i;
+  function ParamToPosition(AParam: Cardinal): TVec2i;
   begin
-    Result := TVec2i.Create(SmallInt($FFFF and Param), SmallInt(($FFFF0000 and Param) shr 16));
+    Result := TVec2i.Create(SmallInt($FFFF and AParam), SmallInt(($FFFF0000 and AParam) shr 16));
   end;
 
 var
@@ -175,22 +176,21 @@ var
 begin
   case msg of
     WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN:
-      if Assigned(FOnMousDown) then
+      if Assigned(FOnMouseDown) then
       begin
         case msg of
-          WM_LBUTTONDOWN: FOnMousDown(ParamToPosition(lparam), mbLeft, ParamToPressedMouseButtons(wparam));
-          WM_MBUTTONDOWN: FOnMousDown(ParamToPosition(lparam), mbMiddle, ParamToPressedMouseButtons(wparam));
-          WM_RBUTTONDOWN: FOnMousDown(ParamToPosition(lparam), mbRight, ParamToPressedMouseButtons(wparam));
+          WM_LBUTTONDOWN: FOnMouseDown(ParamToPosition(lparam), mbLeft, ParamToPressedMouseButtons(wparam));
+          WM_MBUTTONDOWN: FOnMouseDown(ParamToPosition(lparam), mbMiddle, ParamToPressedMouseButtons(wparam));
+          WM_RBUTTONDOWN: FOnMouseDown(ParamToPosition(lparam), mbRight, ParamToPressedMouseButtons(wparam));
           WM_XBUTTONDOWN:
             begin
               XParam := ParamToPosition(WPARAM);
               case XParam.Y of
-                1: FOnMousDown(ParamToPosition(lparam), mbX1, ParamToPressedMouseButtons(XParam.X));
-                2: FOnMousDown(ParamToPosition(lparam), mbX2, ParamToPressedMouseButtons(XParam.X));
+                1: FOnMouseDown(ParamToPosition(lparam), mbX1, ParamToPressedMouseButtons(XParam.X));
+                2: FOnMouseDown(ParamToPosition(lparam), mbX2, ParamToPressedMouseButtons(XParam.X));
               end;
             end;
         end;
-        Result := 0;
       end;
 
     WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, WM_XBUTTONUP:
@@ -209,7 +209,6 @@ begin
               end;
             end;
         end;
-        Result := 0;
       end;
 
     WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, WM_XBUTTONDBLCLK:
@@ -229,7 +228,6 @@ begin
               end;
             end;
         end;
-        Result := 0;
       end;
     end;
 
@@ -237,7 +235,6 @@ begin
       if Assigned(FOnMouseMove) then
       begin
         FOnMouseMove(ParamToPosition(lparam), ParamToPressedMouseButtons(wparam));
-        Result := 0;
       end;
 
     WM_MOUSEWHEEL, WM_MOUSEHWHEEL:
@@ -274,13 +271,9 @@ end;
 
 procedure TQuadWindow.SetSize(AWidth, AHeight: Integer);
 var
-  NewWidth, NewHeight: Integer;
   Client, Window: TRect;
   Diff: TPoint;
 begin
-  NewWidth := AWidth;
-  NewHeight := AHeight;
-
   GetClientRect(Self.FHandle, Client);
   GetWindowRect(Self.FHandle, Window);
 
@@ -324,7 +317,7 @@ end;
 
 procedure TQuadWindow.SetOnMouseDown(OnMouseDown: TOnMouseEvent);
 begin
-  FOnMousDown := OnMouseDown;
+  FOnMouseDown := OnMouseDown;
 end;
 
 procedure TQuadWindow.SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent);

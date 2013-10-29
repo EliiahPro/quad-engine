@@ -9,6 +9,12 @@
         <Projects Include="02 - primitives\demo02.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="03 - window\demo03.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="04 - Input\demo04.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +41,32 @@
     <Target Name="demo02:Make">
         <MSBuild Projects="02 - primitives\demo02.dproj" Targets="Make"/>
     </Target>
+    <Target Name="demo03">
+        <MSBuild Projects="03 - window\demo03.dproj"/>
+    </Target>
+    <Target Name="demo03:Clean">
+        <MSBuild Projects="03 - window\demo03.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="demo03:Make">
+        <MSBuild Projects="03 - window\demo03.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="demo04">
+        <MSBuild Projects="04 - Input\demo04.dproj"/>
+    </Target>
+    <Target Name="demo04:Clean">
+        <MSBuild Projects="04 - Input\demo04.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="demo04:Make">
+        <MSBuild Projects="04 - Input\demo04.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="demo01;demo02"/>
+        <CallTarget Targets="demo01;demo02;demo03;demo04"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="demo01:Clean;demo02:Clean"/>
+        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="demo01:Make;demo02:Make"/>
+        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

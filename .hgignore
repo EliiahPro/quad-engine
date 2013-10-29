@@ -2,3 +2,10 @@ syntax: glob
 __history
 *.dcu
 dll/qei.map
+*.identcache
+*.local
+*.orig
+*.drc
+*.~*
+*.dsk
+*.map
