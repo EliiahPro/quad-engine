@@ -260,7 +260,7 @@ begin
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
   while FIsDeviceLost do
   begin
-    Sleep(1000);
+  //  Sleep(1000);
     if not FIsDeviceLost then
       Device.LastResultCode := FD3DDevice.BeginScene;
   end;

@@ -43,7 +43,7 @@ type
     ScaleFactor: Byte;
   end;
 
-  TInternalDistanceFieldParams = record
+  TInternalDistanceFieldParams = packed record
     Edges: array[0..3] of Single;
     OuterColor: array[0..3] of Single;
     Params: array[0..3] of Single;
@@ -125,8 +125,8 @@ begin
   SetSmartColor('D', $00808080);  // gray (dark)
   SetSmartColor('S', $00C0C0C0);  // silver
 
-  FDistanceFieldParams.Edges[0] := 0.48;
-  FDistanceFieldParams.Edges[1] := 0.5;
+  FDistanceFieldParams.Edges[0] := 0.35;
+  FDistanceFieldParams.Edges[1] := 0.45;
   FDistanceFieldParams.Edges[2] := 0.0;
   FDistanceFieldParams.Edges[3] := 0.0;
   FDistanceFieldParams.Params[0] := 1.0;
@@ -456,10 +456,10 @@ end;
 
 procedure TInternalDistanceFieldParams.SetColor(AColor: Cardinal);
 begin
-  Self.OuterColor[0] := (AColor and $FF000000 shr 24) / 255;
-  Self.OuterColor[1] := (AColor and $00FF0000 shr 16) / 255;
-  Self.OuterColor[2] := (AColor and $0000FF00 shr 8) / 255;
-  Self.OuterColor[3] := (AColor and $000000FF) / 255;
+  Self.OuterColor[0] := (AColor and $00FF0000 shr 16) / 255;
+  Self.OuterColor[1] := (AColor and $0000FF00 shr 8) / 255;
+  Self.OuterColor[2] := (AColor and $000000FF) / 255;
+  Self.OuterColor[3] := (AColor and $FF000000 shr 24) / 255;
 end;
 
 end.
