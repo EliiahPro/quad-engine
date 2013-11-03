@@ -404,7 +404,7 @@ type
   TOnMouseMoveEvent = procedure(APosition: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
   TOnMouseEvent = procedure(APosition: TVec2i; AButtons: TMouseButtons; APressedButtons: TPressedMouseButtons); stdcall;
   TOnMouseWheelEvent = procedure(APosition: TVec2i; AVector: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
-  TOnCreate = procedure; stdcall;
+  TOnEvent = procedure; stdcall;
 
   {Quad Window}
 
@@ -418,7 +418,8 @@ type
 
     procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
     procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
-    procedure SetOnCreate(OnCreate: TOnCreate); stdcall;
+    procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
+    procedure SetOnClose(OnClose: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
     procedure SetOnMouseDown(OnMouseDown: TOnMouseEvent); stdcall;
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;

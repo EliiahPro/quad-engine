@@ -26,7 +26,8 @@ type
     FHandle: THandle;
     FOnKeyDown: TOnKeyPress;
     FOnKeyUp: TOnKeyPress;
-    FOnCreate: TOnCreate;
+    FOnCreate: TOnEvent;
+    FOnClose: TOnEvent;
     FOnMouseMove: TOnMouseMoveEvent;
     FOnMouseDown: TOnMouseEvent;
     FOnMouseUp: TOnMouseEvent;
@@ -46,7 +47,8 @@ type
 
     procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
     procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
-    procedure SetOnCreate(OnCreate: TOnCreate); stdcall;
+    procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
+    procedure SetOnClose(OnClose: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
     procedure SetOnMouseDown(OnMouseDown: TOnMouseEvent); stdcall;
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
@@ -73,6 +75,9 @@ begin
   case msg of
   WM_DESTROY:
     begin
+      if Assigned(FOnClose) then
+        FOnClose;
+
       PostQuitMessage(0);
       Result := 0;
     end;
@@ -295,9 +300,14 @@ begin
   SetWindowPos(FHandle, 0, AXpos, AYPos, 0, 0, SWP_NOSIZE or SWP_NOZORDER);
 end;
 
-procedure TQuadWindow.SetOnCreate(OnCreate: TOnCreate);
+procedure TQuadWindow.SetOnCreate(OnCreate: TOnEvent);
 begin
   FOnCreate := OnCreate;
+end;
+
+procedure TQuadWindow.SetOnClose(OnClose: TOnEvent);
+begin
+  FOnClose := OnClose;
 end;
 
 procedure TQuadWindow.SetOnKeyDown(OnKeyDown: TOnKeyPress);
