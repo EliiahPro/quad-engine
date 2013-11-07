@@ -282,6 +282,9 @@ begin
   GetClientRect(Self.FHandle, Client);
   GetWindowRect(Self.FHandle, Window);
 
+  Diff.X := 0;
+  Diff.Y := 0;
+
   if (AHeight >= GetSystemMetrics(SM_CYSCREEN)) and
      (AWidth >= GetSystemMetrics(SM_CXSCREEN)) then
     SetWindowLong(FHandle, GWL_STYLE, GetWindowLong(FHandle, GWL_STYLE) and not WS_BORDER and not WS_SIZEBOX and not WS_DLGFRAME)
