@@ -59,6 +59,8 @@ type
     FWidth: Integer;
     FRenderMode: TD3DPrimitiveType;
     FShaderModel: TQuadShaderModel;
+    FOldScreenWidth: Integer;
+    FOldScreenHeight: Integer;
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
@@ -302,6 +304,8 @@ begin
   FHeight := 0;
   FHandle := 0;
   FCount := 0;
+  FOldScreenWidth := -1;
+  FOldScreenHeight := -1;
   FIsRenderIntoTexture := False;
 
   FRenderMode := D3DPT_TRIANGLELIST;
@@ -1013,6 +1017,9 @@ begin
 
   if AIsRenderToTexture then
   begin
+    FOldScreenWidth := FWidth;
+    FOldScreenHeight := FHeight;
+
     if AIsCropScreen then
       ChangeResolution(AQuadTexture.GetTextureWidth, AQuadTexture.GetTextureHeight);
 
@@ -1022,7 +1029,10 @@ begin
   else
   begin
     Device.LastResultCode := FBackBuffer.GetDesc(ADesc);
-    ChangeResolution(ADesc.Width, ADesc.Height);
+
+    if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
+      ChangeResolution(FOldScreenWidth, FOldScreenHeight);
+
     Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
 
     for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
