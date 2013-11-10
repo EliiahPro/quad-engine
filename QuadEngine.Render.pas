@@ -907,6 +907,9 @@ begin
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iTrue);
+
+  FD3DDevice.GetRenderTarget(0, FBackBuffer);
+  Device.ReInitializeRenderTargets;
 end;
 
 //=============================================================================
@@ -920,7 +923,7 @@ begin
   RenderMode := D3DPT_TRIANGLELIST;
 
   for i := 0 to MaxTextureStages - 1 do
-  SetTexture(i, nil);
+    SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
   ver[0] := PointA;
@@ -975,7 +978,7 @@ begin
   RenderMode := D3DPT_TRIANGLELIST;
 
   for i := 0 to MaxTextureStages - 1 do
-  SetTexture(i, nil);
+    SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
   ver[0] := PointA;
@@ -996,6 +999,8 @@ end;
 //=============================================================================
 procedure TQuadRender.ReleaseVolatileResources;
 begin
+  RenderToTexture(False);
+  Device.FreeRenderTargets;
   FBackBuffer := nil;
 end;
 
@@ -1068,9 +1073,8 @@ begin
 
     until Succeeded(R);
 
-    FIsDeviceLost := False;
-
     InitializeVolatileResources;
+    FIsDeviceLost := False;
   end;
 end;
 
@@ -1335,8 +1339,6 @@ begin
 
   // set length of possible texture stages
   SetLength(FActiveTexture, MaxTextureStages);
-
-  FD3DDevice.GetRenderTarget(0, FBackBuffer);
 
   // ps2_0
   case FShaderModel of

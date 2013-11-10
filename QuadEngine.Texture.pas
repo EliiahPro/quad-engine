@@ -18,16 +18,10 @@ uses
   TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs, Vec2f;
 
 type
-  TQuadTextureItem = record
-    Texture: IDirect3DTexture9;
-    Reg: Byte;
-  end;
-
   TQuadTexture =  class(TInterfacedObject, IQuadTexture)
   private
     FQuadRender: TQuadRender;
-    FTextures: array of TQuadTextureItem;
-    FTexturesCount: Byte;
+    FTextures: array of IDirect3DTexture9;
     FWidth: Integer;
     FHeight: Integer;
     FFrameWidth: Integer;
@@ -79,7 +73,6 @@ type
     property PatternWidth: Integer read FPatternWidth;
     property PatternHeight: Integer read FPatternHeight;
     property PatternsCount: Integer read GetPatternCount;
-    property TexturesCount: Byte read FTexturesCount;
     property IsLoaded: Boolean read FIsLoaded;
   end;
 
@@ -98,10 +91,7 @@ procedure TQuadTexture.AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9);
 begin
   FSync.Enter;
 
-  Inc(FTexturesCount);
-  SetLength(FTextures, FTexturesCount);
-  FTextures[FTexturesCount - 1].Reg := ARegister;
-  FTextures[FTexturesCount - 1].Texture := ATexture;
+  FTextures[ARegister] := ATexture;
 
   FSync.Leave;
 end;
@@ -112,12 +102,12 @@ end;
 constructor TQuadTexture.Create(QuadRender: TQuadRender);
 begin
   FQuadRender := QuadRender;
-  FTexturesCount := 0;
   FIsLoaded := False;
   FPatternWidth := 0;
   FPatternHeight := 0;
   FPatternSize := TVec2f.Zero;
   FSync := TCriticalSection.Create;
+  SetLength(FTextures, FQuadRender.MaxTextureStages);
 end;
 
 //=============================================================================
@@ -141,8 +131,8 @@ var
 begin
   FSync.Free;
 
-  for i := 0 to FTexturesCount - 1 do
-    FTextures[i].Texture := nil;
+  for i := 0 to High(FTextures) do
+    FTextures[i] := nil;
 
   inherited;
 end;
@@ -285,7 +275,7 @@ end;
 //=============================================================================
 function TQuadTexture.GetTexture(i: Byte): IDirect3DTexture9;
 begin
-  Result := FTextures[i].Texture;
+  Result := FTextures[i];
 end;
 
 //=============================================================================
@@ -695,11 +685,8 @@ procedure TQuadTexture.SetTextureStages;
 var
   i: Integer;
 begin
-  for i := 0 to FTexturesCount - 1 do
-    FQuadRender.SetTexture(FTextures[i].Reg, FTextures[i].Texture);
-
-  for i := FTexturesCount to FQuadRender.MaxTextureStages - 1 do
-    FQuadRender.SetTexture(i, nil);
+  for i := 0 to FQuadRender.MaxTextureStages - 1 do
+    FQuadRender.SetTexture(i, FTextures[i]);
 end;
 
 end.

@@ -15,12 +15,20 @@ interface
 
 uses
   Winapi.Windows, Winapi.Direct3D9, QuadEngine.Utils, QuadEngine.Log, Vec2f,
-  QuadEngine.Render, System.IniFiles, QuadEngine;
+  QuadEngine.Render, System.IniFiles, QuadEngine, Classes;
 
 const
   QuadVersion: PWideChar = 'Quad Engine v0.6.0 (Quartz)';
 
 type
+  PRenderTarget = ^TRenderTarget;
+  TRenderTarget = record
+    Texture: IQuadTexture;
+    Reg: Byte;
+    Width: Word;
+    Height: Word;
+  end;
+
   TQuadDevice = class(TInterfacedObject, IQuadDevice)
   private
     FActiveMonitorIndex: Byte;
@@ -31,12 +39,15 @@ type
     FLastErrorText: PWideChar;
     FOnErrorFunction: TOnErrorFunction;
     FMaxTimerID: Cardinal;
+    FRenderTargets: TList;
     procedure SetLastResultCode(const Value: HResult);
     procedure GetErrorTextByCode(AErrorCode: HResult);
     procedure SetOnErrorFunction(const Value: TOnErrorFunction);
   public
     constructor Create;
     destructor Destroy; override;
+    procedure FreeRenderTargets;
+    procedure ReInitializeRenderTargets;
 
     function CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar; out pQuadFont: IQuadFont): HResult; stdcall;
     function CreateAndLoadTexture(ARegister: Byte; AFilename: PWideChar; out pQuadTexture: IQuadTexture;
@@ -127,12 +138,31 @@ begin
   FRender := TQuadRender.Create;
 
   FMaxTimerID := 0;
+
+  FRenderTargets := TList.Create;
 end;
 
 destructor TQuadDevice.Destroy;
 begin
+  FRenderTargets.Free;
   Log.Free;
   FD3D := nil;
+end;
+
+procedure TQuadDevice.FreeRenderTargets;
+var
+  RenderTarget: PRenderTarget;
+begin
+  for RenderTarget in FRenderTargets do
+    RenderTarget.Texture.AddTexture(RenderTarget.Reg, nil);
+end;
+
+procedure TQuadDevice.ReInitializeRenderTargets;
+var
+  RenderTarget: PRenderTarget;
+begin
+  for RenderTarget in FRenderTargets do
+    CreateRenderTarget(RenderTarget.Width, RenderTarget.Height, RenderTarget.Texture, RenderTarget.Reg);
 end;
 
 function TQuadDevice.GetMonitorsCount: Byte;
@@ -362,9 +392,19 @@ procedure TQuadDevice.CreateRenderTarget(AWidth, AHeight: Word;
   var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
 var
   Target: IDirect3DTexture9;
+  RenderTarget : PRenderTarget;
 begin
   if AQuadTexture = nil then
+  begin
     Device.CreateTexture(AQuadTexture);
+
+    New(RenderTarget);
+    RenderTarget.Texture := AQuadTexture;
+    RenderTarget.Reg := ARegister;
+    RenderTarget.Width := AWidth;
+    RenderTarget.Height := AHeight;
+    FRenderTargets.Add(RenderTarget);
+  end;
 
   Device.LastResultCode := FRender.D3DDevice.CreateTexture(AWidth, AHeight, 1,
                                              D3DUSAGE_RENDERTARGET or D3DUSAGE_AUTOGENMIPMAP,  // with mipmaps
