@@ -579,12 +579,16 @@ var
   line: TVec2f;
   perpendicular: TVec2f;
   ver : array [0..5] of TVertex;
+  i: Integer;
 begin
   line := pointB - pointA;
 
   perpendicular := line.Normal.Normalize;
 
   RenderMode := D3DPT_TRIANGLELIST;
+
+  for i := 0 to MaxTextureStages - 1 do
+    SetTexture(i, nil);
 
   ver[1] := pointA + perpendicular * (width1 / 2);
   ver[0] := pointA - perpendicular * (width1 / 2);
