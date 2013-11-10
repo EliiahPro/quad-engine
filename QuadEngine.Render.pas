@@ -278,8 +278,8 @@ begin
   FWidth := aWidth;
   FHeight := aHeight;
 
-  FD3DPP.BackBufferWidth := FWidth;
-  FD3DPP.BackBufferHeight := FHeight;
+//  FD3DPP.BackBufferWidth := FWidth;
+//  FD3DPP.BackBufferHeight := FHeight;
 
 //  ResetDevice;
 
@@ -1480,15 +1480,15 @@ begin
 
   Bitmap := TBitmap.Create;
   Bitmap.PixelFormat := pf24bit;
-  Bitmap.Width := FWidth;
-  Bitmap.Height := FHeight;
+  Bitmap.Width := FD3DPP.BackBufferWidth;
+  Bitmap.Height := FD3DPP.BackBufferHeight;
 
-  for i := 0 to FHeight - 1 do
+  for i := 0 to FD3DPP.BackBufferHeight - 1 do
   begin
     pbit := Bitmap.ScanLine[i];
     psur := Pointer(Cardinal(LockedRect.pBits) + Cardinal(i + Point.Y) * FD3DDM.Width * 4);
 
-    for j := 0 to FWidth - 1 do
+    for j := 0 to FD3DPP.BackBufferWidth - 1 do
     begin
       pbit[j * 3] := psur[(j + Point.X) * 4 + 0];
       pbit[j * 3 + 1] := psur[(j + Point.X) * 4 + 1];
