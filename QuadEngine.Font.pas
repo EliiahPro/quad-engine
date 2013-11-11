@@ -63,6 +63,7 @@ type
     FQuadRender: TQuadRender;
     FTexture: TQuadTexture;
     FWidth: Word;
+    FFontHeight: Integer;
 
     //v2.0
     FIsDistanceField: Boolean;
@@ -181,6 +182,7 @@ var
   TempUV: TLetterUV;
   c: array[0..3] of Char;
   Size: Cardinal;
+  i: Integer;
 begin
   if GetIsLoaded then
     FTexture.Free;
@@ -213,6 +215,11 @@ begin
     BlockRead(f, Size, 4);
     SetLength(FKerningPairs, Size div SizeOf(tagKERNINGPAIR));
     BlockRead(f, FKerningPairs[0], Size);
+
+    FFontHeight := 0;
+    for i := 0 to 65535 do
+      if FQuadChars[i].IncY > FFontHeight then
+        FFontHeight := FQuadChars[i].IncY;
   end
   else
   begin  // v1.0
@@ -233,7 +240,7 @@ begin
       FLetters[TempUV.id] := TempUV;
     until FilePos(f) >= FileSize(f);
   end;
-  
+
   CloseFile(f);
 end;
 
@@ -381,17 +388,24 @@ function TQuadFont.TextHeight(AText: PWideChar; AScale: Single = 1.0): Single;
 var
   i: Integer;
 begin
-  Result := (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight * AScale;
-  if AText[0] = #0 then
-    Exit;
+  if FIsDistanceField then
+  begin
+    Result := FFontHeight * AScale + FKerning;
+  end
+  else
+  begin
+    Result := (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight * AScale;
+    if AText[0] = #0 then
+      Exit;
 
-  i := 0;
-  repeat
-    if AText[i] = #13 then
-      Result := Result + (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight * AScale;
+    i := 0;
+    repeat
+      if AText[i] = #13 then
+        Result := Result + (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight * AScale;
 
-    Inc(i);
-  until AText[i] = #0;
+      Inc(i);
+    until AText[i] = #0;
+  end;
 end;
 
 //=============================================================================
