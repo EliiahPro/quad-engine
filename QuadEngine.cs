@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.6.0 header file for Visual C#
+  Quad engine 0.6.0 Umber header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -22,25 +22,39 @@ using System.Runtime.InteropServices;
 namespace QuadEngine
 {
     // Blending mode types
-
+    ///<summary>Blending mode types.</summary>     
     public enum TQuadBlendMode{qbmInvalid        = 0,
-                               qbmNone           = 1,     /* Without blending */
-                               qbmAdd            = 2,     /* Add source to dest */
-                               qbmSrcAlpha       = 3,     /* Blend dest with alpha to source */
-                               qbmSrcAlphaAdd    = 4,     /* Add source with alpha to dest */
-                               qbmSrcAlphaMul    = 5,     /* Multiply source alpha with dest */
-                               qbmMul            = 6,     /* Multiply Source with dest */
-                               qbmSrcColor       = 7,     /* Blend source with color weight to dest */
-                               qbmSrcColorAdd    = 8,     /* Blend source with color weight and alpha to dest */
-                               qbmInvertSrcColor = 9};    /* Blend inverted source color */
+                               ///<summary>Without blending</summary>
+                               qbmNone = 1,
+                               ///<summary>Add source to destination</summary>
+                               qbmAdd = 2,
+                               ///<summary>Blend destination with alpha to source</summary>
+                               qbmSrcAlpha = 3,
+                               ///<summary>Add source with alpha to destination</summary>
+                               qbmSrcAlphaAdd = 4,
+                               ///<summary>Multiply source alpha with destination</summary>
+                               qbmSrcAlphaMul = 5,
+                               ///<summary>Multiply Source with destination</summary>
+                               qbmMul = 6,
+                               ///<summary>Blend source with color weight to destination</summary>
+                               qbmSrcColor = 7,
+                               ///<summary>Blend source with color weight and alpha to destination</summary>
+                               qbmSrcColorAdd = 8,
+                               ///<summary>Blend inverted source color</summary>
+                               qbmInvertSrcColor = 9};
 
-    // Texture adressing mode
+    ///<summary>Texture adressing mode</summary>
     public enum TQuadTextureAdressing{qtaInvalid    = 0,
-                                      qtaWrap       = 1,    /* Repeat UV */
-                                      qtaMirror     = 2,    /* Repeat UV with mirroring */
-                                      qtaClamp      = 3,    /* Do not repeat UV */
-                                      qtaBorder     = 4,    /* Fill outranged UV with border */
-                                      qtaMirrorOnce = 5};   /* Mirror UV once */
+                                      ///<summary>Repeat UV</summary>
+                                      qtaWrap       = 1,
+                                      ///<summary>Repeat UV with mirroring</summary>
+                                      qtaMirror     = 2,
+                                      ///<summary>Do not repeat UV</summary>
+                                      qtaClamp      = 3,
+                                      ///<summary>Fill outranged UV with border</summary>
+                                      qtaBorder     = 4,    
+                                      ///<summary>Mirror UV once</summary>
+                                      qtaMirrorOnce = 5};   
 
     // Texture filtering mode
     public enum TQuadTextureFiltering{qtfInvalid         = 0,
@@ -82,19 +96,44 @@ namespace QuadEngine
     [ComImport]
     [Guid("E28626FF-738F-43B0-924C-1AFC7DEC26C7")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    ///<summary>This is main quad-engine interface. Use it methods to create resources, change states and draw primitives.</summary>
     public interface IQuadDevice
     {
         uint CreateAndLoadFont(string AFontTextureFilename, string AUVFilename, out IQuadFont IQuadFont);
         uint CreateAndLoadTexture(byte ARegister, string AFilename, out IQuadTexture IQuadTexture,
                                   int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
         uint CreateCamera(out IQuadCamera IQuadCamera);
+        /// <summary>Return a QuadFont object.</summary>
+        /// <param name="IQuadFont">IQuadFont variable to recieve object.</param>
         uint CreateFont(out IQuadFont IQuadFont);
+        /// <summary>Return a QuadLog object.</summary>
+        /// <param name="IQuadLog">IQuadLog variable to recieve object.</param>
         uint CreateLog(out IQuadLog IQuadLog);
+        /// <summary>Return a QuadShader object.</summary>
+        /// <param name="IQuadShader">IQuadShader variable to recieve object.</param>
         uint CreateShader(out IQuadShader IQuadShader);
+        /// <summary>Return a QuadTexture object.</summary>
+        /// <param name="IQuadTexure">IQuadTexture variable to recieve object.</param>
         uint CreateTexture(out IQuadTexture IQuadTexture);
+        /// <summary>Return a QuadTimer object.</summary>
+        /// <param name="IQuadTimer">IQuadTimer variable to recieve object.</param>
         uint CreateTimer(out IQuadTimer IQuadTimer);
-        uint CreateTimerEx(out IQuadTimer IQuadTimer, [MarshalAs(UnmanagedType.FunctionPtr)]IntPtr AProc, ushort AInterval, bool IsEnabled);
-        uint CreateRender(out IQuadRender Device);
+        /// <summary>Return a QuadTimer object with full initialization.</summary>
+        /// <param name="pQuadTimer">IQuadTimer variable to recieve object.</param>
+        /// <param name="AProc">Callback to onTimer procedure. <see cref="TTimerProcedure"/>
+        ///   <code>private void OnTimer(ref double delta, UInt32 Id)</code>
+        /// </param>
+        /// <param name="AInterval">Timer interval in ms.</param>
+        /// <param name="IsEnabled">False if need to create in suspended state.</param>
+        uint CreateTimerEx(out IQuadTimer IQuadTimer, IntPtr AProc, ushort AInterval, bool IsEnabled);
+        /// <summary>Return a QuadRender object.</summary>
+        /// <param name="IQuadDevice">IQuadRender variable to recieve object.</param>
+        uint CreateRender(out IQuadRender IQuadDevice);
+        /// <summary>Creates a rendertarget within specified <see cref="QuadEngine.IQuadTexture"/>.</summary>
+        /// <param name="AWidth">Width of rendertarget.</param>
+        /// <param name="AHeight">Height of rendertarget.</param>
+        /// <param name="IQuadTexture">Pointer to declared <see cref="QuadEngine.IQuadTexture"/>. If it not created this function will create one. Otherwise it will use existing one.</param>
+        /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
         void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister);
         uint CreateWindow(out IQuadWindow IQuadWindow);
         [PreserveSig]
@@ -119,30 +158,23 @@ namespace QuadEngine
     [ComImport]
     [Guid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
     public interface IQuadRender
     {
-        [PreserveSig]
-        UInt32 GetAvailableTextureMemory();
-        [PreserveSig] 
-        UInt32 GetMaxAnisotropy();
-        [PreserveSig] 
-        UInt32 GetMaxTextureHeight();
-        [PreserveSig] 
-        UInt32 GetMaxTextureStages();
-        [PreserveSig]
-        UInt32 GetMaxTextureWidth();
-        [PreserveSig] 
-        string GetPixelShaderVersionString();
-        [PreserveSig] 
-        Byte GetPSVersionMajor();
-        [PreserveSig] 
-        Byte GetPSVersionMinor();
-        [PreserveSig] 
-        string GetVertexShaderVersionString();
-        [PreserveSig] 
-        Byte GetVSVersionMajor();
-        [PreserveSig] 
-        Byte GetVSVersionMinor();
+        /// <summary>Retrieves the available texture memory.
+        /// This will return all available texture memory including AGP aperture.</summary>
+        /// <returns>Available memory size in bytes</returns>
+        [PreserveSig] UInt32 GetAvailableTextureMemory();
+        [PreserveSig] UInt32 GetMaxAnisotropy();
+        [PreserveSig] UInt32 GetMaxTextureHeight();
+        [PreserveSig] UInt32 GetMaxTextureStages();
+        [PreserveSig] UInt32 GetMaxTextureWidth();
+        [PreserveSig] string GetPixelShaderVersionString();
+        [PreserveSig] Byte GetPSVersionMajor();
+        [PreserveSig] Byte GetPSVersionMinor();
+        [PreserveSig] string GetVertexShaderVersionString();
+        [PreserveSig] Byte GetVSVersionMajor();
+        [PreserveSig] Byte GetVSVersionMinor();
         void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
@@ -232,6 +264,8 @@ namespace QuadEngine
     [ComImport]
     [Guid("7B7F4B1C-7F05-4BC2-8C11-A99696946073")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    /// <summary>This is quad-engine shader interface.
+    /// Use it methods to load shader into GPU, bind variables to shader, execute shader programs.</summary>
     public interface IQuadShader
     {
         void BindVariableToVS(byte ARegister, UIntPtr AVariable, byte ASize);
@@ -278,18 +312,15 @@ namespace QuadEngine
                           qfaJustify = 4};     /* Align by both sides */
 
     // distance field options
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Explicit)]
     public struct TDistanceFieldParams {
-        public float[] Edges;
-        public float[] OuterColor;
-        public float[] Params;
-
-        public TDistanceFieldParams()
-        {
-            Edges = new float[4];
-            OuterColor = new float[4];
-            Params = new float[4];
-        }
+        [FieldOffset(0)] public float Edge1X;
+        [FieldOffset(4)] public float Edge1Y;
+        [FieldOffset(8)] public float Edge2X;
+        [FieldOffset(12)] public float Edge2Y;
+        [FieldOffset(16)] public UInt32 OuterColor;
+        [FieldOffset(20)] public Boolean FirstEdge;
+        [FieldOffset(21)] public Boolean SecondEdge;
     }
 
     [ComImport]
@@ -297,19 +328,38 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadFont
     {
-        [PreserveSig]
-        bool GetIsLoaded();
-        [PreserveSig]
-        float GetKerning();
+        /// <summary>Check is QuadFont's loading of data from file.</summary>
+        /// <returns>True if data is loaded.</returns>
+        /// <remarks>This will be very helpfull for multithread applications.</remarks>
+        [PreserveSig] bool GetIsLoaded();
+        [PreserveSig] float GetKerning();
+        /// <summary>Load font data from file.</summary>
+        /// <param name="ATextureFilename">Filename of texture file.</param>
+        /// <param name="AUVFilename">Filename of additional font data file.</param>
         void LoadFromFile(string ATextureFilename, string AUVFilename);
         void SetSmartColor(string AColorChar, UInt32 AColor);
         void SetDistanceFieldParams(ref TDistanceFieldParams ADistanceFieldParam);
         void SetIsSmartColoring(bool Value);
+        /// <summary>Set kerning for this font.</summary>
+        /// <param name="AValue">Value to be set. 0.0f is default</param>
         void SetKerning(float AValue);
-        [PreserveSig]
-        float TextHeight(string AText, float AScale = 1.0F);
-        [PreserveSig]
-        float TextWidth(string AText, float AScale = 1.0F);
+        /// <summary>Get current font height.</summary>
+        /// <param name="AText">Text to be measured.</param>
+        /// <param name="AScale">Scale of the measured text.</param>
+        /// <returns>Height in texels.</returns>
+        [PreserveSig] float TextHeight(string AText, float AScale = 1.0F);
+        /// <summary>Get current font width.</summary>
+        /// <param name="AText">Text to be measured.</param>
+        /// <param name="AScale">Scale of the measured text.</param>
+        /// <returns>Width in texels.</returns>
+        [PreserveSig] float TextWidth(string AText, float AScale = 1.0F);
+        /// <summary>Draw text.</summary>
+        /// <param name="Position">Position of text to be drawn.</param>
+        /// <param name="AScale">Scale of rendered text. Default is 1.0</param>
+        /// <param name="AText">Text to be drawn. #13 char is allowed.</param>
+        /// <param name="Color">Color of text to be drawn.</param>
+        /// <param name="AAlign">Text alignment.</param>
+        /// <remarks>Note that distancefield fonts will render with Y as baseline of the font instead top pixel in common fonts.</remarks>
         void TextOut(ref Vec2f Position, float AScale, string AText, UInt32 AColor = 0xFFFFFFFF, TqfAlign AAlign = TqfAlign.qfaLeft);
     }
 
@@ -318,6 +368,7 @@ namespace QuadEngine
     [ComImport]
     [Guid("7A4CE319-C7AF-4BF3-9218-C2A744F915E6")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    ///<summary>This interface will help to write any debug information to .log file.</summary>
     public interface IQuadLog
     {
         void Write(string aString);
@@ -325,6 +376,7 @@ namespace QuadEngine
 
     /* Quad Timer */
 
+    /// <summary>OnTimer Callback function prototype</summary>
     public delegate void TimerProcedure(ref double delta, UInt32 Id);
 
     /* Use [MTAThread] insted of [STAThread] 
@@ -342,18 +394,16 @@ namespace QuadEngine
     [ComImport]
     [Guid("EA3BD116-01BF-4E12-B504-07D5E3F3AD35")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    /// <summary>QuadTimer uses it's own thread. Be care of using multiple timers at once.
+    /// If do you must use synchronization methods or critical sections.</summary>
+    ///<remarks>Use [MTAThread] insted of [STAThread]</remarks>
     public interface IQuadTimer
     {
-        [PreserveSig] 
-        float GetCPUload();
-        [PreserveSig]
-        double GetDelta();
-        [PreserveSig]
-        float GetFPS();
-        [PreserveSig]
-        double GetWholeTime();
-        [PreserveSig]
-        UInt32 GetTimerID();
+        [PreserveSig] float GetCPUload();
+        [PreserveSig] double GetDelta();
+        [PreserveSig] float GetFPS();
+        [PreserveSig] double GetWholeTime();
+        [PreserveSig] UInt32 GetTimerID();
         void ResetWholeTimeCounter();
         void SetCallBack(IntPtr AProc);
         void SetInterval(UInt16 AInterval);
@@ -362,8 +412,30 @@ namespace QuadEngine
 
     /* Quad Window */
 
+    public enum TMouseButtons
+    {
+        mbLeft = 0,
+        mbRight = 1,
+        mbMiddle = 2,
+        mbX1 = 3,
+        mbX2 = 4
+    };
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TPressedMouseButtons 
+    {
+        Boolean Left;
+        Boolean Right; 
+        Boolean Middle;
+        Boolean X1;
+        Boolean X2;
+    }
+
     public delegate void TOnKeyPress(ushort Key);
     public delegate void TOnCreate();
+    public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
+    public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
+    public delegate void TOnMouseWheelEvent(Vec2i APosition, Vec2i AVector, TPressedMouseButtons APressedButtons); 
 
     [ComImport]
     [Guid("8EB98692-67B1-4E64-9090-B6A0F47054BA")]
@@ -380,6 +452,11 @@ namespace QuadEngine
         void SetOnKeyDown(TOnKeyPress OnKeyDown); 
         void SetOnKeyUp(TOnKeyPress OnKeyUp); 
         void SetOnCreate(TOnCreate OnCreate); 
+        void SetOnMouseMove(TOnMouseMoveEvent OnMouseMove); 
+        void SetOnMouseDown(TOnMouseEvent OnMouseDown); 
+        void SetOnMouseUp(TOnMouseEvent OnMouseUp); 
+        void SetOnMouseDblClick(TOnMouseEvent OnMouseDblClick); 
+        void SetOnMouseWheel(TOnMouseWheelEvent OnMouseWheel); 
     }
  
     /* Quad Camera */
