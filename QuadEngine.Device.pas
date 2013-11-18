@@ -18,7 +18,7 @@ uses
   QuadEngine.Render, System.IniFiles, QuadEngine, Classes;
 
 const
-  QuadVersion: PWideChar = 'Quad Engine v0.6.0 (Quartz)';
+  QuadVersion: PWideChar = 'Quad Engine v0.6.0 (Umber)';
 
 type
   PRenderTarget = ^TRenderTarget;

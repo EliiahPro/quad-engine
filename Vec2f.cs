@@ -4,6 +4,18 @@ using System.Runtime.InteropServices;
 namespace QuadEngine
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct Vec2i
+    {
+        public int X;
+        public int Y;
+
+        public Vec2i(int X, int Y)
+        {
+            this.X = X;
+            this.Y = Y;
+        }
+    }
+
     public struct Vec2f
     {
         public float X;
@@ -90,22 +102,22 @@ namespace QuadEngine
             float d;
             d = this.Distance(new Vec2f(0, 0));
             
-            if (d < 0)
+            if (d > 0)
             {
                 return this / d;
             } 
             else 
             {
-                return Vec2f(0, 0);
+                return new Vec2f(0, 0);
             }
         }
         
         public float Dot(Vec2f A)
         {
-            return := new Vec2f(A.X * this.X + A.Y * this.Y);
+            return (A.X * this.X + A.Y * this.Y);
         }
         
-        public Vec2f Lerp(Vec2f A; float dist)
+        public Vec2f Lerp(Vec2f A, float dist)
         {
             return (A - this) * dist + this;
         }    
