@@ -145,7 +145,6 @@ end;
 destructor TQuadDevice.Destroy;
 begin
   FRenderTargets.Free;
-  Log.Free;
   FD3D := nil;
 end;
 
@@ -290,6 +289,7 @@ begin
     FLog := TQuadLog.Create;
 
   pQuadLog := FLog;
+  pQuadLog._AddRef;
 
   if Assigned(pQuadLog) then
     Result := S_OK
