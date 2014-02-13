@@ -394,16 +394,31 @@ type
                    mbMiddle = 2,
                    mbX1 = 3,
                    mbX2 = 4);
+
   TPressedMouseButtons = packed record
     case Integer of
       0: (Left, Right, Middle, X1, X2: Boolean);
-      2: (a: array[TMouseButtons] of Boolean);
+      1: (a: array[TMouseButtons] of Boolean);
   end;
 
-  TOnKeyPress = procedure(Key: Word); stdcall;
-  TOnMouseMoveEvent = procedure(APosition: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
-  TOnMouseEvent = procedure(APosition: TVec2i; AButtons: TMouseButtons; APressedButtons: TPressedMouseButtons); stdcall;
-  TOnMouseWheelEvent = procedure(APosition: TVec2i; AVector: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
+  TKeyButtons = (kbLShift = 0,
+                 kbRShift = 1,
+                 kbLCtrl = 2,
+                 kbRCtrl = 3,
+                 kbLAlt = 4,
+                 kbRAlt = 5);
+
+  TPressedKeyButtons = packed record
+    case Integer of
+      0: (LShift, RShift, LCtrl, RCtrl, LAlt, RAlt: Boolean);
+      1: (a: array[TKeyButtons] of Boolean);
+  end;
+
+  TOnKeyPress = procedure(const AKey: Word; const APressedButtons: TPressedKeyButtons); stdcall;
+  TOnKeyChar = procedure(const ACharCode: LongInt; const APressedButtons: TPressedKeyButtons); stdcall;
+  TOnMouseMoveEvent = procedure(const APosition: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseEvent = procedure(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseWheelEvent = procedure(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
   TOnEvent = procedure; stdcall;
 
   {Quad Window}
