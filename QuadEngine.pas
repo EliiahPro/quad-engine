@@ -401,16 +401,20 @@ type
       1: (a: array[TMouseButtons] of Boolean);
   end;
 
-  TKeyButtons = (kbLShift = 0,
-                 kbRShift = 1,
-                 kbLCtrl = 2,
-                 kbRCtrl = 3,
-                 kbLAlt = 4,
-                 kbRAlt = 5);
+  TKeyButtons = (kbNone = 0,
+                 kbShift = 1,
+                 kbLShift = 2,
+                 kbRShift = 3,
+                 kbCtrl = 4,
+                 kbLCtrl = 5,
+                 kbRCtrl = 6,
+                 kbAlt = 7,
+                 kbLAlt = 8,
+                 kbRAlt = 9);
 
   TPressedKeyButtons = packed record
     case Integer of
-      0: (LShift, RShift, LCtrl, RCtrl, LAlt, RAlt: Boolean);
+      0: (None, Shift, LShift, RShift, Ctrl, LCtrl, RCtrl, Alt, LAlt, RAlt: Boolean);
       1: (a: array[TKeyButtons] of Boolean);
   end;
 
@@ -433,6 +437,7 @@ type
 
     procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
     procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
+    procedure SetOnKeyChar(OnKeyChar: TOnKeyChar); stdcall;
     procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
     procedure SetOnClose(OnClose: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;

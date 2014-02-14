@@ -49,6 +49,7 @@ type
 
     procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
     procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
+    procedure SetOnKeyChar(OnKeyChar: TOnKeyChar); stdcall;
     procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
     procedure SetOnClose(OnClose: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
@@ -164,10 +165,17 @@ procedure TQuadWindow.OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
     GetKeyboardState(State);
     Result.LShift := ((State[VK_LSHIFT] and 128) <> 0);
     Result.RShift := ((State[VK_RSHIFT] and 128) <> 0);
+    Result.Shift := Result.LShift or Result.RShift;
+
     Result.LCtrl := ((State[VK_LCONTROL] and 128) <> 0);
     Result.RCtrl := ((State[VK_RCONTROL] and 128) <> 0);
+    Result.Ctrl := Result.LCtrl or Result.RCtrl;
+
     Result.LAlt := ((State[VK_LMENU] and 128) <> 0);
     Result.RAlt := ((State[VK_RMENU] and 128) <> 0);
+    Result.Alt := Result.LAlt or Result.RAlt;
+
+    Result.None := not (Result.Shift or Result.Ctrl or Result.Alt);
   end;
 
 begin
@@ -337,6 +345,11 @@ end;
 procedure TQuadWindow.SetOnClose(OnClose: TOnEvent);
 begin
   FOnClose := OnClose;
+end;
+
+procedure TQuadWindow.SetOnKeyChar(OnKeyChar: TOnKeyChar);
+begin
+  FOnKeyChar := OnKeyChar;
 end;
 
 procedure TQuadWindow.SetOnKeyDown(OnKeyDown: TOnKeyPress);
