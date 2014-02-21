@@ -390,7 +390,7 @@ var
 begin
   if FIsDistanceField then
   begin
-    Result := FFontHeight * AScale + FKerning;
+    Result := FFontHeight / FQuadFontHeader.ScaleFactor * AScale + FKerning;
   end
   else
   begin

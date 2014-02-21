@@ -167,7 +167,7 @@ procedure TQuadWindow.OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM)
     Result.Left := AParam and MK_LBUTTON = MK_LBUTTON;
     Result.Right := AParam and MK_RBUTTON = MK_RBUTTON;
     Result.Middle := AParam and MK_MBUTTON = MK_MBUTTON;
-    Result.X1 := AParam and $0020 = $0040;
+    Result.X1 := AParam and $0020 = $0020;
     Result.X2 := AParam and $0040 = $0040;
   end;
 
