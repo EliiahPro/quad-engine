@@ -25,6 +25,7 @@ type
     FWndClass: TWndClassEx;
     FHandle: THandle;
     FOnKeyDown: TOnKeyPress;
+    FOnKeyChar: TOnKeyChar;
     FOnKeyUp: TOnKeyPress;
     FOnCreate: TOnEvent;
     FOnClose: TOnEvent;
@@ -35,6 +36,7 @@ type
     FOnMouseWheel: TOnMouseWheelEvent;
 
     procedure OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
+    procedure OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
   protected
     function WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
   public
@@ -47,6 +49,7 @@ type
 
     procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
     procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
+    procedure SetOnKeyChar(OnKeyChar: TOnKeyChar); stdcall;
     procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
     procedure SetOnClose(OnClose: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
@@ -81,23 +84,15 @@ begin
       PostQuitMessage(0);
       Result := 0;
     end;
-  WM_KEYDOWN:
+
+  { KEYBOARD }
+  WM_KEYDOWN, WM_KEYUP, WM_CHAR:
     begin
-      if Assigned(FOnKeyDown) {and (lparam and $FE = 0)} then
-      begin
-        FOnKeyDown(wparam);
-        Result := 0;
-      end;
-    end;
-  WM_KEYUP:
-    begin
-      if Assigned(FOnKeyUp) {and (lparam and $FE = 1)} then
-      begin
-        FOnKeyUp(wparam);
-        Result := 0;
-      end;
+      OnKeyEvent(msg, wparam, lparam);
+      Result := 0;
     end;
 
+  { MOUSE }
   WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN,
   WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, WM_XBUTTONUP,
   WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, WM_XBUTTONDBLCLK,
@@ -106,6 +101,7 @@ begin
       OnMouseEvent(msg, wparam, lparam);
       Result := 0;
     end;
+
   WM_SIZE:
     begin
       if wparam = SIZE_MINIMIZED then
@@ -118,7 +114,7 @@ begin
         if Device.Render.IsInitialized then
           Device.Render.ResetDevice;
 
-     Result := 0;
+      Result := 0;
     end;
   else
     Result := DefWindowProc(wnd, msg, wparam, lparam);
@@ -158,6 +154,44 @@ end;
 function TQuadWindow.GetHandle: THandle;
 begin
   Result := FHandle;
+end;
+
+procedure TQuadWindow.OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
+
+  function GetPressedKeyButtons: TPressedKeyButtons;
+  var
+    State: TKeyboardState;
+  begin
+    GetKeyboardState(State);
+    Result.LShift := ((State[VK_LSHIFT] and 128) <> 0);
+    Result.RShift := ((State[VK_RSHIFT] and 128) <> 0);
+    Result.Shift := Result.LShift or Result.RShift;
+
+    Result.LCtrl := ((State[VK_LCONTROL] and 128) <> 0);
+    Result.RCtrl := ((State[VK_RCONTROL] and 128) <> 0);
+    Result.Ctrl := Result.LCtrl or Result.RCtrl;
+
+    Result.LAlt := ((State[VK_LMENU] and 128) <> 0);
+    Result.RAlt := ((State[VK_RMENU] and 128) <> 0);
+    Result.Alt := Result.LAlt or Result.RAlt;
+
+    Result.None := not (Result.Shift or Result.Ctrl or Result.Alt);
+  end;
+
+begin
+  case msg of
+  WM_KEYDOWN:
+    if Assigned(FOnKeyDown) {and (lparam and $FE = 0)} then
+      FOnKeyDown(wparam, GetPressedKeyButtons);
+
+  WM_KEYUP:
+    if Assigned(FOnKeyUp) {and (lparam and $FE = 1)} then
+      FOnKeyUp(wparam, GetPressedKeyButtons);
+
+  WM_CHAR:
+    if Assigned(FOnKeyChar) then
+      FOnKeyChar(wparam, GetPressedKeyButtons);
+  end;
 end;
 
 procedure TQuadWindow.OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
@@ -311,6 +345,11 @@ end;
 procedure TQuadWindow.SetOnClose(OnClose: TOnEvent);
 begin
   FOnClose := OnClose;
+end;
+
+procedure TQuadWindow.SetOnKeyChar(OnKeyChar: TOnKeyChar);
+begin
+  FOnKeyChar := OnKeyChar;
 end;
 
 procedure TQuadWindow.SetOnKeyDown(OnKeyDown: TOnKeyPress);
