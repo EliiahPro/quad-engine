@@ -431,7 +431,37 @@ namespace QuadEngine
         Boolean X2;
     }
 
-    public delegate void TOnKeyPress(ushort Key);
+    public enum TKeyButtons
+    {
+        kbNone = 0,
+        kbShift = 1,
+        kbLShift = 2,
+        kbRShift = 3,
+        kbCtrl = 4,
+        kbLCtrl = 5,
+        kbRCtrl = 6,
+        kbAlt = 7,
+        kbLAlt = 8,
+        kbRAlt = 9        
+    };
+    
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TPressedKeyButtons
+    {
+        Boolean None;
+        Boolean Shift;
+        Boolean LShift;
+        Boolean RShift;
+        Boolean Ctrl;
+        Boolean LCtrl;
+        Boolean RCtrl;
+        Boolean Alt;
+        Boolean LAlt;
+        Boolean RAlt;
+    }
+
+    public delegate void TOnKeyPress(ushort Key, TPressedKeyButtons APressedButtons);
+    public delegate void TOnKeyChar(int ACharCode, TPressedKeyButtons APressedButtons)
     public delegate void TOnCreate();
     public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
     public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
@@ -451,6 +481,7 @@ namespace QuadEngine
 
         void SetOnKeyDown(TOnKeyPress OnKeyDown); 
         void SetOnKeyUp(TOnKeyPress OnKeyUp); 
+        void SetOnKeyChar(TOnKeyChar OnKeyChar); 
         void SetOnCreate(TOnCreate OnCreate); 
         void SetOnMouseMove(TOnMouseMoveEvent OnMouseMove); 
         void SetOnMouseDown(TOnMouseEvent OnMouseDown); 
