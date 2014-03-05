@@ -461,7 +461,7 @@ namespace QuadEngine
     }
 
     public delegate void TOnKeyPress(ushort Key, TPressedKeyButtons APressedButtons);
-    public delegate void TOnKeyChar(int ACharCode, TPressedKeyButtons APressedButtons)
+    public delegate void TOnKeyChar(int ACharCode, TPressedKeyButtons APressedButtons);
     public delegate void TOnCreate();
     public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
     public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
