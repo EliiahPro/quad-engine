@@ -66,7 +66,7 @@ begin
   FViewMatrix._23 := 0;
   FViewMatrix._24 := 0;
 
-  FViewMatrix._31 := 0  ;
+  FViewMatrix._31 := 0;
   FViewMatrix._32 := 0;
   FViewMatrix._33 := 1;
   FViewMatrix._34 := 0;
@@ -133,8 +133,8 @@ end;
 
 procedure TQuadCamera.Translate(AXDistance, AYDistance: Single);
 begin
-  FXTranslation := FXTranslation + AXDistance;
-  FYTranslation := FYTranslation + AYDistance;
+  FXTranslation := FXTranslation + AXDistance * 2;
+  FYTranslation := FYTranslation + AYDistance * 2;
 end;
 
 procedure TQuadCamera.Zoom(AScale: Single);
