@@ -504,6 +504,7 @@ namespace QuadEngine
         void Translate(float AXDistance, float AYDistance);
         void Reset();
         void ApplyTransform();
+        void Disable();
     }
 
     public static class QuadEngine

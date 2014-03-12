@@ -38,6 +38,7 @@ type
     procedure Translate(AXDistance, AYDistance: Single); stdcall;
     procedure Reset; stdcall;
     procedure ApplyTransform; stdcall;
+    procedure Disable; stdcall;
   end;
 
 implementation
@@ -51,6 +52,8 @@ procedure TQuadCamera.ApplyTransform;
 var
   SinA, CosA: Single;
 begin
+  Device.Render.FlushBuffer;
+
   SinCos(DegToRad(FAngle), SinA, CosA);
 
   FViewMatrix._11 := 2 / FRender.Width * CosA * FScale;
@@ -69,7 +72,7 @@ begin
   FViewMatrix._34 := 0;
 
   FViewMatrix._41 := -1 - FXTranslation / FRender.Width;
-  FViewMatrix._42 := 1 - FYTranslation / FRender.Height;
+  FViewMatrix._42 := 1 + FYTranslation / FRender.Height;
   FViewMatrix._43 := 0;
   FViewMatrix._44 := 1;
 
@@ -85,6 +88,8 @@ end;
 
 procedure TQuadCamera.Reset;
 begin
+  Device.Render.FlushBuffer;
+
   FViewMatrix._11 := 2 / FRender.Width;
   FViewMatrix._12 := 0;
   FViewMatrix._13 := 0;
@@ -135,6 +140,11 @@ end;
 procedure TQuadCamera.Zoom(AScale: Single);
 begin
   FScale := AScale;
+end;
+
+procedure TQuadCamera.Disable;
+begin
+  Device.Render.ChangeResolution(Device.Render.Width, Device.Render.Height);
 end;
 
 end.

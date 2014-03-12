@@ -458,6 +458,7 @@ type
     procedure Translate(AXDistance, AYDistance: Single); stdcall;
     procedure Reset; stdcall;
     procedure ApplyTransform; stdcall;
+    procedure Disable; stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

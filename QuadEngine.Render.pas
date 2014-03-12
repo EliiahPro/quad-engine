@@ -275,6 +275,7 @@ end;
 //=============================================================================
 procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word);
 begin
+  FlushBuffer;
   FWidth := aWidth;
   FHeight := aHeight;
 
