@@ -451,14 +451,15 @@ type
 
   IQuadCamera = interface(IUnknown)
   ['{BBC0BBF2-7602-489A-BE2A-37D681B7A242}']
-    procedure Shift(AXShift, AYShift: Single); stdcall;
-    procedure Shear(AXShear, AYShear: Single); stdcall;
-    procedure Zoom(AScale: Single); stdcall;
+    procedure Scale(AScale: Single); stdcall;
     procedure Rotate(AAngle: Single); stdcall;
-    procedure Translate(AXDistance, AYDistance: Single); stdcall;
+    procedure Translate(const ADistance: TVec2f); stdcall;
     procedure Reset; stdcall;
-    procedure ApplyTransform; stdcall;
+    procedure Enable; stdcall;
     procedure Disable; stdcall;
+    function GetPosition: TVec2f; stdcall;
+    function GetAngle: Single; stdcall;
+    function GetScale: Single; stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

@@ -475,7 +475,7 @@ namespace QuadEngine
         void Start(); 
         void SetCaption(string ACaption);
         void SetSize(int AWidth, int AHeight); 
-        void SetPosition(int AXpos, int AYPos); 
+        void SetPosition(int AXpos, int AYPos);
         [PreserveSig]
         UIntPtr GetHandle();
 
@@ -497,14 +497,18 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadCamera
     {
-        void Shift(float AXShift, float AYShift);
-        void Shear(float AXShear, float AYShear);
-        void Zoom(float AScale);
+        void Scale(float AScale);
         void Rotate(float AAngle);
-        void Translate(float AXDistance, float AYDistance);
+        void Translate(ref Vec2f ADistance);
         void Reset();
-        void ApplyTransform();
+        void Enable();
         void Disable();
+        [PreserveSig]
+        Vec2f GetPosition();
+        [PreserveSig]
+        Vec2f GetAngle();
+        [PreserveSig]
+        Vec2f GetScale();
     }
 
     public static class QuadEngine
