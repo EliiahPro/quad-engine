@@ -258,6 +258,8 @@ end;
 procedure TQuadFont.SetDistanceFieldParams(
   const ADistanceFieldParams: TDistanceFieldParams);
 begin
+  Device.Render.FlushBuffer;
+
   FDistanceFieldParams.SetColor(ADistanceFieldParams.OuterColor);
   FDistanceFieldParams.Edges[0] := ADistanceFieldParams.Edge1X;
   FDistanceFieldParams.Edges[1] := ADistanceFieldParams.Edge1Y;
