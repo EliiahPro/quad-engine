@@ -84,8 +84,8 @@ begin
   Translate._33 := 1;
   Translate._34 := 0;
 
-  Translate._41 := -( FRender.Width / 2 );
-  Translate._42 := -( FRender.Height / 2 );
+  Translate._41 := -(FRender.Width / 2);
+  Translate._42 := -(FRender.Height / 2);
   Translate._43 := 0;
   Translate._44 := 1;
 
@@ -127,8 +127,8 @@ begin
   Translate._33 := 1;
   Translate._34 := 0;
 
-  Translate._41 :=  - FXTranslation / FRender.Width * FSCale;
-  Translate._42 :=  + FYTranslation / FRender.Height * FSCale;
+  Translate._41 := -(FXTranslation * 2) / FRender.Width * FSCale;
+  Translate._42 := (FYTranslation * 2) / FRender.Height * FSCale;
   Translate._43 := 0;
   Translate._44 := 1;
 
@@ -183,8 +183,8 @@ end;
 
 procedure TQuadCamera.Translate(const ADistance: TVec2f);
 begin
-  FXTranslation := FXTranslation + ADistance.X * 2;
-  FYTranslation := FYTranslation + ADistance.Y * 2;
+  FXTranslation := FXTranslation + ADistance.X;
+  FYTranslation := FYTranslation + ADistance.Y;
 end;
 
 procedure TQuadCamera.Scale(AScale: Single);
