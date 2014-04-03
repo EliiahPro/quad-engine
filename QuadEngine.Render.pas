@@ -56,6 +56,7 @@ type
     FTextureAdressing: TQuadTextureAdressing;
     FTextureFiltering: TQuadTextureFiltering;
     FViewMatrix: TD3DMatrix;
+    FViewport: TRect;
     FWidth: Integer;
     FRenderMode: TD3DPrimitiveType;
     FShaderModel: TQuadShaderModel;
@@ -70,6 +71,7 @@ type
     procedure ReleaseVolatileResources;
   public
     constructor Create;
+    function GetClipRect: TRect; stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
@@ -215,6 +217,11 @@ begin
   normalize(t);
   normalize(b);
   normalize(n);
+end;
+
+function TQuadRender.GetClipRect: TRect;
+begin
+  Result := FViewport;
 end;
 
 //=============================================================================
@@ -1183,15 +1190,13 @@ end;
 // Set clip rectangle for rendering
 //=============================================================================
 procedure TQuadRender.SetClipRect(X, Y, X2, Y2: Cardinal);
-var
-  Viewport: TRect;
 begin
-  Viewport.Left   := X;
-  Viewport.Top    := Y;
-  Viewport.Right  := X2;
-  Viewport.Bottom := Y2;
+  FViewport.Left   := X;
+  FViewport.Top    := Y;
+  FViewport.Right  := X2;
+  FViewport.Bottom := Y2;
 
-  Device.LastResultCode := FD3DDevice.SetScissorRect(@Viewport);
+  Device.LastResultCode := FD3DDevice.SetScissorRect(@FViewport);
 end;
 
 //=============================================================================
@@ -1447,15 +1452,13 @@ end;
 // Set clip rectangle with fullscreen
 //=============================================================================
 procedure TQuadRender.SkipClipRect;
-var
-  R : TRect;
 begin
-  R.Left   := 0;
-  R.Top    := 0;
-  R.Right  := FWidth;
-  R.Bottom := FHeight;
+  FViewport.Left   := 0;
+  FViewport.Top    := 0;
+  FViewport.Right  := FWidth;
+  FViewport.Bottom := FHeight;
 
-  Device.LastResultCode := FD3DDevice.SetScissorRect(@R);
+  Device.LastResultCode := FD3DDevice.SetScissorRect(@FViewport);
 end;
 
 //=============================================================================

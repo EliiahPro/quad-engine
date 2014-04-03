@@ -91,6 +91,13 @@ namespace QuadEngine
         ushort Y;
     }
 
+    public struct TRect {
+        int Left;
+        int Top;
+        int Right;
+        int Bootom;
+    }
+
     /* Quad Device */
 
     [ComImport]
@@ -164,6 +171,7 @@ namespace QuadEngine
         /// <summary>Retrieves the available texture memory.
         /// This will return all available texture memory including AGP aperture.</summary>
         /// <returns>Available memory size in bytes</returns>
+        [preserveSig] TRect GetClipRect();
         [PreserveSig] UInt32 GetAvailableTextureMemory();
         [PreserveSig] UInt32 GetMaxAnisotropy();
         [PreserveSig] UInt32 GetMaxTextureHeight();
