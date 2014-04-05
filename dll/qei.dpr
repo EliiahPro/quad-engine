@@ -7,7 +7,7 @@ library qei;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
-//{$DEFINE DEBUG}
+{$INCLUDE QUADENGINE.INC}
 
 {$R 'Shaders.res' 'Shaders.rc'}
 
@@ -26,8 +26,10 @@ uses
   QuadEngine.Window in '..\QuadEngine.Window.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
   Vec2f in '..\Vec2f.pas',
-  QuadEngine.Color in '..\QuadEngine.Color.pas',
-  QuadEngine.Profiler in '..\QuadEngine.Profiler.pas';
+  QuadEngine.Color in '..\QuadEngine.Color.pas'
+  {$IFDEF DEBUG}
+  , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
+  {$ENDIF};
 
 {$R *.res}
 

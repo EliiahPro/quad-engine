@@ -13,9 +13,12 @@ unit QuadEngine.Device;
 
 interface
 
+{$INCLUDE QUADENGINE.INC}
+
 uses
   Winapi.Windows, Winapi.Direct3D9, QuadEngine.Utils, QuadEngine.Log, Vec2f,
-  QuadEngine.Render, System.IniFiles, QuadEngine, Classes;
+  QuadEngine.Render, System.IniFiles, QuadEngine, Classes
+  {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
 
 const
   QuadVersion: PWideChar = 'Quad Engine v0.6.0 (Umber)';
@@ -40,6 +43,9 @@ type
     FOnErrorFunction: TOnErrorFunction;
     FMaxTimerID: Cardinal;
     FRenderTargets: TList;
+    {$IFDEF DEBUG}
+    FProfiler: TQuadProfiler;
+    {$ENDIF}
     procedure SetLastResultCode(const Value: HResult);
     procedure GetErrorTextByCode(AErrorCode: HResult);
     procedure SetOnErrorFunction(const Value: TOnErrorFunction);
@@ -140,10 +146,18 @@ begin
   FMaxTimerID := 0;
 
   FRenderTargets := TList.Create;
+  {$IFDEF DEBUG}
+  FProfiler := TQuadProfiler.Create;
+  {$ENDIF}
 end;
 
 destructor TQuadDevice.Destroy;
 begin
+  {$IFDEF DEBUG}
+  if Assigned(FProfiler) then
+    FProfiler.Free;
+  {$ENDIF}
+
   FRenderTargets.Free;
   FD3D := nil;
 end;
@@ -351,7 +365,7 @@ begin
 end;
 
 function TQuadDevice.CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar;
-  out pQuadFont: IQuadFont): HResult; stdcall;
+  out pQuadFont: IQuadFont): HResult;
 begin
   Result := CreateFont(pQuadFont);
   pQuadFont.LoadFromFile(AFontTextureFilename, AUVFilename);
@@ -389,7 +403,7 @@ end;
 // Create render target
 //=============================================================================
 procedure TQuadDevice.CreateRenderTarget(AWidth, AHeight: Word;
-  var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
+  var AQuadTexture: IQuadTexture; ARegister: Byte);
 var
   Target: IDirect3DTexture9;
   RenderTarget : PRenderTarget;

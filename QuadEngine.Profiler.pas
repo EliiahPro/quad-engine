@@ -23,10 +23,11 @@ type
               atEndScene = 2,
               atClear = 3,
               atDraw = 4,
-              atRectangle = 5,
-              atSetRenderTarget = 6,
-              atFlushBuffer = 7,
-              atSetBlendMode = 8
+              atFlushBuffer = 6,
+              atSetBlendMode = 7,
+              atCalculateTBN = 8,
+              atSwitchRenderTarget = 9,
+              atSwitchTexture = 10
               );
 
   TAPICall = packed record
@@ -64,26 +65,6 @@ uses
 
 { TQuadProfiler }
 
-procedure TQuadProfiler.BeginCount(APItype: TAPIType);
-begin
-  QueryPerformanceCounter(FCurrentAPICallsStartTime[APItype]);
-end;
-
-procedure TQuadProfiler.BeginTick;
-var
-  i: TAPIType;
-begin
-  QueryPerformanceCounter(FCurrentTickStartTime);
-
-  for i := Low(TAPIType) to High(TAPIType) do
-  begin
-    FCurrentAPICalls[i].Calls := 0;
-    FCurrentAPICalls[i].Time := 0.0;
-    FCurrentAPICalls[i].TimeFastest := MaxDouble;
-    FCurrentAPICalls[i].TimeSlowest := 0.0;
-  end;
-end;
-
 class function TQuadProfiler.Create: TQuadProfiler;
 begin
   if not Assigned(FInstance) then
@@ -93,6 +74,11 @@ begin
   end;
 
   Result := FInstance;
+end;
+
+procedure TQuadProfiler.BeginCount(APItype: TAPIType);
+begin
+  QueryPerformanceCounter(FCurrentAPICallsStartTime[APItype]);
 end;
 
 procedure TQuadProfiler.EndCount(APItype: TAPIType);
@@ -112,6 +98,21 @@ begin
 
   if FCurrentAPICalls[APItype].TimeSlowest < Time then
     FCurrentAPICalls[APItype].TimeSlowest := Time;
+end;
+
+procedure TQuadProfiler.BeginTick;
+var
+  i: TAPIType;
+begin
+  QueryPerformanceCounter(FCurrentTickStartTime);
+
+  for i := Low(TAPIType) to High(TAPIType) do
+  begin
+    FCurrentAPICalls[i].Calls := 0;
+    FCurrentAPICalls[i].Time := 0.0;
+    FCurrentAPICalls[i].TimeFastest := MaxDouble;
+    FCurrentAPICalls[i].TimeSlowest := 0.0;
+  end;
 end;
 
 procedure TQuadProfiler.EndTick;

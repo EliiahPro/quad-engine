@@ -13,9 +13,12 @@ unit QuadEngine.Render;
 
 interface
 
+{$INCLUDE QUADENGINE.INC}
+
 uses
   Winapi.Windows, Winapi.direct3d9, Winapi.DXTypes, graphics, VCL.Imaging.pngimage,
-  QuadEngine.Utils, QuadEngine.Log, Vec2f, QuadEngine, IniFiles, System.SysUtils;
+  QuadEngine.Utils, QuadEngine.Log, Vec2f, QuadEngine, IniFiles,
+  System.SysUtils {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
 
 const
   // Vertex struct declaration
@@ -62,6 +65,9 @@ type
     FShaderModel: TQuadShaderModel;
     FOldScreenWidth: Integer;
     FOldScreenHeight: Integer;
+    {$IFDEF DEBUG}
+    FProfiler: TQuadProfiler;
+    {$ENDIF}
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
@@ -231,10 +237,16 @@ procedure TQuadRender.AddQuadToBuffer(Vertexes: array of TVertex);
 begin
   if FIsAutoCalculateTBN then
   begin
+    {$IFDEF DEBUG}
+    FProfiler.BeginCount(atCalculateTBN);
+    {$ENDIF}
     CalcTBN(Vertexes[0].tangent, Vertexes[0].binormal, Vertexes[0].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
     CalcTBN(Vertexes[1].tangent, Vertexes[1].binormal, Vertexes[1].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
     CalcTBN(Vertexes[2].tangent, Vertexes[2].binormal, Vertexes[2].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
     CalcTBN(Vertexes[5].tangent, Vertexes[5].binormal, Vertexes[5].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
+    {$IFDEF DEBUG}
+    FProfiler.EndCount(atCalculateTBN);
+    {$ENDIF}
   end;
 
   Vertexes[3] := Vertexes[2];
@@ -264,6 +276,11 @@ end;
 //=============================================================================
 procedure TQuadRender.BeginRender;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginTick;
+  FProfiler.BeginCount(atBeginScene);
+  {$ENDIF}
+
   Device.LastResultCode := FD3DDevice.BeginScene;
 
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
@@ -275,6 +292,9 @@ begin
   end;
 
   FCount := 0;
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atBeginScene);
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -300,7 +320,13 @@ end;
 //=============================================================================
 procedure TQuadRender.Clear(AColor: Cardinal);
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atClear);
+  {$ENDIF}
   Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0);
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atClear);
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -321,6 +347,10 @@ begin
   FIsDeviceLost := False;
   FIsAutoCalculateTBN := True;
   FIsInitialized := False;
+
+  {$IFDEF DEBUG}
+  FProfiler := TQuadProfiler.Create;
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -360,6 +390,9 @@ var
   Alpha: Single;
   SinA, CosA: Extended;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
   RenderMode := D3DPT_TRIANGLELIST;
 
   Origin := (PointB - PointA) / 2 + PointA;
@@ -396,6 +429,9 @@ begin
   ver[2].u := UVA.U;   ver[2].v := UVB.V;
   ver[5].u := UVB.U;   ver[5].v := UVB.V;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
 
   AddQuadToBuffer(ver);
 end;
@@ -410,6 +446,10 @@ var
   Alpha: Single;
   SinA, CosA: Extended;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_TRIANGLELIST;
 
   Alpha := Angle * (pi / 180);
@@ -444,6 +484,10 @@ begin
   ver[2].u := UVA.U;   ver[2].v := UVB.V;
   ver[5].u := UVB.U;   ver[5].v := UVB.V;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
+
   AddQuadToBuffer(ver);
 end;
 
@@ -461,6 +505,10 @@ var
 //  ua, ub : Single;
   i : Integer;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_TRIANGLELIST;
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
@@ -539,6 +587,10 @@ begin
   ver[10].x := x1;   ver[10].y := y1;    ver[10].z := 0;
   ver[11].x := cx;   ver[11].y := cy;    ver[11].z := 0;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
+
   AddTrianglesToBuffer(ver, 12);
 end;
 
@@ -549,6 +601,10 @@ procedure TQuadRender.DrawLine(const PointA, PointB: TVec2f; Color: Cardinal);
 var
   ver: array [0..1] of TVertex;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_LINELIST;
 
   ver[0] := PointA;
@@ -559,6 +615,10 @@ begin
 
   Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
   inc(FCount, 2);
+
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
 
   if FCount >= MaxBufferCount then
     FlushBuffer;
@@ -571,6 +631,10 @@ procedure TQuadRender.DrawPoint(const Point: TVec2f; Color: Cardinal);
 var
   ver: array [0..0] of TVertex;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_POINTLIST;
 
   ver[0] := Point;
@@ -578,6 +642,10 @@ begin
 
   Move(ver, FVertexBuffer[FCount], SizeOf(TVertex));
   inc(FCount, 1);
+
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
 
   if FCount >= MaxBufferCount then
     FlushBuffer;
@@ -593,6 +661,10 @@ var
   ver : array [0..5] of TVertex;
   i: Integer;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   line := pointB - pointA;
 
   perpendicular := line.Normal.Normalize;
@@ -612,6 +684,10 @@ begin
   ver[2].color := Color2;
   ver[5].color := Color2;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
+
   AddQuadToBuffer(ver);
 end;
 
@@ -622,6 +698,10 @@ procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Ca
 var
   ver : array [0..5] of TVertex;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_TRIANGLELIST;
                                         { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
@@ -640,6 +720,9 @@ begin
   ver[2].u := UVA.X;  ver[2].v := UVB.Y;
   ver[5].u := UVB.X;  ver[5].v := UVB.Y;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
 
   AddQuadToBuffer(ver);
 end;
@@ -649,6 +732,9 @@ end;
 //=============================================================================
 procedure TQuadRender.EndRender;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atEndScene);
+  {$ENDIF}
   if FIsDeviceLost then
     Exit;
 
@@ -660,6 +746,10 @@ begin
     Device.LastResultCode := FD3DDevice.Present(nil, nil, 0, nil);
 //    ResetDevice;
   end;
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atEndScene);
+  FProfiler.EndTick;
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -669,9 +759,6 @@ procedure TQuadRender.Finalize;
 begin
   FD3DVD := nil;
   FD3DVB := nil
-  //FD3DDevice := nil
-
-  //FD3D :=  := nil;
 end;
 
 //=============================================================================
@@ -682,6 +769,9 @@ var
   pver : Pointer;
   PrimitiveCount : Cardinal;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atFlushBuffer);
+  {$ENDIF}
   PrimitiveCount := 0;
 
   case FRenderMode of
@@ -719,6 +809,9 @@ begin
   Device.LastResultCode := FD3DVB.Unlock;
   Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
   FCount := 0;
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atFlushBuffer);
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -928,6 +1021,10 @@ var
   ver : array [0..5] of TVertex;
   i : Integer;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_TRIANGLELIST;
 
   for i := 0 to MaxTextureStages - 1 do
@@ -944,6 +1041,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
+
   AddQuadToBuffer(ver);
 end;
 
@@ -955,6 +1056,9 @@ var
   ver: array [0..5] of TVertex;
   i: Integer;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
   RenderMode := D3DPT_TRIANGLELIST;
 
   for i := 0 to MaxTextureStages - 1 do
@@ -971,6 +1075,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
+
   AddQuadToBuffer(ver);
 end;
 
@@ -983,6 +1091,10 @@ var
   ver : array [0..5] of TVertex;
   i : Integer;
 begin
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atDraw);
+  {$ENDIF}
+
   RenderMode := D3DPT_TRIANGLELIST;
 
   for i := 0 to MaxTextureStages - 1 do
@@ -998,6 +1110,10 @@ begin
   ver[1].color := Color2;
   ver[2].color := Color3;
   ver[5].color := Color4;
+
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atDraw);
+  {$ENDIF}
 
   AddQuadToBuffer(ver);
 end;
@@ -1023,6 +1139,10 @@ var
   i: Integer;
 begin
   FlushBuffer;
+
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atSwitchRenderTarget);
+  {$ENDIF}
   FIsRenderIntoTexture := AIsRenderToTexture;
 
   if AQuadTexture = nil then
@@ -1051,6 +1171,9 @@ begin
     for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
       Device.LastResultCode := FD3DDevice.SetRenderTarget(0, nil);
   end;
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atSwitchRenderTarget);
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -1104,6 +1227,9 @@ begin
 
   FlushBuffer;
 
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atSetBlendMode);
+  {$ENDIF}
   Fqbm := qbm;
   case qbm of
     qbmNone:
@@ -1184,6 +1310,9 @@ begin
       FIsEnabledBlending := True;
     end;
   end;
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atSetBlendMode);
+  {$ENDIF}
 end;
 
 //=============================================================================
@@ -1381,8 +1510,14 @@ begin
 
   FlushBuffer;
 
+  {$IFDEF DEBUG}
+  FProfiler.BeginCount(atSwitchTexture);
+  {$ENDIF}
   FActiveTexture[aRegister] := aTexture;
   Device.LastResultCode := FD3DDevice.SetTexture(aRegister, FActiveTexture[aRegister]);
+  {$IFDEF DEBUG}
+  FProfiler.EndCount(atSwitchTexture);
+  {$ENDIF}
 end;
 
 //=============================================================================
