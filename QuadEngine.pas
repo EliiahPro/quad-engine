@@ -94,6 +94,26 @@ type
     class operator Implicit(const A: TVec2f): TVertex;
   end;
 
+  // Shader model
+  TQuadShaderModel = (qsmInvalid = 0,
+                      qsmNone    = 1,   // do not use shaders
+                      qsm20      = 2,   // shader model 2.0
+                      qsm30      = 3);  // shader model 3.0
+
+  // Initialization record
+  TRenderInit = packed record
+    Handle                    : THandle;
+    Width                     : Integer;
+    Height                    : Integer;
+    BackBufferCount           : Integer;
+    RefreshRate               : Integer;
+    Fullscreen                : Boolean;
+    SoftwareVertexProcessing  : Boolean;
+    MultiThreaded             : Boolean;
+    VerticalSync              : Boolean;
+    ShaderModel               : TQuadShaderModel;
+  end;
+
   /// <summary>OnTimer Callback function prototype</summary>
   TTimerProcedure = procedure(out delta: Double; Id: Cardinal); stdcall;
   { template:
@@ -166,12 +186,6 @@ type
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
   end;
-
-  // Shader model
-  TQuadShaderModel = (qsmInvalid = 0,
-                      qsmNone    = 1,   // do not use shaders
-                      qsm20      = 2,   // shader model 2.0
-                      qsm30      = 3);  // shader model 3.0
 
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)

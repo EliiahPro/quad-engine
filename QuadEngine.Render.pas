@@ -71,8 +71,7 @@ type
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
-    procedure DoInitialize(AHandle : THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate : Integer;
-      AIsFullscreen, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync : Boolean; AShaderModel: TQuadShaderModel);
+    procedure DoInitialize(const ARenderInit: TRenderInit);
     procedure InitializeVolatileResources;
     procedure ReleaseVolatileResources;
   public
@@ -923,8 +922,21 @@ end;
 //=============================================================================
 procedure TQuadRender.Initialize(AHandle: THandle; AWidth, AHeight: Integer;
   AIsFullscreen : Boolean; AShaderModel: TQuadShaderModel = qsm20);
+var
+  RenderInit: TRenderInit;
 begin
-  DoInitialize(AHandle, AWidth, AHeight, 1, 0, AIsFullscreen, True, True, False, AShaderModel);
+  RenderInit.Handle := AHandle;
+  RenderInit.Width := AWidth;
+  RenderInit.Height := AHeight;
+  RenderInit.BackBufferCount := 1;
+  RenderInit.RefreshRate := -1;
+  RenderInit.Fullscreen := AIsFullscreen;
+  RenderInit.SoftwareVertexProcessing := True;
+  RenderInit.MultiThreaded := True;
+  RenderInit.VerticalSync := False;
+  RenderInit.ShaderModel := AShaderModel;
+
+  DoInitialize(RenderInit);
 end;
 
 //=============================================================================
@@ -935,33 +947,25 @@ const
   ASection: string = 'Quadengine';
 var
   AIniFile: TIniFile;
-  AWidth, AHeight: Integer;
-  AIsFullscreen: Boolean;
-  ABackBufferCount: Byte;
-  ARefreshRate: Byte;
-  AIsSoftwareVertexProcessing: Boolean;
-  AIsMultiThreaded: Boolean;
-  AIsVerticalSync: Boolean;
-  AShaderModel: TQuadShaderModel;
+  ARenderInit: TRenderInit;
 begin
   AIniFile := TIniFile.Create(AFilename);
 
   try
-    AWidth := AIniFile.ReadInteger(ASection, 'Width', 800);
-    AHeight := AIniFile.ReadInteger(ASection, 'Height', 600);
-    AIsFullscreen := AIniFile.ReadBool(ASection, 'Fullscreen', False);
-    ABackBufferCount := AIniFile.ReadInteger(ASection, 'BackBufferCount', 1);
-    ARefreshRate := AIniFile.ReadInteger(ASection, 'RefreshRate', 60);
-    AIsSoftwareVertexProcessing := AIniFile.ReadBool(ASection, 'SoftwareVertexProcessing', True);
-    AIsMultiThreaded := AIniFile.ReadBool(ASection, 'MultiThreaded', True);
-    AIsVerticalSync := AIniFile.ReadBool(ASection, 'VerticalSync', False);
-    AShaderModel := TQuadShaderModel(AIniFile.ReadInteger(ASection, 'ShaderModel', Integer(qsm20)));
+    ARenderInit.Width := AIniFile.ReadInteger(ASection, 'Width', 800);
+    ARenderInit.Height := AIniFile.ReadInteger(ASection, 'Height', 600);
+    ARenderInit.Fullscreen := AIniFile.ReadBool(ASection, 'Fullscreen', False);
+    ARenderInit.BackBufferCount := AIniFile.ReadInteger(ASection, 'BackBufferCount', 1);
+    ARenderInit.RefreshRate := AIniFile.ReadInteger(ASection, 'RefreshRate', -1);
+    ARenderInit.SoftwareVertexProcessing := AIniFile.ReadBool(ASection, 'SoftwareVertexProcessing', True);
+    ARenderInit.MultiThreaded := AIniFile.ReadBool(ASection, 'MultiThreaded', True);
+    ARenderInit.VerticalSync := AIniFile.ReadBool(ASection, 'VerticalSync', False);
+    ARenderInit.ShaderModel := TQuadShaderModel(AIniFile.ReadInteger(ASection, 'ShaderModel', Integer(qsm20)));
   finally
     AIniFile.Free;
   end;
 
-  DoInitialize(AHandle, AWidth, AHeight, ABackBufferCount, ARefreshRate, AIsFullscreen,
-               AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync, AShaderModel);
+  DoInitialize(ARenderInit);
 end;
 
 //=============================================================================
@@ -1352,8 +1356,7 @@ end;
 // Main initialization routine.
 // Yes, it's long. Yes, I know it. And yes, I know it's not good at all!!!
 //=============================================================================
-procedure TQuadRender.DoInitialize(AHandle: THandle; AWidth, AHeight, ABackBufferCount, ARefreshRate: Integer;
-  AIsFullscreen, AIsSoftwareVertexProcessing, AIsMultiThreaded, AIsVerticalSync: Boolean; AShaderModel: TQuadShaderModel);
+procedure TQuadRender.DoInitialize(const ARenderInit: TRenderInit);
 
   function CompleteBooleanText(AText: PChar; AState: Boolean): PChar; inline;
   begin
@@ -1365,24 +1368,25 @@ procedure TQuadRender.DoInitialize(AHandle: THandle; AWidth, AHeight, ABackBuffe
   end;
 
 var
-  winrect : TRect;
-  winstyle : Integer;
+  winrect: TRect;
+  winstyle: Integer;
+  BehaviorFlag: Cardinal;
 begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
     Device.Log.Write('QuadRender Initialization');
-    Device.Log.Write(PChar('Resolution: ' + IntToStr(aWidth) + 'x' + IntToStr(aHeight)));
+    Device.Log.Write(PChar('Resolution: ' + IntToStr(ARenderInit.Width) + 'x' + IntToStr(ARenderInit.Height)));
   end;
   {$ENDREGION}
 
-  FWidth := AWidth;
-  FHeight := AHeight;
-  FHandle := AHandle;
+  FWidth := ARenderInit.Width;
+  FHeight := ARenderInit.Height;
+  FHandle := ARenderInit.Handle;
 
-  FShaderModel := AShaderModel;
+  FShaderModel := ARenderInit.ShaderModel;
 
-  if AIsFullscreen then
+  if ARenderInit.Fullscreen then
   begin
     winstyle := GetWindowLong(FHandle, GWL_STYLE);
     winrect.Left := 0;
@@ -1410,34 +1414,50 @@ begin
     BackBufferWidth              := FWidth;
     BackBufferHeight             := FHeight;
     BackBufferFormat             := D3DDM.Format;
-    BackBufferCount              := ABackBufferCount;
+    BackBufferCount              := ARenderInit.BackBufferCount;
     MultiSampleType              := D3DMULTISAMPLE_NONE;
     MultiSampleQuality           := 0;
     SwapEffect                   := D3DSWAPEFFECT_DISCARD;
     hDeviceWindow                := FHandle;
-    Windowed                     := not AIsFullscreen;
+    Windowed                     := not ARenderInit.Fullscreen;
     EnableAutoDepthStencil       := False;
     Flags                        := 0;
-    if not AIsFullscreen then
-      FullScreen_RefreshRateInHz := D3DPRESENT_RATE_DEFAULT
+    if not ARenderInit.Fullscreen then
+      FullScreen_RefreshRateInHz := 0
     else
-      FullScreen_RefreshRateInHz := FD3DDM.RefreshRate;
-    PresentationInterval         := D3DPRESENT_INTERVAL_IMMEDIATE;
+      begin
+        if ARenderInit.RefreshRate < 0 then
+          FullScreen_RefreshRateInHz := FD3DDM.RefreshRate
+        else
+          FullScreen_RefreshRateInHz := ARenderInit.RefreshRate;
+      end;
+    if ARenderInit.VerticalSync then
+      PresentationInterval := D3DPRESENT_INTERVAL_ONE
+    else
+      PresentationInterval := D3DPRESENT_INTERVAL_IMMEDIATE;
   end;
 
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
     Device.Log.Write(CompleteBooleanText('Multisample', False));
-    Device.Log.Write(CompleteBooleanText('Fullscreen', AIsFullscreen));
-    Device.Log.Write(CompleteBooleanText('Vsync', AIsVerticalSync));
+    Device.Log.Write(CompleteBooleanText('Fullscreen', ARenderInit.Fullscreen));
+    Device.Log.Write(CompleteBooleanText('Vsync', ARenderInit.VerticalSync));
   end;
   {$ENDREGION}
+
+  if ARenderInit.SoftwareVertexProcessing then
+    BehaviorFlag := D3DCREATE_SOFTWARE_VERTEXPROCESSING
+  else
+    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING;
+
+  if ARenderInit.MultiThreaded then
+    BehaviorFlag := BehaviorFlag or D3DCREATE_MULTITHREADED;
 
   Device.LastResultCode := Device.D3D.CreateDevice(Device.ActiveMonitorIndex,
                                                    D3DDEVTYPE_HAL,
                                                    FHandle,
-                                                   D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_MULTITHREADED,
+                                                   BehaviorFlag,
                                                    @FD3DPP,
                                                    FD3DDevice);
 
