@@ -162,6 +162,21 @@ namespace QuadEngine
                                  qsm20      = 2,   // shader model 2.0
                                  qsm30      = 3};  // shader model 3.0
 
+    // Initialization record
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TRenderInit {
+        UInt32 Handle;
+        int Width;
+        int Height;
+        int BackBufferCount;
+        int RefreshRate;
+        bool Fullscreen;
+        bool SoftwareVertexProcessing;
+        bool MultiThreaded;
+        bool VerticalSync;
+        TQuadShaderModel ShaderModel;
+    }
+
     [ComImport]
     [Guid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -199,6 +214,7 @@ namespace QuadEngine
         void Finalize();
         void FlushBuffer();
         void Initialize(IntPtr AHandle, int AWidth, int AHeight, bool AIsFullscreen, TQuadShaderModel AShaderModel = TQuadShaderModel.qsm20);
+        void InitializeEx(ref TRenderInit ARenderInit);
         void InitializeFromIni(IntPtr AHandle, string AFilename);
         void Polygon(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f PointC, ref Vec2f PointD, UInt32 Color);
         void Rectangle(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);

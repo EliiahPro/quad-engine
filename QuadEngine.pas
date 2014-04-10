@@ -222,6 +222,7 @@ type
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
+    procedure InitializeEx(const ARenderInit: TRenderInit); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;

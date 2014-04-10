@@ -71,7 +71,6 @@ type
     procedure AddQuadToBuffer(Vertexes: array of TVertex);
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
-    procedure DoInitialize(const ARenderInit: TRenderInit);
     procedure InitializeVolatileResources;
     procedure ReleaseVolatileResources;
   public
@@ -105,6 +104,7 @@ type
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
+    procedure InitializeEx(const ARenderInit: TRenderInit); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
@@ -936,7 +936,7 @@ begin
   RenderInit.VerticalSync := False;
   RenderInit.ShaderModel := AShaderModel;
 
-  DoInitialize(RenderInit);
+  InitializeEx(RenderInit);
 end;
 
 //=============================================================================
@@ -965,7 +965,7 @@ begin
     AIniFile.Free;
   end;
 
-  DoInitialize(ARenderInit);
+  InitializeEx(ARenderInit);
 end;
 
 //=============================================================================
@@ -1136,7 +1136,7 @@ end;
 // Enable/disable rendering into texture with index "Count"
 //=============================================================================
 procedure TQuadRender.RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
-  ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
+  ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False);
 var
   ARenderSurface: IDirect3DSurface9;
   ADesc : D3DSURFACE_DESC;
@@ -1335,7 +1335,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.SetPointSize(ASize: Cardinal); stdcall;
+procedure TQuadRender.SetPointSize(ASize: Cardinal);
 begin
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_POINTSIZE, ASize);
 end;
@@ -1356,7 +1356,7 @@ end;
 // Main initialization routine.
 // Yes, it's long. Yes, I know it. And yes, I know it's not good at all!!!
 //=============================================================================
-procedure TQuadRender.DoInitialize(const ARenderInit: TRenderInit);
+procedure TQuadRender.InitializeEx(const ARenderInit: TRenderInit);
 
   function CompleteBooleanText(AText: PChar; AState: Boolean): PChar; inline;
   begin
