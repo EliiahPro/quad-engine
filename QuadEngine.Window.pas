@@ -73,8 +73,6 @@ end;
 
 function TQuadWindow.WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
 begin
-  Result := 0;
-
   case msg of
   WM_DESTROY:
     begin
@@ -98,6 +96,9 @@ begin
   WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, WM_XBUTTONDBLCLK,
   WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_MOUSEHWHEEL:
     begin
+  //    if Device.IsHardwareCursor then
+   //     Device.SetCursorPosition(SmallInt($FFFF and lParam), SmallInt(($FFFF0000 and lParam) shr 16));
+
       OnMouseEvent(msg, wparam, lparam);
       Result := 0;
     end;
@@ -107,6 +108,17 @@ begin
       if wparam = SIZE_MINIMIZED then
         Result := 0;
     end;
+
+  {Prevent setting GDI cursor}
+  WM_SETCURSOR:
+    if Device.IsHardwareCursor then
+    begin
+      SetCursor(0);
+      Device.Render.D3DDevice.ShowCursor(True);
+      Result := 1;
+      Device.Log.Write('asdasd');
+    end;
+
   WM_ACTIVATEAPP:
     begin
      if wparam <> WA_INACTIVE then
@@ -116,6 +128,7 @@ begin
 
       Result := 0;
     end;
+
   else
     Result := DefWindowProc(wnd, msg, wparam, lparam);
   end;

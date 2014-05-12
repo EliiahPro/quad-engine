@@ -43,6 +43,8 @@ type
     FOnErrorFunction: TOnErrorFunction;
     FMaxTimerID: Cardinal;
     FRenderTargets: TList;
+    FCursorSurface: IDirect3DSurface9;
+    FIsHardwareCursor: Boolean;
     {$IFDEF DEBUG}
     FProfiler: TQuadProfiler;
     {$ENDIF}
@@ -74,6 +76,9 @@ type
     procedure GetSupportedScreenResolution(index: Integer; out Resolution: TCoord); stdcall;
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
+    procedure ShowCursor(Show: Boolean); stdcall;
+    procedure SetCursorPosition(x, y: integer); stdcall;
+    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
 
     property ActiveMonitorIndex: Byte read FActiveMonitorIndex;
     property D3D: IDirect3D9 read FD3D;
@@ -81,6 +86,7 @@ type
     property Log: TQuadLog read FLog;
     property OnError: TOnErrorFunction read FOnErrorFunction write SetOnErrorFunction;
     property Render: TQuadRender read FRender;
+    property IsHardwareCursor: Boolean read FIsHardwareCursor;
   end;
 
 var
@@ -146,6 +152,7 @@ begin
   FMaxTimerID := 0;
 
   FRenderTargets := TList.Create;
+  FIsHardwareCursor := False;
   {$IFDEF DEBUG}
   FProfiler := TQuadProfiler.Create;
   {$ENDIF}
@@ -430,6 +437,25 @@ begin
   AQuadTexture.AddTexture(ARegister, Target);
 
   AQuadTexture.SetIsLoaded(AWidth, AHeight);
+end;
+
+procedure TQuadDevice.ShowCursor(Show: Boolean);
+begin
+  FIsHardwareCursor := Show;
+
+  if not IsHardwareCursor then
+    FRender.D3DDevice.ShowCursor(False);
+end;
+
+procedure TQuadDevice.SetCursorPosition(x, y: integer);
+begin
+  FRender.D3DDevice.SetCursorPosition(x, y, D3DCURSOR_IMMEDIATE_UPDATE);
+end;
+
+procedure TQuadDevice.SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture);
+begin
+  Image.GetTexture(0).GetSurfaceLevel(0, FCursorSurface);
+  FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
 end;
 
 end.

@@ -185,6 +185,9 @@ type
     procedure GetSupportedScreenResolution(index: Integer; out Resolution: TCoord); stdcall;
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
+    procedure ShowCursor(Show: Boolean); stdcall;
+    procedure SetCursorPosition(x, y: integer); stdcall;
+    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
   end;
 
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
