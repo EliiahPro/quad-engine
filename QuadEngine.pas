@@ -91,7 +91,9 @@ type
     u, v    : Single;         { Texture UV coord }
     Tangent : TVector;        { Tangent vector }
     Binormal: TVector;        { Binormal vector }
+    {$IFDEF VER180}
     class operator Implicit(const A: TVec2f): TVertex;
+    {$ENDIF}
   end;
 
   // Shader model
@@ -504,11 +506,13 @@ end;
 
 { TVertex }
 
+{$IFDEF VER180}
 class operator TVertex.Implicit(const A: TVec2f): TVertex;
 begin
   Result.x := A.X;
   Result.y := A.Y;
   Result.z := 0.0;
 end;
+{$ENDIF}
 
 end.
