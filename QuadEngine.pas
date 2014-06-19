@@ -91,9 +91,9 @@ type
     u, v    : Single;         { Texture UV coord }
     Tangent : TVector;        { Tangent vector }
     Binormal: TVector;        { Binormal vector }
-    {$IFDEF VER180}
+    {$IF CompilerVersion > 17}
     class operator Implicit(const A: TVec2f): TVertex;
-    {$ENDIF}
+    {$IFEND}
   end;
 
   // Shader model
@@ -215,10 +215,6 @@ type
     procedure ChangeResolution(AWidth, AHeight : Word); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure CreateOrthoMatrix; stdcall;
-    procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
@@ -506,13 +502,13 @@ end;
 
 { TVertex }
 
-{$IFDEF VER180}
+{$IF CompilerVersion > 17}
 class operator TVertex.Implicit(const A: TVec2f): TVertex;
 begin
   Result.x := A.X;
   Result.y := A.Y;
   Result.z := 0.0;
 end;
-{$ENDIF}
+{$IFEND}
 
 end.

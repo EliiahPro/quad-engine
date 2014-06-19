@@ -7,7 +7,7 @@ uses
 
 type
   TVec2i = record
-    {$IFDEF VER180}
+    {$IF CompilerVersion > 17}
     class operator Add(const a, b: TVec2i): TVec2i;
     class operator Subtract(const a, b: TVec2i): TVec2i;
     class operator Multiply(const a, b: TVec2i): TVec2i;
@@ -17,7 +17,7 @@ type
     function Distance(const X: TVec2i): Single; inline;
     function Dot(const X: TVec2i): Single; inline;
     function Lerp(const X: TVec2i; dist: Single): TVec2i; inline;
-    {$ENDIF}
+    {$IFEND}
         // data
     case Integer of
       0: (X, Y: Integer);
@@ -25,7 +25,7 @@ type
   end;
 
   TVec2f = packed record
-  {$IFDEF VER180}
+  {$IF CompilerVersion > 17}
   strict private
     class var FZero: TVec2f;
   public
@@ -52,7 +52,7 @@ type
     function Normalize: TVec2f; inline;
     class property Zero: TVec2f read FZero;
         // data
-    {$ENDIF}
+    {$IFEND}
     case Integer of
       0: (X, Y: Single);
       1: (U, V: Single);
@@ -60,7 +60,7 @@ type
   end;
 
   TVec3f = record
-    {$IFDEF VER180}
+    {$IF CompilerVersion > 17}
     class operator Add(const a, b: TVec3f): TVec3f;
     class operator Subtract(const a, b: TVec3f): TVec3f;
     class operator Multiply(const a, b: TVec3f): TVec3f;
@@ -70,7 +70,7 @@ type
     function Distance(const X: TVec3f): Single; inline;
     function Dot(const X: TVec3f): Single; inline;
     function Lerp(const X: TVec3f; dist: Single): TVec3f; inline;
-    {$ENDIF}
+    {$IFEND}
         // data
     case Integer of
       0: (X, Y, Z: Single);
@@ -83,7 +83,7 @@ implementation
 
   {TVec2f}
 
-{$IFDEF VER180}
+{$IF CompilerVersion > 17}
 class operator TVec2f.Add(const A, B: TVec2f): TVec2f;
 begin
   Result.X := A.X + B.X;
@@ -324,7 +324,7 @@ function TVec3f.Lerp(const X: TVec3f; dist: Single): TVec3f;
 begin
   Result := (X - Self) * dist + Self;     
 end;
-{$ENDIF}
+{$IFEND}
 
 end.
 
