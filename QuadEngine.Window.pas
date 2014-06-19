@@ -34,6 +34,7 @@ type
     FOnMouseUp: TOnMouseEvent;
     FOnMouseDblClick: TOnMouseEvent;
     FOnMouseWheel: TOnMouseWheelEvent;
+    FOnMove: TOnWindowMove;
 
     procedure OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
     procedure OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
@@ -57,6 +58,7 @@ type
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
+    procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
   end;
 
 function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT; stdcall;
@@ -109,6 +111,14 @@ begin
         Result := 0;
     end;
 
+  WM_MOVE:
+    begin
+      if Assigned(Self) and Assigned(FOnMove) then
+        FOnMove(Integer(lparam and $FFFF), Integer((lparam shr 16) and $FFFF));
+
+      Result := 0;
+    end;
+
   {Prevent setting GDI cursor}
   WM_SETCURSOR:
     if Device.IsHardwareCursor then
@@ -116,7 +126,6 @@ begin
       SetCursor(0);
       Device.Render.D3DDevice.ShowCursor(True);
       Result := 1;
-      Device.Log.Write('asdasd');
     end;
 
   WM_ACTIVATEAPP:
@@ -162,6 +171,7 @@ begin
   FOnKeyDown := nil;
   FOnKeyUp := nil;
   FOnCreate := nil;
+  FOnMove := nil;
 end;
 
 function TQuadWindow.GetHandle: THandle;
@@ -398,6 +408,11 @@ end;
 procedure TQuadWindow.SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent);
 begin
   FOnMouseWheel := OnMouseWheel;
+end;
+
+procedure TQuadWindow.SetOnWindowMove(OnWindowMove: TOnWindowMove);
+begin
+  FOnMove := OnWindowMove;
 end;
 
 end.

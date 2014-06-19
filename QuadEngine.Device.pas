@@ -21,7 +21,7 @@ uses
   {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
 
 const
-  QuadVersion: PWideChar = 'Quad Engine v0.6.0 (Umber)';
+  QuadVersion: PWideChar = 'Quad Engine v0.6.1 (Umber)';
 
 type
   PRenderTarget = ^TRenderTarget;

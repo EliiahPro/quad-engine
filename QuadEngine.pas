@@ -443,6 +443,7 @@ type
   TOnMouseEvent = procedure(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
   TOnMouseWheelEvent = procedure(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
   TOnEvent = procedure; stdcall;
+  TOnWindowMove = procedure(const Xpos, Ypos: Integer); stdcall;
 
   {Quad Window}
 
@@ -464,6 +465,7 @@ type
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
+    procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
   end;
 
   {Quad Camera}
