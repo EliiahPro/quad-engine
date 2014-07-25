@@ -1511,6 +1511,7 @@ begin
       TQuadShader.DistanceField := TQuadShader.Create(Self);
       TQuadShader.DistanceField.LoadFromResource('DistantFieldVS30', False);
       TQuadShader.DistanceField.LoadFromResource('DistantFieldPS30');
+      TQuadShader.DistanceField.BindVariableToVS(0, @FViewMatrix, 4);
     end;
     qsmNone:
       if Device.Log <> nil then
