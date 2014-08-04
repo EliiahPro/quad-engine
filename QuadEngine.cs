@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.6.0 Umber header file for Visual C#
+  Quad engine 0.6.2 Umber header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║

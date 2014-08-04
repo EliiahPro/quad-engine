@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.6.0 Umber header file for Embarcadero™ Delphi®
+  Quad engine 0.6.2 Umber header file for Embarcadero™ Delphi®
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -91,9 +91,11 @@ type
     u, v    : Single;         { Texture UV coord }
     Tangent : TVector;        { Tangent vector }
     Binormal: TVector;        { Binormal vector }
+    {$IFNDEF FPC}
     {$IF CompilerVersion > 17}
     class operator Implicit(const A: TVec2f): TVertex;
     {$IFEND}
+    {$ENDIF}
   end;
 
   // Shader model
@@ -495,13 +497,14 @@ var
   Creator: TCreateQuadDevice;
 begin
   h := LoadLibrary(LibraryName);
-  Creator := GetProcAddress(h, CreateQuadDeviceProcName);
+  Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
   if Assigned(Creator) then
     Creator(Result);
 end;
 
 { TVertex }
 
+{$IFNDEF FPC}
 {$IF CompilerVersion > 17}
 class operator TVertex.Implicit(const A: TVec2f): TVertex;
 begin
@@ -510,5 +513,6 @@ begin
   Result.z := 0.0;
 end;
 {$IFEND}
+{$ENDIF}
 
 end.
