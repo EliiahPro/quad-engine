@@ -216,7 +216,6 @@ type
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight : Word); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
-    procedure CreateOrthoMatrix; stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;

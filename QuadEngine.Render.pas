@@ -73,6 +73,8 @@ type
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure InitializeVolatileResources;
     procedure ReleaseVolatileResources;
+    procedure CreateOrthoMatrix;
+    procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -91,7 +93,6 @@ type
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
-    procedure CreateOrthoMatrix; stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
@@ -145,6 +146,7 @@ type
     property Width: Integer read FWidth;
     property IsInitialized: Boolean read FIsInitialized;
     property ShaderModel: TQuadShaderModel read FShaderModel;
+    property ViewMatrix: TD3DMatrix read FViewMatrix write SetViewMatrix;
   end;
 
 implementation
@@ -1603,7 +1605,15 @@ begin
     Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MINFILTER, Value);
   end;
 end;
-                                                                               
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadRender.SetViewMatrix(AViewMatrix: TD3DMatrix);
+begin
+  FViewMatrix := AViewMatrix;
+end;
+
 //=============================================================================
 // Set clip rectangle with fullscreen
 //=============================================================================

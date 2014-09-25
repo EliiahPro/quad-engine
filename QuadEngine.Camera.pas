@@ -135,6 +135,7 @@ begin
   FViewMatrix := MultiplyMatrix(FViewMatrix, Translate);
 
   Device.LastResultCode := FRender.D3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
+  FRender.ViewMatrix := FViewMatrix;
 end;
 
 constructor TQuadCamera.Create(AQuadRender: TQuadRender);

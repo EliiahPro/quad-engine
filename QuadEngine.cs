@@ -205,7 +205,6 @@ namespace QuadEngine
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
-        void CreateOrthoMatrix();
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
