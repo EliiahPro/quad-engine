@@ -69,6 +69,7 @@ begin
 
   SinCos(DegToRad(FAngle), SinA, CosA);
 
+  // translate
   Translate._11 := 1;
   Translate._12 := 0;
   Translate._13 := 0;
@@ -89,7 +90,7 @@ begin
   Translate._43 := 0;
   Translate._44 := 1;
 
-
+  // scale & rorate
   Rotate._11 := 2 / FRender.Width * CosA * FScale;
   Rotate._12 := - 2 / FRender.Height * SinA;
   Rotate._13 := 0;
@@ -112,6 +113,7 @@ begin
 
   FViewMatrix := MultiplyMatrix(Translate, Rotate);
 
+  // translate backward
   Translate._11 := 1;
   Translate._12 := 0;
   Translate._13 := 0;

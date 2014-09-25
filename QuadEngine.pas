@@ -20,8 +20,7 @@ unit QuadEngine;
 
 interface
 
-// Uncomment this define if Direct3D interfaces is needed
-{$DEFINE USED3D}
+{$INCLUDE QUADENGINE.INC}
 
 uses
   Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f;
