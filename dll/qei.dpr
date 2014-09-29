@@ -1,3 +1,16 @@
+﻿//=============================================================================
+//             ╔═══════════╦═╗
+//             ║           ║ ║
+//             ║           ║ ║
+//             ║ ╔╗ ║║ ╔╗ ╔╣ ║
+//             ║ ╚╣ ╚╝ ╚╩ ╚╝ ║
+//             ║  ║ engine   ║
+//             ║  ║          ║
+//             ╚══╩══════════╝
+//
+// for license see COPYING
+//=============================================================================
+
 //Theory is - when you know everything but nothing works.
 //Practice is - when all works, but you don't know why.
 //We combine theory and practice - nothing works and nobody knows why

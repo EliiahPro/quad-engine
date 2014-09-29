@@ -14,6 +14,8 @@
   For further information please visit:
   http://quad-engine.com
 
+  For license see COPYING
+
 ===============================================================================}
 
 unit QuadEngine.Color;

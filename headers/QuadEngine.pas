@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.6.2 Umber header file for Embarcadero™ Delphi®
+  Quad engine 0.6.2 Umber header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -14,7 +14,9 @@
   For further information please visit:
   http://quad-engine.com
 
-==============================================================================}
+  For license see COPYING
+
+===============================================================================}
 
 unit QuadEngine;
 
