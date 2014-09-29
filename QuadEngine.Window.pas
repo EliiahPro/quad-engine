@@ -7,6 +7,8 @@
 //             ║  ║ engine   ║
 //             ║  ║          ║
 //             ╚══╩══════════╝
+//
+// For license see COPYING
 //=============================================================================
 
 unit QuadEngine.Window;
@@ -34,6 +36,7 @@ type
     FOnMouseUp: TOnMouseEvent;
     FOnMouseDblClick: TOnMouseEvent;
     FOnMouseWheel: TOnMouseWheelEvent;
+    FOnMove: TOnWindowMove;
 
     procedure OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
     procedure OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
@@ -57,6 +60,7 @@ type
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
+    procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
   end;
 
 function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT; stdcall;
@@ -73,8 +77,6 @@ end;
 
 function TQuadWindow.WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
 begin
-  Result := 0;
-
   case msg of
   WM_DESTROY:
     begin
@@ -98,6 +100,9 @@ begin
   WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, WM_XBUTTONDBLCLK,
   WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_MOUSEHWHEEL:
     begin
+  //    if Device.IsHardwareCursor then
+   //     Device.SetCursorPosition(SmallInt($FFFF and lParam), SmallInt(($FFFF0000 and lParam) shr 16));
+
       OnMouseEvent(msg, wparam, lparam);
       Result := 0;
     end;
@@ -107,6 +112,24 @@ begin
       if wparam = SIZE_MINIMIZED then
         Result := 0;
     end;
+
+  WM_MOVE:
+    begin
+      if Assigned(Self) and Assigned(FOnMove) then
+        FOnMove(Integer(lparam and $FFFF), Integer((lparam shr 16) and $FFFF));
+
+      Result := 0;
+    end;
+
+  {Prevent setting GDI cursor}
+  WM_SETCURSOR:
+    if Device.IsHardwareCursor then
+    begin
+      SetCursor(0);
+      Device.Render.D3DDevice.ShowCursor(True);
+      Result := 1;
+    end;
+
   WM_ACTIVATEAPP:
     begin
      if wparam <> WA_INACTIVE then
@@ -116,6 +139,7 @@ begin
 
       Result := 0;
     end;
+
   else
     Result := DefWindowProc(wnd, msg, wparam, lparam);
   end;
@@ -149,6 +173,7 @@ begin
   FOnKeyDown := nil;
   FOnKeyUp := nil;
   FOnCreate := nil;
+  FOnMove := nil;
 end;
 
 function TQuadWindow.GetHandle: THandle;
@@ -385,6 +410,11 @@ end;
 procedure TQuadWindow.SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent);
 begin
   FOnMouseWheel := OnMouseWheel;
+end;
+
+procedure TQuadWindow.SetOnWindowMove(OnWindowMove: TOnWindowMove);
+begin
+  FOnMove := OnWindowMove;
 end;
 
 end.

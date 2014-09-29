@@ -2,25 +2,30 @@ unit Vec2f;
 
 interface
 
+uses
+  Windows;
+
 type
   TVec2i = record
+    {$IF CompilerVersion > 17}
     class operator Add(const a, b: TVec2i): TVec2i;
     class operator Subtract(const a, b: TVec2i): TVec2i;
     class operator Multiply(const a, b: TVec2i): TVec2i;
-    class operator Multiply(const a: TVec2i; X: Single): TVec2i;
+    class operator Multiply(const a: TVec2i; X: Integer): TVec2i;
     class operator Negative(const X: TVec2i): TVec2i;
-    constructor Create(X, Y: Single);
+    constructor Create(X, Y: Integer);
     function Distance(const X: TVec2i): Single; inline;
     function Dot(const X: TVec2i): Single; inline;
     function Lerp(const X: TVec2i; dist: Single): TVec2i; inline;
+    {$IFEND}
         // data
     case Integer of
-      0: (X, Y: Single);
-      1: (U, V: Single);
-      2: (a: array[0..1] of Single);
+      0: (X, Y: Integer);
+      2: (a: array[0..1] of Integer);
   end;
 
   TVec2f = packed record
+  {$IF CompilerVersion > 17}
   strict private
     class var FZero: TVec2f;
   public
@@ -47,6 +52,7 @@ type
     function Normalize: TVec2f; inline;
     class property Zero: TVec2f read FZero;
         // data
+    {$IFEND}
     case Integer of
       0: (X, Y: Single);
       1: (U, V: Single);
@@ -54,6 +60,7 @@ type
   end;
 
   TVec3f = record
+    {$IF CompilerVersion > 17}
     class operator Add(const a, b: TVec3f): TVec3f;
     class operator Subtract(const a, b: TVec3f): TVec3f;
     class operator Multiply(const a, b: TVec3f): TVec3f;
@@ -63,6 +70,7 @@ type
     function Distance(const X: TVec3f): Single; inline;
     function Dot(const X: TVec3f): Single; inline;
     function Lerp(const X: TVec3f; dist: Single): TVec3f; inline;
+    {$IFEND}
         // data
     case Integer of
       0: (X, Y, Z: Single);
@@ -75,6 +83,7 @@ implementation
 
   {TVec2f}
 
+{$IF CompilerVersion > 17}
 class operator TVec2f.Add(const A, B: TVec2f): TVec2f;
 begin
   Result.X := A.X + B.X;
@@ -223,7 +232,7 @@ begin
   Result.Y := a.Y * b.Y;
 end;
 
-class operator TVec2i.Multiply(const a: TVec2i; X: Single): TVec2i;
+class operator TVec2i.Multiply(const a: TVec2i; X: Integer): TVec2i;
 begin
   Result.X := a.X * X;
   Result.Y := a.Y * X;
@@ -245,7 +254,7 @@ begin
   Result := X.X * Self.X + X.Y * Self.Y;
 end;
 
-constructor TVec2i.Create(X, Y: Single);
+constructor TVec2i.Create(X, Y: Integer);
 begin
   Self.X := X;
   Self.Y := Y;
@@ -253,7 +262,8 @@ end;
 
 function TVec2i.Lerp(const X: TVec2i; dist: Single): TVec2i;
 begin
-  Result := (X - Self) * dist + Self;
+  Result.X := Trunc((X.X - Self.X) * dist + Self.X);
+  Result.Y := Trunc((X.Y - Self.Y) * dist + Self.Y);
 end;
 
  {TVec3f}
@@ -314,6 +324,7 @@ function TVec3f.Lerp(const X: TVec3f; dist: Single): TVec3f;
 begin
   Result := (X - Self) * dist + Self;     
 end;
+{$IFEND}
 
 end.
 

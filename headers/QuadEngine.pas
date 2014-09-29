@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.6.0 Umber header file for Embarcadero™ Delphi®
+  Quad engine 0.6.2 Umber header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -14,14 +14,15 @@
   For further information please visit:
   http://quad-engine.com
 
-==============================================================================}
+  For license see COPYING
+
+===============================================================================}
 
 unit QuadEngine;
 
 interface
 
-// Uncomment this define if Direct3D interfaces is needed
-{$DEFINE USED3D}
+{$INCLUDE QUADENGINE.INC}
 
 uses
   Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f;
@@ -91,7 +92,31 @@ type
     u, v    : Single;         { Texture UV coord }
     Tangent : TVector;        { Tangent vector }
     Binormal: TVector;        { Binormal vector }
+    {$IFNDEF FPC}
+    {$IF CompilerVersion > 17}
     class operator Implicit(const A: TVec2f): TVertex;
+    {$IFEND}
+    {$ENDIF}
+  end;
+
+  // Shader model
+  TQuadShaderModel = (qsmInvalid = 0,
+                      qsmNone    = 1,   // do not use shaders
+                      qsm20      = 2,   // shader model 2.0
+                      qsm30      = 3);  // shader model 3.0
+
+  // Initialization record
+  TRenderInit = packed record
+    Handle                    : THandle;
+    Width                     : Integer;
+    Height                    : Integer;
+    BackBufferCount           : Integer;
+    RefreshRate               : Integer;
+    Fullscreen                : Boolean;
+    SoftwareVertexProcessing  : Boolean;
+    MultiThreaded             : Boolean;
+    VerticalSync              : Boolean;
+    ShaderModel               : TQuadShaderModel;
   end;
 
   /// <summary>OnTimer Callback function prototype</summary>
@@ -165,13 +190,10 @@ type
     procedure GetSupportedScreenResolution(index: Integer; out Resolution: TCoord); stdcall;
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
+    procedure ShowCursor(Show: Boolean); stdcall;
+    procedure SetCursorPosition(x, y: integer); stdcall;
+    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
   end;
-
-  // Shader model
-  TQuadShaderModel = (qsmInvalid = 0,
-                      qsmNone    = 1,   // do not use shaders
-                      qsm20      = 2,   // shader model 2.0
-                      qsm30      = 3);  // shader model 3.0
 
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)
@@ -195,11 +217,6 @@ type
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight : Word); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
-    procedure CreateOrthoMatrix; stdcall;
-    procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
@@ -208,6 +225,7 @@ type
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
+    procedure InitializeEx(const ARenderInit: TRenderInit); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
@@ -425,6 +443,7 @@ type
   TOnMouseEvent = procedure(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
   TOnMouseWheelEvent = procedure(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
   TOnEvent = procedure; stdcall;
+  TOnWindowMove = procedure(const Xpos, Ypos: Integer); stdcall;
 
   {Quad Window}
 
@@ -446,6 +465,7 @@ type
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
+    procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
   end;
 
   {Quad Camera}
@@ -477,18 +497,22 @@ var
   Creator: TCreateQuadDevice;
 begin
   h := LoadLibrary(LibraryName);
-  Creator := GetProcAddress(h, CreateQuadDeviceProcName);
+  Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
   if Assigned(Creator) then
     Creator(Result);
 end;
 
 { TVertex }
 
+{$IFNDEF FPC}
+{$IF CompilerVersion > 17}
 class operator TVertex.Implicit(const A: TVec2f): TVertex;
 begin
   Result.x := A.X;
   Result.y := A.Y;
   Result.z := 0.0;
 end;
+{$IFEND}
+{$ENDIF}
 
 end.

@@ -7,6 +7,8 @@
 //             ║  ║ engine   ║
 //             ║  ║          ║
 //             ╚══╩══════════╝
+//
+// For license see COPYING
 //=============================================================================
 
 unit QuadEngine.Shader;
@@ -63,14 +65,15 @@ var
   i: Integer;
 begin
   for i := 0 to FBindedVariableCount - 1 do
-    if FBindedVariables[i].IsVS and
-      (FBindedVariables[i].RegisterIndex = ARegister) and
-      (FBindedVariables[i].Variable <> AVariable) then
-    begin
-      FBindedVariables[i].Variable := AVariable;
-      FBindedVariables[i].Size := ASize;
-      Exit;
-    end;
+    if FBindedVariables[i].IsVS and (FBindedVariables[i].RegisterIndex = ARegister) then
+      if (FBindedVariables[i].Variable <> AVariable) then
+      begin
+        FBindedVariables[i].Variable := AVariable;
+        FBindedVariables[i].Size := ASize;
+        Exit;
+      end
+      else
+        Exit;
 
   FBindedVariableCount := FBindedVariableCount + 1;
   SetLength(FBindedVariables, FBindedVariableCount);
@@ -93,14 +96,16 @@ var
   i: Integer;
 begin
   for i := 0 to FBindedVariableCount - 1 do
-    if not FBindedVariables[i].IsVS and
-      (FBindedVariables[i].RegisterIndex = ARegister) and
-      (FBindedVariables[i].Variable <> AVariable) then
-    begin
-      FBindedVariables[i].Variable := AVariable;
-      FBindedVariables[i].Size := ASize;
-      Exit;
-    end;
+    if not FBindedVariables[i].IsVS and (FBindedVariables[i].RegisterIndex = ARegister) then
+      if (FBindedVariables[i].Variable <> AVariable) then
+      begin
+        FBindedVariables[i].Variable := AVariable;
+        FBindedVariables[i].Size := ASize;
+        Exit;
+      end
+      else
+        Exit;
+
 
   FBindedVariableCount := FBindedVariableCount + 1;
   SetLength(FBindedVariables, FBindedVariableCount);

@@ -21,7 +21,7 @@ unit QuadEngine;
 interface
 
 // Uncomment this define if Direct3D interfaces is needed
-//{$DEFINE USED3D}
+{$DEFINE USED3D}
 
 uses
   Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f;
@@ -91,7 +91,29 @@ type
     u, v    : Single;         { Texture UV coord }
     Tangent : TVector;        { Tangent vector }
     Binormal: TVector;        { Binormal vector }
+    {$IF CompilerVersion > 17}
     class operator Implicit(const A: TVec2f): TVertex;
+    {$IFEND}
+  end;
+
+  // Shader model
+  TQuadShaderModel = (qsmInvalid = 0,
+                      qsmNone    = 1,   // do not use shaders
+                      qsm20      = 2,   // shader model 2.0
+                      qsm30      = 3);  // shader model 3.0
+
+  // Initialization record
+  TRenderInit = packed record
+    Handle                    : THandle;
+    Width                     : Integer;
+    Height                    : Integer;
+    BackBufferCount           : Integer;
+    RefreshRate               : Integer;
+    Fullscreen                : Boolean;
+    SoftwareVertexProcessing  : Boolean;
+    MultiThreaded             : Boolean;
+    VerticalSync              : Boolean;
+    ShaderModel               : TQuadShaderModel;
   end;
 
   /// <summary>OnTimer Callback function prototype</summary>
@@ -165,13 +187,10 @@ type
     procedure GetSupportedScreenResolution(index: Integer; out Resolution: TCoord); stdcall;
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
+    procedure ShowCursor(Show: Boolean); stdcall;
+    procedure SetCursorPosition(x, y: integer); stdcall;
+    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
   end;
-
-  // Shader model
-  TQuadShaderModel = (qsmInvalid = 0,
-                      qsmNone    = 1,   // do not use shaders
-                      qsm20      = 2,   // shader model 2.0
-                      qsm30      = 3);  // shader model 3.0
 
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)
@@ -179,6 +198,7 @@ type
     /// </summary>Retrieves the available texture memory.
     /// This will return all available texture memory including AGP aperture.</summary>
     /// <returns>Available memory size in bytes</returns>
+    function GetClipRect: TRect; stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
@@ -195,10 +215,6 @@ type
     procedure ChangeResolution(AWidth, AHeight : Word); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure CreateOrthoMatrix; stdcall;
-    procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
-    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
@@ -207,6 +223,7 @@ type
     procedure FlushBuffer; stdcall;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
+    procedure InitializeEx(const ARenderInit: TRenderInit); stdcall;
     procedure InitializeFromIni(AHandle: THandle; AFilename: PWideChar); stdcall;
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
@@ -394,17 +411,37 @@ type
                    mbMiddle = 2,
                    mbX1 = 3,
                    mbX2 = 4);
+
   TPressedMouseButtons = packed record
     case Integer of
       0: (Left, Right, Middle, X1, X2: Boolean);
-      2: (a: array[TMouseButtons] of Boolean);
+      1: (a: array[TMouseButtons] of Boolean);
   end;
 
-  TOnKeyPress = procedure(Key: Word); stdcall;
-  TOnMouseMoveEvent = procedure(APosition: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
-  TOnMouseEvent = procedure(APosition: TVec2i; AButtons: TMouseButtons; APressedButtons: TPressedMouseButtons); stdcall;
-  TOnMouseWheelEvent = procedure(APosition: TVec2i; AVector: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
+  TKeyButtons = (kbNone = 0,
+                 kbShift = 1,
+                 kbLShift = 2,
+                 kbRShift = 3,
+                 kbCtrl = 4,
+                 kbLCtrl = 5,
+                 kbRCtrl = 6,
+                 kbAlt = 7,
+                 kbLAlt = 8,
+                 kbRAlt = 9);
+
+  TPressedKeyButtons = packed record
+    case Integer of
+      0: (None, Shift, LShift, RShift, Ctrl, LCtrl, RCtrl, Alt, LAlt, RAlt: Boolean);
+      1: (a: array[TKeyButtons] of Boolean);
+  end;
+
+  TOnKeyPress = procedure(const AKey: Word; const APressedButtons: TPressedKeyButtons); stdcall;
+  TOnKeyChar = procedure(const ACharCode: LongInt; const APressedButtons: TPressedKeyButtons); stdcall;
+  TOnMouseMoveEvent = procedure(const APosition: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseEvent = procedure(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
+  TOnMouseWheelEvent = procedure(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
   TOnEvent = procedure; stdcall;
+  TOnWindowMove = procedure(const Xpos, Ypos: Integer); stdcall;
 
   {Quad Window}
 
@@ -418,6 +455,7 @@ type
 
     procedure SetOnKeyDown(OnKeyDown: TOnKeyPress); stdcall;
     procedure SetOnKeyUp(OnKeyUp: TOnKeyPress); stdcall;
+    procedure SetOnKeyChar(OnKeyChar: TOnKeyChar); stdcall;
     procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
     procedure SetOnClose(OnClose: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
@@ -425,19 +463,22 @@ type
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
+    procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
   end;
 
   {Quad Camera}
 
   IQuadCamera = interface(IUnknown)
   ['{BBC0BBF2-7602-489A-BE2A-37D681B7A242}']
-    procedure Shift(AXShift, AYShift: Single); stdcall;
-    procedure Shear(AXShear, AYShear: Single); stdcall;
-    procedure Zoom(AScale: Single); stdcall;
+    procedure Scale(AScale: Single); stdcall;
     procedure Rotate(AAngle: Single); stdcall;
-    procedure Translate(AXDistance, AYDistance: Single); stdcall;
+    procedure Translate(const ADistance: TVec2f); stdcall;
     procedure Reset; stdcall;
-    procedure ApplyTransform; stdcall;
+    procedure Enable; stdcall;
+    procedure Disable; stdcall;
+    function GetPosition: TVec2f; stdcall;
+    function GetAngle: Single; stdcall;
+    function GetScale: Single; stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
@@ -461,11 +502,13 @@ end;
 
 { TVertex }
 
+{$IF CompilerVersion > 17}
 class operator TVertex.Implicit(const A: TVec2f): TVertex;
 begin
   Result.x := A.X;
   Result.y := A.Y;
   Result.z := 0.0;
 end;
+{$IFEND}
 
 end.

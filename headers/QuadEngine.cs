@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.6.0 Umber header file for Visual C#
+  Quad engine 0.6.2 Umber header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -152,6 +152,9 @@ namespace QuadEngine
         void GetSupportedScreenResolution(int index, out TCoord Resolution); 
         void SetActiveMonitor(byte AMonitorIndex);
         void SetOnErrorCallBack(IntPtr TOnErrorFunction);   // todo: Delegate
+        void ShowCursor(bool Show);
+        void SetCursorPosition(int x, int y); 
+        void SetCursorProperties(UInt32 XHotSpot, UInt32 YHotSpot, IQuadTexture Image);
     }
  
     /* Quad Render */
@@ -161,6 +164,21 @@ namespace QuadEngine
                                  qsmNone    = 1,   // do not use shaders
                                  qsm20      = 2,   // shader model 2.0
                                  qsm30      = 3};  // shader model 3.0
+
+    // Initialization record
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TRenderInit {
+        UInt32 Handle;
+        int Width;
+        int Height;
+        int BackBufferCount;
+        int RefreshRate;
+        bool Fullscreen;
+        bool SoftwareVertexProcessing;
+        bool MultiThreaded;
+        bool VerticalSync;
+        TQuadShaderModel ShaderModel;
+    }
 
     [ComImport]
     [Guid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")]
@@ -187,11 +205,6 @@ namespace QuadEngine
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
-        void CreateOrthoMatrix();
-        void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, double u1, double v1, double u2, double v2, UInt32 Color);
-        void DrawRect(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color);
-        void DrawRectRot(ref Vec2f PointA, ref Vec2f PointB, double Angle, double Scale, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color);
-        void DrawRectRotAxis(ref Vec2f PointA, ref Vec2f PointB, double Angle, double Scale, ref Vec2f Axis, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color);
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
@@ -199,6 +212,7 @@ namespace QuadEngine
         void Finalize();
         void FlushBuffer();
         void Initialize(IntPtr AHandle, int AWidth, int AHeight, bool AIsFullscreen, TQuadShaderModel AShaderModel = TQuadShaderModel.qsm20);
+        void InitializeEx(ref TRenderInit ARenderInit);
         void InitializeFromIni(IntPtr AHandle, string AFilename);
         void Polygon(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f PointC, ref Vec2f PointD, UInt32 Color);
         void Rectangle(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
@@ -474,6 +488,7 @@ namespace QuadEngine
     public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
     public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
     public delegate void TOnMouseWheelEvent(Vec2i APosition, Vec2i AVector, TPressedMouseButtons APressedButtons); 
+    public delegate void TOnWindowMove(int Xpos, int Ypos); 
 
     [ComImport]
     [Guid("8EB98692-67B1-4E64-9090-B6A0F47054BA")]
@@ -496,6 +511,7 @@ namespace QuadEngine
         void SetOnMouseUp(TOnMouseEvent OnMouseUp); 
         void SetOnMouseDblClick(TOnMouseEvent OnMouseDblClick); 
         void SetOnMouseWheel(TOnMouseWheelEvent OnMouseWheel); 
+        void SetOnWindowMove(TOnWindowMove OnWindowMove); 
     }
  
     /* Quad Camera */

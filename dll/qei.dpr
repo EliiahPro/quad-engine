@@ -1,3 +1,16 @@
+﻿//=============================================================================
+//             ╔═══════════╦═╗
+//             ║           ║ ║
+//             ║           ║ ║
+//             ║ ╔╗ ║║ ╔╗ ╔╣ ║
+//             ║ ╚╣ ╚╝ ╚╩ ╚╝ ║
+//             ║  ║ engine   ║
+//             ║  ║          ║
+//             ╚══╩══════════╝
+//
+// for license see COPYING
+//=============================================================================
+
 //Theory is - when you know everything but nothing works.
 //Practice is - when all works, but you don't know why.
 //We combine theory and practice - nothing works and nobody knows why
@@ -7,13 +20,13 @@ library qei;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
-//{$DEFINE DEBUG}
+{$INCLUDE QUADENGINE.INC}
 
 {$R 'Shaders.res' 'Shaders.rc'}
 
 uses
   Windows,
-  QuadEngine in '..\QuadEngine.pas',
+  QuadEngine in '..\headers\QuadEngine.pas',
   QuadEngine.Device in '..\QuadEngine.Device.pas',
   QuadEngine.Font in '..\QuadEngine.Font.pas',
   QuadEngine.Log in '..\QuadEngine.Log.pas',
@@ -25,9 +38,11 @@ uses
   QuadEngine.Utils in '..\QuadEngine.Utils.pas',
   QuadEngine.Window in '..\QuadEngine.Window.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
-  Vec2f in '..\Vec2f.pas',
-  QuadEngine.Color in '..\QuadEngine.Color.pas';
-//  QuadEngine.Profiler in '..\QuadEngine.Profiler.pas';
+  Vec2f in '..\headers\Vec2f.pas',
+  QuadEngine.Color in '..\headers\QuadEngine.Color.pas'
+  {$IFDEF DEBUG}
+  , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
+  {$ENDIF};
 
 {$R *.res}
 

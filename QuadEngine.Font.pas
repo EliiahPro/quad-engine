@@ -7,6 +7,8 @@
 //             ║  ║ engine   ║
 //             ║  ║          ║
 //             ╚══╩══════════╝
+//
+// For license see COPYING
 //=============================================================================}
 
 unit QuadEngine.Font;
@@ -364,7 +366,7 @@ begin
                    FQuadChars[l].YPos / FTexture.TextureHeight),
                    TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth + FQuadChars[l].SizeX / FTexture.TextureWidth,
                    FQuadChars[l].YPos / FTexture.TextureHeight + FQuadChars[l].SizeY / FTexture.TextureHeight),
-                   AColor);
+                   CurrentColor);
 
         sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
 

@@ -16,7 +16,7 @@ var
   PressedButtons: TPressedMouseButtons;
   PressedButtons2: TPressedMouseButtons;
 
-procedure OnMouseMove(Position: TVec2i; APressedButtons: TPressedMouseButtons); stdcall;
+procedure OnMouseMove(const Position: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
 begin
   QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y)));
  //
