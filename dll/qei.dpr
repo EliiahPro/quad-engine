@@ -13,7 +13,7 @@ library qei;
 
 uses
   Windows,
-  QuadEngine in '..\QuadEngine.pas',
+  QuadEngine in '..\headers\QuadEngine.pas',
   QuadEngine.Device in '..\QuadEngine.Device.pas',
   QuadEngine.Font in '..\QuadEngine.Font.pas',
   QuadEngine.Log in '..\QuadEngine.Log.pas',
@@ -25,8 +25,8 @@ uses
   QuadEngine.Utils in '..\QuadEngine.Utils.pas',
   QuadEngine.Window in '..\QuadEngine.Window.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
-  Vec2f in '..\Vec2f.pas',
-  QuadEngine.Color in '..\QuadEngine.Color.pas'
+  Vec2f in '..\headers\Vec2f.pas',
+  QuadEngine.Color in '..\headers\QuadEngine.Color.pas'
   {$IFDEF DEBUG}
   , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
   {$ENDIF};
