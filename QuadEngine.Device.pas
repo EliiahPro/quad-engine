@@ -219,7 +219,6 @@ begin
     OnError(FLastErrorText);
 end;
 
-
 function TQuadDevice.GetIsResolutionSupported(AWidth, AHeight: Word): Boolean;
 var
   AResolution: TCoord;

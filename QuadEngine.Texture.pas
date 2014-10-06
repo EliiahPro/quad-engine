@@ -17,7 +17,7 @@ interface
 
 uses
   QuadEngine.Render, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, direct3d9,
-  TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs, Vec2f;
+  TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs, Vec2f, QuadEngine.TextureLoader;
 
 type
   TQuadTexture =  class(TInterfacedObject, IQuadTexture)
