@@ -21,6 +21,10 @@ using System.Runtime.InteropServices;
 
 namespace QuadEngine
 {
+    public static byte QuadEngineMinorVersion = 2;
+    public static byte QuadEngineMajorVersion = 6;
+    public static byte QuadEngineReleaseVersion = 0;
+
     // Blending mode types
     ///<summary>Blending mode types.</summary>     
     public enum TQuadBlendMode{qbmInvalid        = 0,
@@ -487,7 +491,7 @@ namespace QuadEngine
     public delegate void TOnCreate();
     public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
     public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
-    public delegate void TOnMouseWheelEvent(Vec2i APosition, Vec2i AVector, TPressedMouseButtons APressedButtons); 
+    public delegate void TOnMouseWheelEvent(Vec2i APosition, Vec2i AVector, TPressedMouseButtons APressedButtons);
     public delegate void TOnWindowMove(int Xpos, int Ypos); 
 
     [ComImport]
@@ -513,7 +517,7 @@ namespace QuadEngine
         void SetOnMouseWheel(TOnMouseWheelEvent OnMouseWheel); 
         void SetOnWindowMove(TOnWindowMove OnWindowMove); 
     }
- 
+
     /* Quad Camera */
  
     [ComImport]
@@ -539,6 +543,9 @@ namespace QuadEngine
     {
         [DllImport("qei.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "CreateQuadDevice", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateQuadDevice(out IQuadDevice Device); //[Out, MarshalAs(UnmanagedType.Interface)]
+
+        [DllImport("qei.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "IsSameVersion", CharSet = CharSet.Unicode)]
+        public static extern bool IsSameVersion(byte ARelease, byte AMajor, byte AMinor);
 
         [DllImport("qei.dll", EntryPoint = "SecretMagicFunction", CharSet = CharSet.Unicode)]
         public static extern string SecretMagicFunction();

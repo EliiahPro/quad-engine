@@ -31,6 +31,9 @@ const
   LibraryName: PChar = 'qei.dll';
   CreateQuadDeviceProcName: PChar = 'CreateQuadDevice';
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
+  QuadEngineMinorVersion: Byte = 2;
+  QuadEngineMajorVersion: Byte = 6;
+  QuadEngineReleaseVersion: Byte = 0;
 
 type
   ///<summary>Blending mode types.</summary>
@@ -485,6 +488,7 @@ type
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
   TSecretMagicFunction = function: PWideChar;
+  TCheckLibraryVersion = function(ARelease, AMajor, AMinor: Byte): Boolean; stdcall;
 
   function CreateQuadDevice: IQuadDevice;
 
@@ -495,11 +499,16 @@ function CreateQuadDevice: IQuadDevice;
 var
   h: THandle;
   Creator: TCreateQuadDevice;
+  CheckLibrary: TCheckLibraryVersion;
 begin
   h := LoadLibrary(LibraryName);
-  Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
-  if Assigned(Creator) then
-    Creator(Result);
+  CheckLibrary := TCheckLibraryVersion(GetProcAddress(h, 'IsSameVersion'));
+  if CheckLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion) then
+  begin
+    Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
+    if Assigned(Creator) then
+      Creator(Result);
+  end;
 end;
 
 { TVertex }

@@ -26,6 +26,7 @@ library qei;
 
 uses
   Windows,
+  SysUtils,
   QuadEngine in '..\headers\QuadEngine.pas',
   QuadEngine.Device in '..\QuadEngine.Device.pas',
   QuadEngine.Font in '..\QuadEngine.Font.pas',
@@ -55,7 +56,6 @@ begin
   ADevice := Pointer(QD);
 end;
 
-
 function CreateQuadDevice(out AQuadDevice: IQuadDevice): HResult; stdcall;
 begin
   Device := TQuadDevice.Create;
@@ -67,6 +67,15 @@ begin
     Result := E_FAIL;
 end;
 
+function IsSameVersion(ARelease, AMajor, AMinor: Byte): Boolean; stdcall;
+begin
+  Result := (ARelease = QuadEngineReleaseVersion) and
+            (AMajor = QuadEngineMajorVersion) and
+            (AMinor = QuadEngineMinorVersion);
+
+  if not Result then
+    raise Exception.Create('Quad Engine version and header version does not match!');
+end;
 
 function SecretMagicFunction: PWideChar; stdcall;
 begin
@@ -78,6 +87,7 @@ end;
 exports
   CreateQuadDeviceEx,
   CreateQuadDevice,
+  IsSameVersion,
   SecretMagicFunction;
 
 begin
