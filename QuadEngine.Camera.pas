@@ -66,6 +66,7 @@ var
   SinA, CosA: Single;
   Rotate: D3DMATRIX;
   Translate: D3DMATRIX;
+  Scale: D3DMATRIX;
 begin
   FRender.FlushBuffer;
 
@@ -92,14 +93,15 @@ begin
   Translate._43 := 0;
   Translate._44 := 1;
 
-  // scale & rorate
-  Rotate._11 := 2 / FRender.Width * CosA * FScale;
+
+  // rotate
+  Rotate._11 := 2 / FRender.Width * CosA;
   Rotate._12 := - 2 / FRender.Height * SinA;
   Rotate._13 := 0;
   Rotate._14 := 0;
 
   Rotate._21 := 2 / FRender.Width * (- SinA);
-  Rotate._22 := -2 / FRender.Height * CosA * FScale;
+  Rotate._22 := -2 / FRender.Height * CosA;
   Rotate._23 := 0;
   Rotate._24 := 0;
 
@@ -113,7 +115,28 @@ begin
   Rotate._43 := 0;
   Rotate._44 := 1;
 
-  FViewMatrix := MultiplyMatrix(Translate, Rotate);
+  // scale
+  Scale._11 := FScale;
+  Scale._12 := 0;
+  Scale._13 := 0;
+  Scale._14 := 0;
+
+  Scale._21 := 0;
+  Scale._22 := FScale;
+  Scale._23 := 0;
+  Scale._24 := 0;
+
+  Scale._31 := 0;
+  Scale._32 := 0;
+  Scale._33 := 1;
+  Scale._34 := 0;
+
+  Scale._41 := 0;
+  Scale._42 := 0;
+  Scale._43 := 0;
+  Scale._44 := 1;
+
+  FViewMatrix := MultiplyMatrix(MultiplyMatrix(Translate, Rotate), Scale);
 
   Device.LastResultCode := FRender.D3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
   FRender.ViewMatrix := FViewMatrix;
