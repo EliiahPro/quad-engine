@@ -87,8 +87,8 @@ begin
   Translate._33 := 1;
   Translate._34 := 0;
 
-  Translate._41 := -(FRender.Width / 2);
-  Translate._42 := -(FRender.Height / 2);
+  Translate._41 := -(FRender.Width / 2) - FXTranslation;
+  Translate._42 := -(FRender.Height / 2) - FYTranslation;
   Translate._43 := 0;
   Translate._44 := 1;
 
@@ -114,29 +114,6 @@ begin
   Rotate._44 := 1;
 
   FViewMatrix := MultiplyMatrix(Translate, Rotate);
-
-  // translate backward
-  Translate._11 := 1;
-  Translate._12 := 0;
-  Translate._13 := 0;
-  Translate._14 := 0;
-
-  Translate._21 := 0;
-  Translate._22 := 1;
-  Translate._23 := 0;
-  Translate._24 := 0;
-
-  Translate._31 := 0;
-  Translate._32 := 0;
-  Translate._33 := 1;
-  Translate._34 := 0;
-
-  Translate._41 := -(FXTranslation * 2) / FRender.Width * FSCale;
-  Translate._42 := (FYTranslation * 2) / FRender.Height * FSCale;
-  Translate._43 := 0;
-  Translate._44 := 1;
-
-  FViewMatrix := MultiplyMatrix(FViewMatrix, Translate);
 
   Device.LastResultCode := FRender.D3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
   FRender.ViewMatrix := FViewMatrix;
