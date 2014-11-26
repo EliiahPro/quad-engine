@@ -31,6 +31,8 @@ type
     FOnKeyUp: TOnKeyPress;
     FOnCreate: TOnEvent;
     FOnClose: TOnEvent;
+    FOnActivate: TOnEvent;
+    FOnDeactivate: TOnEvent;
     FOnMouseMove: TOnMouseMoveEvent;
     FOnMouseDown: TOnMouseEvent;
     FOnMouseUp: TOnMouseEvent;
@@ -55,6 +57,8 @@ type
     procedure SetOnKeyChar(OnKeyChar: TOnKeyChar); stdcall;
     procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
     procedure SetOnClose(OnClose: TOnEvent); stdcall;
+    procedure SetOnActivate(OnActivate: TOnEvent); stdcall;
+    procedure SetOnDeactivate(OnDeactivate: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
     procedure SetOnMouseDown(OnMouseDown: TOnMouseEvent); stdcall;
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
@@ -132,10 +136,18 @@ begin
 
   WM_ACTIVATEAPP:
     begin
-     if wparam <> WA_INACTIVE then
-       if Assigned(Device) then
-        if Device.Render.IsInitialized then
-          Device.Render.ResetDevice;
+      if wparam <> WA_INACTIVE then
+      begin
+        if Assigned(Device) then
+          if Device.Render.IsInitialized then
+            Device.Render.ResetDevice;
+
+        if Assigned(Self) and Assigned(FOnActivate) then
+          FOnActivate;
+      end
+      else
+        if Assigned(Self) and Assigned(FOnDeactivate) then
+          FOnDeactivate;
 
       Result := 0;
     end;
@@ -174,6 +186,8 @@ begin
   FOnKeyUp := nil;
   FOnCreate := nil;
   FOnMove := nil;
+  FOnActivate := nil;
+  FOnDeactivate := nil;
 end;
 
 function TQuadWindow.GetHandle: THandle;
@@ -362,6 +376,11 @@ begin
   SetWindowPos(FHandle, 0, AXpos, AYPos, 0, 0, SWP_NOSIZE or SWP_NOZORDER);
 end;
 
+procedure TQuadWindow.SetOnActivate(OnActivate: TOnEvent);
+begin
+  FOnActivate := OnActivate;
+end;
+
 procedure TQuadWindow.SetOnCreate(OnCreate: TOnEvent);
 begin
   FOnCreate := OnCreate;
@@ -370,6 +389,11 @@ end;
 procedure TQuadWindow.SetOnClose(OnClose: TOnEvent);
 begin
   FOnClose := OnClose;
+end;
+
+procedure TQuadWindow.SetOnDeactivate(OnDeactivate: TOnEvent);
+begin
+  FOnDeactivate := OnDeactivate;
 end;
 
 procedure TQuadWindow.SetOnKeyChar(OnKeyChar: TOnKeyChar);

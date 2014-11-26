@@ -31,7 +31,7 @@ const
   LibraryName: PChar = 'qei.dll';
   CreateQuadDeviceProcName: PChar = 'CreateQuadDevice';
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
-  QuadEngineMinorVersion: Byte = 2;
+  QuadEngineMinorVersion: Byte = 3;
   QuadEngineMajorVersion: Byte = 6;
   QuadEngineReleaseVersion: Byte = 0;
 
@@ -463,6 +463,8 @@ type
     procedure SetOnKeyChar(OnKeyChar: TOnKeyChar); stdcall;
     procedure SetOnCreate(OnCreate: TOnEvent); stdcall;
     procedure SetOnClose(OnClose: TOnEvent); stdcall;
+    procedure SetOnActivate(OnActivate: TOnEvent); stdcall;
+    procedure SetOnDeactivate(OnDeactivate: TOnEvent); stdcall;
     procedure SetOnMouseMove(OnMouseMove: TOnMouseMoveEvent); stdcall;
     procedure SetOnMouseDown(OnMouseDown: TOnMouseEvent); stdcall;
     procedure SetOnMouseUp(OnMouseUp: TOnMouseEvent); stdcall;
