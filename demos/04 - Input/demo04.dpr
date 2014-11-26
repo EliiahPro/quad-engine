@@ -16,9 +16,9 @@ var
   PressedButtons: TPressedMouseButtons;
   PressedButtons2: TPressedMouseButtons;
 
-procedure OnMouseMove(const Position: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
+procedure OnMouseMove(const APosition: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
 begin
-  QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y)));
+  QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y)));
  //
   PressedButtons := APressedButtons;
 end;
@@ -47,7 +47,7 @@ begin
   QuadRender.EndRender;
 end;
 
-procedure OnMouseDown(APosition: TVec2i; AButtons: TMouseButtons; APressedButtons: TPressedMouseButtons); stdcall;
+procedure OnMouseDown(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 begin
   case AButtons of
     mbLeft: PressedButtons2.Left := True;
@@ -58,7 +58,7 @@ begin
   end;
 end;
 
-procedure OnMouseUp(APosition: TVec2i; AButtons: TMouseButtons; APressedButtons: TPressedMouseButtons); stdcall;
+procedure OnMouseUp(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 begin
   case AButtons of
     mbLeft: PressedButtons2.Left := False;
@@ -69,20 +69,20 @@ begin
   end;
 end;
 
-procedure OnMouseDblClick(Position: TVec2i; Buttons: TMouseButtons; PressedButtons: TPressedMouseButtons); stdcall;
+procedure OnMouseDblClick(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 begin
-  case Buttons of
-    mbLeft: QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y) + ' DblLeft'));
-    mbRight: QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y) + ' DblRight'));
-    mbMiddle: QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y) + ' DblMiddle'));
-    mbX1: QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y) + ' DblX1'));
-    mbX2: QuadWindow.SetCaption(PChar(IntToStr(Position.X) + 'x' + IntToStr(Position.Y) + ' DblX2'));
+  case AButtons of
+    mbLeft: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblLeft'));
+    mbRight: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblRight'));
+    mbMiddle: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblMiddle'));
+    mbX1: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblX1'));
+    mbX2: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblX2'));
   end;
 end;
 
-procedure OnMouseWheel(Position: TVec2i; Vector: TVec2i; PressedButtons: TPressedMouseButtons); stdcall;
+procedure OnMouseWheel(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
 begin
-  QuadWindow.SetCaption(PChar( 'Wheel: ' + IntToStr(Vector.X) + 'x' + IntToStr(Vector.Y)));
+  QuadWindow.SetCaption(PChar( 'Wheel: ' + IntToStr(AVector.X) + 'x' + IntToStr(AVector.Y)));
 end;
 
 begin
