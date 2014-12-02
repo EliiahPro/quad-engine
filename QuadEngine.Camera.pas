@@ -25,8 +25,7 @@ type
     FViewMatrix: D3DMATRIX;
     FAngle: Single;
     FScale: Single;
-    FXTranslation: Single;
-    FYTranslation: Single;
+    FTranslation: TVec2f;
   public
     constructor Create(AQuadRender: TQuadRender);
     procedure Scale(AScale: Single); stdcall;
@@ -38,6 +37,8 @@ type
     function GetPosition: TVec2f; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
+    procedure SetAngle(AAngle: Single); stdcall;
+    procedure SetPosition(APosition: TVec2f); stdcall;
   end;
 
 implementation
@@ -88,8 +89,8 @@ begin
   Translate._33 := 1;
   Translate._34 := 0;
 
-  Translate._41 := -(FRender.Width / 2) - FXTranslation;
-  Translate._42 := -(FRender.Height / 2) - FYTranslation;
+  Translate._41 := -(FRender.Width / 2) - FTranslation.X;
+  Translate._42 := -(FRender.Height / 2) - FTranslation.Y;
   Translate._43 := 0;
   Translate._44 := 1;
 
@@ -173,8 +174,7 @@ begin
   FViewMatrix._43 := 0;
   FViewMatrix._44 := 1;
 
-  FXTranslation := 0;
-  FYTranslation := 0;
+  FTranslation := TVec2f.Zero;
   FAngle := 0;
   FScale := 1.0;
 
@@ -188,8 +188,7 @@ end;
 
 procedure TQuadCamera.Translate(const ADistance: TVec2f);
 begin
-  FXTranslation := FXTranslation + ADistance.X;
-  FYTranslation := FYTranslation + ADistance.Y;
+  FTranslation := FTranslation + ADistance;
 end;
 
 procedure TQuadCamera.Scale(AScale: Single);
@@ -204,7 +203,7 @@ end;
 
 function TQuadCamera.GetPosition: TVec2f;
 begin
-  Result.Create(FXTranslation, FYTranslation);
+  Result := FTranslation;
 end;
 
 function TQuadCamera.GetAngle: Single;
@@ -215,6 +214,16 @@ end;
 function TQuadCamera.GetScale: Single;
 begin
   Result := FScale;
+end;
+
+procedure TQuadCamera.SetAngle(AAngle: Single);
+begin
+  FAngle := AAngle;
+end;
+
+procedure TQuadCamera.SetPosition(APosition: TVec2f);
+begin
+  FTranslation := APosition;
 end;
 
 

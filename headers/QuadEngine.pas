@@ -486,6 +486,8 @@ type
     function GetPosition: TVec2f; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
+    procedure SetAngle(AAngle: Single); stdcall;
+    procedure SetPosition(APosition: TVec2f); stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
