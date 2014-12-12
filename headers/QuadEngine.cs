@@ -492,6 +492,7 @@ namespace QuadEngine
     public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
     public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
     public delegate void TOnMouseWheelEvent(Vec2i APosition, Vec2i AVector, TPressedMouseButtons APressedButtons);
+    public delegate void TOnEvent();
     public delegate void TOnWindowMove(int Xpos, int Ypos); 
 
     [ComImport]
@@ -510,6 +511,9 @@ namespace QuadEngine
         void SetOnKeyUp(TOnKeyPress OnKeyUp); 
         void SetOnKeyChar(TOnKeyChar OnKeyChar); 
         void SetOnCreate(TOnCreate OnCreate); 
+        void SetOnClose(TOnEvent OnClose);
+        void SetOnActivate(TOnEvent OnActivate);
+        void SetOnDeactivate(TOnEvent OnDeactivate);
         void SetOnMouseMove(TOnMouseMoveEvent OnMouseMove); 
         void SetOnMouseDown(TOnMouseEvent OnMouseDown); 
         void SetOnMouseUp(TOnMouseEvent OnMouseUp); 
@@ -537,6 +541,8 @@ namespace QuadEngine
         Vec2f GetAngle();
         [PreserveSig]
         Vec2f GetScale();
+        void SetAngle(float AAngle);
+        void SetPosition(Vec2f APosition);
     }
 
     public static class QuadEngine
