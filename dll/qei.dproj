@@ -494,6 +494,7 @@
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
         <DCCReference Include="..\headers\Vec2f.pas"/>
         <DCCReference Include="..\headers\QuadEngine.Color.pas"/>
+        <DCCReference Include="..\QuadEngine.TextureLoader.pas"/>
         <None Include="..\QuadEngine.cs"/>
         <None Include="..\quadengine.h"/>
         <None Include="..\QuadEngine.inc"/>
