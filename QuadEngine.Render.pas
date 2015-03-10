@@ -313,6 +313,7 @@ begin
   begin
     FD3DPP.BackBufferWidth := FWidth;
     FD3DPP.BackBufferHeight := FHeight;
+    GetD3DDevice.Reset(FD3DPP);
 
     ResetDevice;
   end;
