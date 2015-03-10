@@ -93,7 +93,7 @@ type
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     procedure BeginRender; stdcall;
-    procedure ChangeResolution(AWidth, AHeight: Word); stdcall;
+    procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
@@ -303,16 +303,19 @@ end;
 //=============================================================================
 // Clears render target with color
 //=============================================================================
-procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word);
+procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True);
 begin
   FlushBuffer;
   FWidth := aWidth;
   FHeight := aHeight;
 
-//  FD3DPP.BackBufferWidth := FWidth;
-//  FD3DPP.BackBufferHeight := FHeight;
+  if not isVirtual then
+  begin
+    FD3DPP.BackBufferWidth := FWidth;
+    FD3DPP.BackBufferHeight := FHeight;
 
-//  ResetDevice;
+    ResetDevice;
+  end;
 
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
