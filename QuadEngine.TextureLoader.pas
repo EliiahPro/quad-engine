@@ -8,6 +8,12 @@ uses
 type
   TTextureSignature = array[0..31] of AnsiChar;
 
+  TTextureResult = record
+    Texture: IDirect3DTexture9;
+    Width, Height: Integer;
+    FrameWidth, FrameHeight: Integer;
+  end;
+
   TQuadCustomTextureFormat = class abstract
     class var
       aData : TD3DLockedRect;
@@ -49,8 +55,7 @@ type
     class var FFormats: TList<TQuadCustomTextureClass>;
   public
     class procedure Register(AQuadCustomTextureClass: TQuadCustomTextureClass);
-    class function LoadFromFile(AFileName: string): IDirect3DTexture9;
-    class function LoadFromStream(AStream: TStream): IDirect3DTexture9;
+    class function LoadFromStream(AStream: TStream): TTextureResult;
   end;
 
   TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadRAWTextureClass);
@@ -284,23 +289,13 @@ end;
 
 { TQuadTextureLoader }
 
-class function TQuadTextureLoader.LoadFromFile(AFileName: string): IDirect3DTexture9;
-var
-  Stream: TMemoryStream;
-begin
-  Stream := TMemoryStream.Create;
-  Stream.LoadFromFile(AFileName);
-  Result := LoadFromStream(Stream);
-  FreeAndNil(Stream);
-end;
-
-class function TQuadTextureLoader.LoadFromStream(AStream: TStream): IDirect3DTexture9;
+class function TQuadTextureLoader.LoadFromStream(AStream: TStream): TTextureResult;
 var
   tf: TQuadCustomTextureClass;
   Signature: TTextureSignature;
   res: Boolean;
 begin
-  Result := nil;
+  Result.Texture := nil;
 
   AStream.Position := 0;
   AStream.Read(Signature[0], 31);
@@ -321,7 +316,11 @@ begin
     Exit;
   end;
 
-  Result := tf.LoadFromStream(AStream, -1);
+  Result.Texture := tf.LoadFromStream(AStream, -1);
+  Result.Width := tf.Width;
+  Result.Height := tf.Height;
+  Result.FrameWidth := tf.FrameWidth;
+  Result.FrameHeight := tf.FrameHeight;
 
   FreeAndNil(AStream);
 end;

@@ -16,7 +16,7 @@ unit QuadEngine.Texture;
 interface
 
 uses
-  QuadEngine.Render, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, direct3d9,
+  QuadEngine.Render, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, direct3d9, classes,
   TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs, Vec2f, QuadEngine.TextureLoader;
 
 type
@@ -63,6 +63,8 @@ type
     procedure DrawRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxisFrame(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure LoadFromFile(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
+      APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
+    procedure LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
@@ -421,74 +423,26 @@ end;
 procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
   APatternWidth, APatternHeight: Integer; AColorKey: Integer);
 var
-  Texture : IDirect3DTexture9;
-  f: file;
-  Signature: array[0..31] of AnsiChar;
+  TextureResult: TTextureResult;
+  Stream: TMemoryStream;
 begin
-  FIsLoaded := False;
-
-                           {todo : size FWIDTH, FHEIGHT}
-//  if not (copy(UpperCase(aFilename), length(aFilename) - 3, 4) = '.DDS') then
-//  FQuadRender.LastResultCode := FQuadRender.D3DDevice.CreateTexture(NormalizeSize(aWidth), NormalizeSize(aHeight), 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Texture, nil)
-//  else
-//  FQuadRender.LastResultCode := FQuadRender.D3DDevice.CreateTexture(NormalizeSize(aWidth), NormalizeSize(aHeight), 0, 0, D3DFMT_DXT1, D3DPOOL_MANAGED, Texture, nil);
-
-
-//  if copy(UpperCase(aFilename), length(aFilename) - 3, 4) = '.DDS' then
-//  LoadDDSTexture(aFilename, rect);
-
   if Assigned(Device.Log) then
   begin
     Device.Log.Write(PWideChar('Loading texture "' + AFilename + '"'));
-
-    if not FileExists(AFilename) then
-    begin
-      Device.Log.Write(PWideChar('Texture "' + AFilename + '" not found!'));
-      Exit;
-    end;
   end;
 
-  try
-    AssignFile(f, AFilename);
-    Reset(f, 1);
-    BlockRead(f, Signature[0], 31);
-    CloseFile(f);
-
-    if Copy(Signature, 1, 2) = 'BM' then
-      LoadBMPTexture(AFilename, Texture, AColorKey);
-
-    if Copy(Signature, 1, 16) = 'TRUEVISION-XFILE' then
-      LoadTGATexture(AFilename, Texture);
-
-    if Copy(Signature, 2, 3) = 'PNG' then
-      LoadPNGTexture(AFilename, Texture);
-
-    if (Signature[6] = 'J') and (Signature[7] = 'F') and (Signature[8] = 'I') and (Signature[9] = 'F') then
-      LoadJPGTexture(AFilename, Texture);
-
-
-    Device.LastResultCode := Texture.UnlockRect(0);
-
-    AddTexture(ARegister, Texture);
-  except
-    if Assigned(Device.Log) then
-      Device.Log.Write(PWideChar('Error loading texture "' + AFilename + '". Bad format.'));
+  if not FileExists(AFilename) then
+  begin
+    Device.Log.Write(PWideChar('Texture "' + AFilename + '" not found!'));
     Exit;
   end;
 
-  FIsLoaded := True;
+  Stream := TMemoryStream.Create;
+  Stream.LoadFromFile(AFilename);
 
-  if (APatternWidth = 0) or (APatternHeight = 0)
-  then
-  begin
-    FPatternWidth := FFrameWidth;
-    FPatternHeight := FFrameHeight;
-  end
-  else
-  begin
-    FPatternWidth := APatternWidth;
-    FPatternHeight := APatternHeight;
-  end;
+  LoadFromStream(ARegister, Stream.Memory, Stream.Size, APatternWidth, APatternHeight, AColorKey);
+
+  FreeAndNil(Stream);
 end;
 
 //=============================================================================
@@ -528,6 +482,56 @@ begin
   Device.LastResultCode := Texture.UnlockRect(0);
 
   AddTexture(aRegister, Texture);
+
+  FIsLoaded := True;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadTexture.LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer;
+  APatternWidth, APatternHeight, AColorKey: Integer); stdcall;
+var
+  TextureResult: TTextureResult;
+  Stream: TMemoryStream;
+begin
+  FIsLoaded := False;
+
+  if Assigned(Device.Log) then
+  begin
+    Device.Log.Write(PWideChar('Loading texture from stream'));
+  end;
+
+  try
+    Stream := TMemoryStream.Create;
+    Stream.Write(AStream^, AStreamSize);
+
+    TextureResult := TQuadTextureLoader.LoadFromStream(Stream);
+
+    FreeAndNil(Stream);
+
+    AddTexture(ARegister, TextureResult.Texture);
+    FWidth := TextureResult.Width;
+    FHeight := TextureResult.Height;
+    FFrameWidth := TextureResult.FrameWidth;
+    FFrameHeight := TextureResult.FrameHeight;
+  except
+    if Assigned(Device.Log) then
+      Device.Log.Write(PWideChar('Error loading texture'));
+    Exit;
+  end;
+
+  if (APatternWidth = 0) or (APatternHeight = 0)
+  then
+  begin
+    FPatternWidth := FFrameWidth;
+    FPatternHeight := FFrameHeight;
+  end
+  else
+  begin
+    FPatternWidth := APatternWidth;
+    FPatternHeight := APatternHeight;
+  end;
 
   FIsLoaded := True;
 end;
