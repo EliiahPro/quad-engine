@@ -31,8 +31,8 @@ const
   LibraryName: PChar = 'qei.dll';
   CreateQuadDeviceProcName: PChar = 'CreateQuadDevice';
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
-  QuadEngineMinorVersion: Byte = 3;
-  QuadEngineMajorVersion: Byte = 6;
+  QuadEngineMinorVersion: Byte = 0;
+  QuadEngineMajorVersion: Byte = 7;
   QuadEngineReleaseVersion: Byte = 0;
 
 type

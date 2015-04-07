@@ -16,8 +16,8 @@ unit QuadEngine.Texture;
 interface
 
 uses
-  QuadEngine.Render, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, direct3d9, classes,
-  TGAReader, QuadEngine.Log, QuadEngine, System.SyncObjs, Vec2f, QuadEngine.TextureLoader;
+  QuadEngine.Render, direct3d9, classes, QuadEngine.Log,
+  QuadEngine, System.SyncObjs, Vec2f, QuadEngine.TextureLoader;
 
 type
   TQuadTexture =  class(TInterfacedObject, IQuadTexture)
@@ -33,10 +33,6 @@ type
     FPatternSize: TVec2f;
     FIsLoaded: Boolean;
     FSync: TCriticalSection;
-    procedure LoadBMPTexture(const aFilename: String; var Texture: IDirect3DTexture9; ColorKey: Integer = -1);
-    procedure LoadJPGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
-    procedure LoadTGATexture(const aFilename: String; var Texture: IDirect3DTexture9);
-    procedure LoadPNGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
     procedure SetTextureStages;
   public
     constructor Create(QuadRender: TQuadRender);
@@ -350,80 +346,9 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.LoadBMPTexture(const aFilename: String; var Texture: IDirect3DTexture9; ColorKey: Integer);
-var
-  bmp : TBitmap;
-  i, j : Integer;
-  p : Pointer;
-  aData : TD3DLockedRect;
-begin
-  bmp := TBitmap.Create;
-  bmp.LoadFromFile(aFilename);
-  if (bmp.PixelFormat <> pf24bit) and (bmp.PixelFormat <> pf32bit) then
-    bmp.PixelFormat := pf24bit;
-
-  FWidth := NormalizeSize(bmp.Width);
-  FHeight := NormalizeSize(bmp.Height);
-
-  FFrameWidth := bmp.Width;
-  FFrameHeight := bmp.Height;
-
-  Device.LastResultCode := FQuadRender.D3DDevice.CreateTexture(FWidth, FHeight, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Texture, nil);
-  Device.LastResultCode := Texture.LockRect(0, aData, nil, 0);
-
-  for I := 0 to FFrameHeight - 1 do
-  begin
-    p := bmp.ScanLine[i];
-    for j := 0 to FFrameWidth - 1 do
-    begin
-
-      if bmp.PixelFormat = pf24bit then
-      begin
-        Move(p^, aData.pBits^, 3);
-
-        Cardinal(aData.pBits^) := Cardinal(aData.pBits^) ;//and $FF000000 + $00FFFFFF;
-
-        Inc(NativeInt(aData.pBits), 3);
-
-        if ColorKey <> -1 then
-        begin
-
-          if (Byte(p^) = (ColorKey shr 16) and $FF) and
-             (Byte(Pointer(Integer(p) + 1)^) = (ColorKey shr 8) and $FF) and
-             (Byte(Pointer(Integer(p) + 2)^) = ColorKey and $FF) then
-            Byte(aData.pBits^) := 0
-          else
-            Byte(aData.pBits^) := 255;
-        end;
-
-        Inc(NativeInt(aData.pBits), 1);
-
-        Inc(NativeInt(p), 3);
-      end else
-      if bmp.PixelFormat = pf32bit then
-      begin
-        Move(p^, aData.pBits^, 4);
-
-        Cardinal(aData.pBits^) := Cardinal(aData.pBits^) and $FF000000 + $00FFFFFF;
-
-        Inc(NativeInt(aData.pBits), 4);
-
-        Inc(NativeInt(p), 4);
-      end;
-    end;
-    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
-  end;
-
-  bmp.Free;
-end;
-
-//=============================================================================
-//
-//=============================================================================
 procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
   APatternWidth, APatternHeight: Integer; AColorKey: Integer);
 var
-  TextureResult: TTextureResult;
   Stream: TMemoryStream;
 begin
   if Assigned(Device.Log) then
@@ -546,145 +471,6 @@ begin
   FFrameWidth := AWidth;
   FFrameHeight := AHeight;
   FIsLoaded := True;
-end;
-
-//=============================================================================
-//
-//=============================================================================
-procedure TQuadTexture.LoadJPGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
-var
-  bmp : TBitmap;
-  jpg : TJPEGImage;
-  i, j : Integer;
-  p : Pointer;
-  aData : TD3DLockedRect;
-begin
-  bmp := TBitmap.Create;
-  jpg := TJPEGImage.Create;
-  jpg.LoadFromFile(aFilename);
-  bmp.Assign(jpg);
-  jpg.Free;
-
-  FWidth := NormalizeSize(bmp.Width);
-  FHeight := NormalizeSize(bmp.Height);
-
-  FFrameWidth := bmp.Width;
-  FFrameHeight := bmp.Height;
-
-  Device.LastResultCode := FQuadRender.D3DDevice.CreateTexture(FWidth, FHeight, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Texture, nil);
-  Device.LastResultCode := Texture.LockRect(0, aData, nil, 0);
-
-  for I := 0 to FFrameHeight - 1 do
-  begin
-    p:= bmp.ScanLine[i];
-    for j:= 0 to FFrameWidth - 1 do
-    begin
-      Move(p^, aData.pBits^, 3);
-
-      Inc(NativeInt(aData.pBits), 3);
-
-//      if Byte(p^) + Byte(Pointer(Integer(p) + 1)^) + Byte(Pointer(Integer(p) + 2)^) < 128 then
-//      Byte(aData.pBits^) := 0 else
-      Byte(aData.pBits^) := 255;
-
-      Inc(NativeInt(aData.pBits), 1);
-
-      Inc(NativeInt(p), 3);
-    end;
-    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
-  end;
-
-  bmp.Free;
-end;
-
-//=============================================================================
-//
-//=============================================================================
-procedure TQuadTexture.LoadPNGTexture(const aFilename: String; var Texture: IDirect3DTexture9);
-var
-  bmp : TPngImage;
-  i, j : Integer;
-  p, pa : Pointer;
-  aData : TD3DLockedRect;
-begin
-  bmp := TPngImage.Create;
-  bmp.LoadFromFile(aFilename);
-
-  FWidth := NormalizeSize(bmp.Width);
-  FHeight := NormalizeSize(bmp.Height);
-
-  FFrameWidth := bmp.Width;
-  FFrameHeight := bmp.Height;
-
-  Device.LastResultCode := FQuadRender.D3DDevice.CreateTexture(FWidth, FHeight, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Texture, nil);
-  Device.LastResultCode := Texture.LockRect(0, aData, nil, 0);
-
-  for I := 0 to FFrameHeight - 1 do
-  begin
-    p := bmp.ScanLine[i];
-    pa := bmp.AlphaScanline[i];
-    for j:= 0 to FFrameWidth - 1 do
-    begin
-      Move(p^, aData.pBits^, 3);
-      Inc(NativeInt(aData.pBits), 3);
-      Inc(NativeInt(p), 3);
-
-      if pa <> nil then
-      begin
-        Move(pa^, aData.pBits^, 1);
-        Inc(NativeInt(pa), 1);
-      end;
-      Inc(NativeInt(aData.pBits), 1);
-
-    end;
-    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
-  end;
-
-  bmp.Free;
-end;
-
-//=============================================================================
-//
-//=============================================================================
-procedure TQuadTexture.LoadTGATexture(const aFilename: String; var Texture: IDirect3DTexture9);
-var
-  bmp: TBitmapEx;
-  i, j: Integer;
-  p: Pointer;
-  aData: TD3DLockedRect;
-begin
-  bmp := TBitmapEx.Create;
-  bmp.LoadFromFile(aFilename);
-
-  FWidth := NormalizeSize(bmp.Width);
-  FHeight := NormalizeSize(bmp.Height);
-
-  FFrameWidth := bmp.Width;
-  FFrameHeight := bmp.Height;
-
-  Device.LastResultCode := FQuadRender.D3DDevice.CreateTexture(FWidth, FHeight, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Texture, nil);
-  Device.LastResultCode := Texture.LockRect(0, aData, nil, 0);
-
-  for I := 0 to FFrameHeight - 1 do
-  begin
-    p:= bmp.ScanLine[i];
-    for j:= 0 to FFrameWidth - 1 do
-    begin
-      Move(p^, aData.pBits^, 4);
-
-      Inc(NativeInt(aData.pBits), 4);
-
-  {    if Byte(p^) + Byte(Pointer(Integer(p) + 1)^) + Byte(Pointer(Integer(p) + 2)^) < 128 then
-      Byte(aData.pBits^) := 0 else
-      Byte(aData.pBits^) := 255;
-                                    }
-
-      Inc(NativeInt(p), 4);
-    end;
-    Inc(NativeInt(aData.pBits), 4 * (FWidth - FFrameWidth));
-  end;
-
-  bmp.Free;
 end;
 
 procedure TQuadTexture.SetTextureStages;

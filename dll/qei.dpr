@@ -41,9 +41,10 @@ uses
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
   Vec2f in '..\headers\Vec2f.pas',
   QuadEngine.Color in '..\headers\QuadEngine.Color.pas',
-  QuadEngine.TextureLoader in '..\QuadEngine.TextureLoader.pas'
   {$IFDEF DEBUG}
-  , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
+  QuadEngine.TextureLoader in '..\QuadEngine.TextureLoader.pas';
+
+, QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
   {$ENDIF};
 
 {$R *.res}

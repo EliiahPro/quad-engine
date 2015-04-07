@@ -117,7 +117,7 @@ end;
 
 class function TQuadRAWTextureFormat.CheckSignature(ASignature: TTextureSignature): Boolean;
 begin
-  Result := True;
+  Result := False;
 end;
 
 class function TQuadRAWTextureFormat.LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9;

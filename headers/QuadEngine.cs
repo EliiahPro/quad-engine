@@ -21,8 +21,8 @@ using System.Runtime.InteropServices;
 
 namespace QuadEngine
 {
-    public static byte QuadEngineMinorVersion = 3;
-    public static byte QuadEngineMajorVersion = 6;
+    public static byte QuadEngineMinorVersion = 0;
+    public static byte QuadEngineMajorVersion = 7;
     public static byte QuadEngineReleaseVersion = 0;
 
     // Blending mode types
