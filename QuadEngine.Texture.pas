@@ -427,13 +427,12 @@ begin
     Device.Log.Write(PWideChar('Loading texture from stream'));
   end;
 
+  Stream := TMemoryStream.Create;
+  Stream.WriteBuffer((AStream)^, AStreamSize);
+  Stream.Position := 0;
+
   try
-    Stream := TMemoryStream.Create;
-    Stream.Write(AStream^, AStreamSize);
-
     TextureResult := TQuadTextureLoader.LoadFromStream(Stream);
-
-    FreeAndNil(Stream);
 
     AddTexture(ARegister, TextureResult.Texture);
     FWidth := TextureResult.Width;
@@ -445,6 +444,7 @@ begin
       Device.Log.Write(PWideChar('Error loading texture'));
     Exit;
   end;
+
 
   if (APatternWidth = 0) or (APatternHeight = 0)
   then

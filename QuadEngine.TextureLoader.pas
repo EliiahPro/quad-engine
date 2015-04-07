@@ -316,6 +316,7 @@ begin
     Exit;
   end;
 
+  AStream.Position := 0;
   Result.Texture := tf.LoadFromStream(AStream, -1);
   Result.Width := tf.Width;
   Result.Height := tf.Height;
