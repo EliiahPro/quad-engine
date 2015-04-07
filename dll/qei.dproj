@@ -64,18 +64,17 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <Version>7.0</Version>
-        <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_DebugInformation>False</DCC_DebugInformation>
         <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_DcuOutput>dcu</DCC_DcuOutput>
-        <VerInfo_MinorVer>0</VerInfo_MinorVer>
-        <VerInfo_MajorVer>1</VerInfo_MajorVer>
+        <VerInfo_MinorVer>7</VerInfo_MinorVer>
         <DCC_UnitSearchPath>../;../headers;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.7.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=0.7.0.0;Comments=</VerInfo_Keys>
         <Manifest_File>None</Manifest_File>
         <VerInfo_Build>0</VerInfo_Build>
     </PropertyGroup>
@@ -116,7 +115,7 @@
                     <VersionInfo Name="MajorVer">0</VersionInfo>
                     <VersionInfo Name="MinorVer">4</VersionInfo>
                     <VersionInfo Name="Release">0</VersionInfo>
-                    <VersionInfo Name="Build">403</VersionInfo>
+                    <VersionInfo Name="Build">406</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -128,7 +127,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">0.4.0.403</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">0.4.0.406</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
@@ -138,9 +137,8 @@
                     <VersionInfoKeys Name="Comments">http://quad-engine.com</VersionInfoKeys>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\15.0\Bpl\AstaD2010.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\15.0\Bpl\AstaD2010.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k210.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp210.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
                 <Source>
                     <Source Name="MainSource">qei.dpr</Source>
@@ -150,34 +148,17 @@
                 <Platform value="Win32">True</Platform>
             </Platforms>
             <Deployment>
+                <DeployFile LocalName="qei.dll" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="Win32"/>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="OSX32"/>
+                    <Platform Name="iOSSimulator"/>
+                    <Platform Name="iOSDevice"/>
+                </DeployFile>
                 <DeployFile LocalName="qei.rsm" Configuration="Release" Class="DebugSymbols">
                     <Platform Name="Win32">
                         <RemoteName>qei.rsm</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="qei.dll" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="OSX32">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="OSX32">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                    <Platform Name="iOSDevice">
-                        <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployClass Required="true" Name="DependencyPackage">
@@ -488,14 +469,13 @@
         <DCCReference Include="..\QuadEngine.Shader.pas"/>
         <DCCReference Include="..\QuadEngine.Sprite.pas"/>
         <DCCReference Include="..\QuadEngine.Texture.pas"/>
+        <DCCReference Include="..\QuadEngine.TextureLoader.pas"/>
         <DCCReference Include="..\QuadEngine.Timer.pas"/>
         <DCCReference Include="..\QuadEngine.Utils.pas"/>
         <DCCReference Include="..\QuadEngine.Window.pas"/>
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
         <DCCReference Include="..\headers\Vec2f.pas"/>
         <DCCReference Include="..\headers\QuadEngine.Color.pas"/>
-        <None Include="..\QuadEngine.cs"/>
-        <None Include="..\quadengine.h"/>
         <None Include="..\QuadEngine.inc"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

@@ -25,14 +25,14 @@ interface
 {$INCLUDE QUADENGINE.INC}
 
 uses
-  Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f;
+  Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f, Classes;
 
 const
   LibraryName: PChar = 'qei.dll';
   CreateQuadDeviceProcName: PChar = 'CreateQuadDevice';
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
-  QuadEngineMinorVersion: Byte = 3;
-  QuadEngineMajorVersion: Byte = 6;
+  QuadEngineMinorVersion: Byte = 0;
+  QuadEngineMajorVersion: Byte = 7;
   QuadEngineReleaseVersion: Byte = 0;
 
 type
@@ -279,6 +279,8 @@ type
     procedure DrawRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxisFrame(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure LoadFromFile(ARegister: Byte; AFilename: PWideChar; APatternWidth: Integer = 0;
+      APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
+    procedure LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;

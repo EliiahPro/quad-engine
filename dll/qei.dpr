@@ -35,6 +35,7 @@ uses
   QuadEngine.Shader in '..\QuadEngine.Shader.pas',
   QuadEngine.Sprite in '..\QuadEngine.Sprite.pas',
   QuadEngine.Texture in '..\QuadEngine.Texture.pas',
+  QuadEngine.TextureLoader in '..\QuadEngine.TextureLoader.pas',
   QuadEngine.Timer in '..\QuadEngine.Timer.pas',
   QuadEngine.Utils in '..\QuadEngine.Utils.pas',
   QuadEngine.Window in '..\QuadEngine.Window.pas',
@@ -42,7 +43,8 @@ uses
   Vec2f in '..\headers\Vec2f.pas',
   QuadEngine.Color in '..\headers\QuadEngine.Color.pas'
   {$IFDEF DEBUG}
-  , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
+
+, QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
   {$ENDIF};
 
 {$R *.res}
