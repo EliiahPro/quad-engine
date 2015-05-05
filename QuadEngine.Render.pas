@@ -155,7 +155,7 @@ implementation
 
 uses
   QuadEngine.Texture, QuadEngine.Shader, QuadEngine.Font, QuadEngine.Timer,
-  Math, QuadEngine.Device;
+  QuadEngine.Device;
 
 { TQuadRender }
 
@@ -395,7 +395,7 @@ var
   ver: array [0..5] of TVertex;
   Origin: TVec2f;
   Alpha: Single;
-  SinA, CosA: Extended;
+  SinA, CosA: Single;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -406,7 +406,7 @@ begin
 
   Alpha := Angle * (pi / 180);
 
-  SinCos(Alpha, SinA, CosA);
+  FastSinCos(Alpha, SinA, CosA);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
 
@@ -451,7 +451,7 @@ procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale
 var
   ver: array [0..5] of TVertex;
   Alpha: Single;
-  SinA, CosA: Extended;
+  SinA, CosA: Single;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -461,7 +461,7 @@ begin
 
   Alpha := Angle * (pi / 180);
 
-  SinCos(Alpha, SinA, CosA);
+  FastSinCos(Alpha, SinA, CosA);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
 
