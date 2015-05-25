@@ -37,7 +37,7 @@ type
     class operator Divide(A, B: TQuadColor): TQuadColor;
     class operator Divide(A: TQuadColor; B: Double): TQuadColor;
     constructor Create(R, G, B: Double; A: Double = 1.0); overload;
-    constructor Create(R, G, B: Byte; A: Byte = 255); overload;
+    constructor CreateB(R, G, B: Byte; A: Byte = 255); overload;
     constructor Create(ARGB: Cardinal); overload;
     function Lerp(const A: TQuadColor; dist: Single): TQuadColor; inline;
   case integer of
@@ -80,7 +80,7 @@ begin
   Self.B := B;
 end;
 
-constructor TQuadColor.Create(R, G, B: Byte; A: Byte = 255);
+constructor TQuadColor.CreateB(R, G, B: Byte; A: Byte = 255);
 begin
   Self.A := A / 255;
   Self.R := R / 255;
