@@ -27,7 +27,7 @@ type
   function GetAppMemoryUsed: Cardinal;
   function GetMemoryStatus: _MEMORYSTATUS;
   function NormalizeSize(int: Integer): Integer; assembler;
-  function IsSingleIn(AValue, Amin, Amax: Single): Boolean; inline;
+  function IsSingleIn(const AValue, Amin, Amax: Single): Boolean; inline;
   function GetCPUInfo: TCPUExtensions;
   procedure FastSinCos(Angle : Single; var Asin, Acos: Single); inline;
 
@@ -73,7 +73,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function IsSingleIn(AValue, Amin, Amax: Single): Boolean;
+function IsSingleIn(const AValue, Amin, Amax: Single): Boolean;
 begin
   Result := (AValue > Amin) and (AValue < Amax);
 end;
@@ -92,11 +92,13 @@ end;
 procedure FastSinCos(Angle : Single; var Asin, Acos: Single); inline;
 begin
   //always wrap input angle to -PI..PI
-  if Angle < -Pi then
-    Angle := Angle + Pi * 2
-  else
-    if Angle > Pi then
-      Angle := Angle - Pi * 2;
+  repeat
+    if Angle < -Pi then
+      Angle := Angle + Pi * 2
+    else
+      if Angle > Pi then
+        Angle := Angle - Pi * 2;
+  until IsSingleIn(Angle, -Pi, Pi);
 
   //compute sine
   if Angle < 0 then

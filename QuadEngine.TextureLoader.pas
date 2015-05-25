@@ -296,6 +296,7 @@ var
   res: Boolean;
 begin
   Result.Texture := nil;
+  tf := nil;
 
   AStream.Position := 0;
   AStream.Read(Signature[0], 31);
@@ -310,7 +311,7 @@ begin
       Break;
   end;
 
-  if not res then
+  if (not res) or (not Assigned(tf)) then
   begin
     FreeAndNil(AStream);
     Exit;
