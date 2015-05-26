@@ -19,32 +19,37 @@ type
       aData : TD3DLockedRect;
       Width, Height: Integer;
       FrameWidth, FrameHeight: Integer;
-    class function LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9; virtual; abstract;
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; virtual; abstract;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; virtual; abstract;
   end;
 
   TQuadBMPTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9; override;
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadPNGTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9; override;
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadTGATextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9; override;
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadJPGTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9; override;
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadRAWTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9; override;
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
+    class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
+  end;
+
+  TQuadDDSTextureFormat = class sealed(TQuadCustomTextureFormat)
+    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
@@ -55,7 +60,7 @@ type
     class var FFormats: TList<TQuadCustomTextureClass>;
   public
     class procedure Register(AQuadCustomTextureClass: TQuadCustomTextureClass);
-    class function LoadFromStream(AStream: TStream): TTextureResult;
+    class function LoadFromStream(AStream: TMemoryStream): TTextureResult;
   end;
 
   TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadRAWTextureClass);
@@ -63,7 +68,7 @@ type
 implementation
 
 uses
-  QuadEngine.Device, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, QuadEngine.Utils, TGAReader;
+  QuadEngine.Device, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, QuadEngine.Utils, TGAReader, BeRoDDS;
 
 { TQuadJPGTextureFormat }
 
@@ -72,7 +77,7 @@ begin
   Result := (ASignature[6] = 'J') and (ASignature[7] = 'F') and (ASignature[8] = 'I') and (ASignature[9] = 'F');
 end;
 
-class function TQuadJPGTextureFormat.LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9;
+class function TQuadJPGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp : TBitmap;
   jpg : TJPEGImage;
@@ -120,7 +125,7 @@ begin
   Result := False;
 end;
 
-class function TQuadRAWTextureFormat.LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9;
+class function TQuadRAWTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 begin
 
 end;
@@ -132,7 +137,7 @@ begin
   Result := Copy(ASignature, 1, 16) = 'TRUEVISION-XFILE';
 end;
 
-class function TQuadTGATextureFormat.LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9;
+class function TQuadTGATextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp: TBitmapEx;
   i, j: Integer;
@@ -174,7 +179,7 @@ begin
   Result := Copy(ASignature, 2, 3) = 'PNG';
 end;
 
-class function TQuadPNGTextureFormat.LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9;
+class function TQuadPNGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp : TPngImage;
   i, j : Integer;
@@ -225,7 +230,7 @@ begin
   Result := Copy(ASignature, 1, 2) = 'BM';
 end;
 
-class function TQuadBMPTextureFormat.LoadFromStream(AStream: TStream; ColorKey: Integer): IDirect3DTexture9;
+class function TQuadBMPTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp : TBitmap;
   i, j : Integer;
@@ -285,6 +290,29 @@ begin
   Device.LastResultCode := Result.UnlockRect(0);
 
   bmp.Free;
+end;
+
+class function TQuadDDSTextureFormat.CheckSignature(ASignature: TTextureSignature): Boolean;
+begin
+  Result := Copy(ASignature, 1, 4) = 'DDS ';
+end;
+
+class function TQuadDDSTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
+var
+  i, j: Integer;
+  p: Pointer;
+begin
+  LoadDDSImage(AStream.Memory, AStream.Size, p, FrameWidth, FrameWidth);
+
+  Width := NormalizeSize(FrameWidth);
+  Height := NormalizeSize(FrameHeight);
+
+  Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Result, nil);
+  Device.LastResultCode := Result.LockRect(0, aData, nil, 0);
+
+  System.Move(p, aData, FrameWidth * FrameHeight * 4);
+
+  Device.LastResultCode := Result.UnlockRect(0);
 end;
 
 { TQuadTextureLoader }
