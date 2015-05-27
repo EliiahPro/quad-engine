@@ -317,7 +317,7 @@ end;
 
 { TQuadTextureLoader }
 
-class function TQuadTextureLoader.LoadFromStream(AStream: TStream): TTextureResult;
+class function TQuadTextureLoader.LoadFromStream(AStream: TMemoryStream): TTextureResult;
 var
   tf: TQuadCustomTextureClass;
   Signature: TTextureSignature;
