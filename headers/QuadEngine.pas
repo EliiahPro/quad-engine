@@ -150,9 +150,15 @@ type
   ///<summary>This is main quad-engine interface. Use it methods to create resources, change states and draw primitives.</summary>
   IQuadDevice = interface(IUnknown)
     ['{E28626FF-738F-43B0-924C-1AFC7DEC26C7}']
+    /// <summary>Load font data from file and return a QuadFont object.</summary>
+    /// <param name="ATextureFilename">Filename of texture file.</param>
+    /// <param name="AUVFilename">Filename of additional font data file.</param>
+    /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
     function CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar; out pQuadFont: IQuadFont): HResult; stdcall;
     function CreateAndLoadTexture(ARegister: Byte; AFilename: PWideChar; out pQuadTexture: IQuadTexture;
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
+    /// <summary>Return a QuadCamera object.</summary>
+    /// <param name="pQuadCamera">IQuadCamera variable to recieve object.</param>
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     /// <summary>Return a QuadFont object.</summary>
     /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
@@ -217,12 +223,14 @@ type
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
+    /// </summary>Begin of render. Call this routine when before frame render begins.
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
+    /// </summary>End of render. Call this routine when at frame render end.
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;

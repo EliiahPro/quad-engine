@@ -110,9 +110,15 @@ namespace QuadEngine
     ///<summary>This is main quad-engine interface. Use it methods to create resources, change states and draw primitives.</summary>
     public interface IQuadDevice
     {
+        /// <summary>Load font data from file and return a QuadFont object.</summary>
+        /// <param name="ATextureFilename">Filename of texture file.</param>
+        /// <param name="AUVFilename">Filename of additional font data file.</param>
+        /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
         uint CreateAndLoadFont(string AFontTextureFilename, string AUVFilename, out IQuadFont IQuadFont);
         uint CreateAndLoadTexture(byte ARegister, string AFilename, out IQuadTexture IQuadTexture,
                                   int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
+        /// <summary>Return a QuadCamera object.</summary>
+        /// <param name="pQuadCamera">IQuadCamera variable to recieve object.</param>
         uint CreateCamera(out IQuadCamera IQuadCamera);
         /// <summary>Return a QuadFont object.</summary>
         /// <param name="IQuadFont">IQuadFont variable to recieve object.</param>
@@ -206,12 +212,14 @@ namespace QuadEngine
         [PreserveSig] Byte GetVSVersionMajor();
         [PreserveSig] Byte GetVSVersionMinor();
         void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
+        /// </summary>Begin of render. Call this routine when before frame render begins.
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
+        /// </summary>End of render. Call this routine when at frame render end.
         void EndRender();
         void Finalize();
         void FlushBuffer();
