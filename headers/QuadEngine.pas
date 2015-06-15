@@ -516,12 +516,15 @@ var
   CheckLibrary: TCheckLibraryVersion;
 begin
   h := LoadLibrary(LibraryName);
-  CheckLibrary := TCheckLibraryVersion(GetProcAddress(h, 'IsSameVersion'));
-  if CheckLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion) then
+  if h <> 0 then
   begin
-    Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
-    if Assigned(Creator) then
-      Creator(Result);
+    CheckLibrary := TCheckLibraryVersion(GetProcAddress(h, 'IsSameVersion'));
+    if CheckLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion) then
+    begin
+      Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
+      if Assigned(Creator) then
+        Creator(Result);
+    end;
   end;
 end;
 
