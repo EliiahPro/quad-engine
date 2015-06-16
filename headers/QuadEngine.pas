@@ -207,7 +207,7 @@ type
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)
     ['{D9E9C42B-E737-4CF9-A92F-F0AE483BA39B}']
-    /// </summary>Retrieves the available texture memory.
+    /// <summary>Retrieves the available texture memory.
     /// This will return all available texture memory including AGP aperture.</summary>
     /// <returns>Available memory size in bytes</returns>
     function GetClipRect: TRect; stdcall;
@@ -223,14 +223,14 @@ type
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
-    /// </summary>Begin of render. Call this routine when before frame render begins.
+    /// <summary>Begin of render. Call this routine before frame render begins.</summary>
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
-    /// </summary>End of render. Call this routine when at frame render end.
+    /// <summary>End of render. Call this routine at the end of frame render.</summary>
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;

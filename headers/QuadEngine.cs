@@ -212,14 +212,14 @@ namespace QuadEngine
         [PreserveSig] Byte GetVSVersionMajor();
         [PreserveSig] Byte GetVSVersionMinor();
         void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
-        /// </summary>Begin of render. Call this routine when before frame render begins.
+        /// <summary>Begin of render. Call this routine before frame render begins.</summary>
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
-        /// </summary>End of render. Call this routine when at frame render end.
+        /// <summary>End of render. Call this routine at the end of frame render.</summary>
         void EndRender();
         void Finalize();
         void FlushBuffer();
