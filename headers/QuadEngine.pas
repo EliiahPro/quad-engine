@@ -270,13 +270,14 @@ type
     function GetPatternCount: Integer; stdcall;
     function GetPatternHeight: Word; stdcall;
     function GetPatternWidth: Word; stdcall;
-    function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
+    function GetPixelColor(x, y: Integer; ARegister: Byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
     function GetTexture(i: Byte): {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}; stdcall;
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
+    procedure AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;    
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;

@@ -42,13 +42,14 @@ type
     function GetPatternCount: Integer; stdcall;
     function GetPatternHeight: Word; stdcall;
     function GetPatternWidth: Word; stdcall;
-    function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
+    function GetPixelColor(x, y: Integer; ARegister: Byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
     function GetTexture(i: Byte): IDirect3DTexture9; stdcall;
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -94,6 +95,14 @@ begin
   FTextures[ARegister] := ATexture;
 
   FSync.Leave;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadTexture.AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte);
+begin
+  AddTexture(ATargetRegister, AQuadTexture.GetTexture(ASourceRegister));
 end;
 
 //=============================================================================
@@ -305,7 +314,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: byte): Cardinal; stdcall;
+function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: Byte): Cardinal; stdcall;
 var
   aData : TD3DLockedRect;
 begin

@@ -279,6 +279,7 @@ namespace QuadEngine
         [PreserveSig]
         UInt16 GetTextureWidth();
         void AddTexture(byte ARegister, IntPtr ATexture);  // ATexture: IDirect3DTexture9
+        void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister); 
         void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(ref Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
