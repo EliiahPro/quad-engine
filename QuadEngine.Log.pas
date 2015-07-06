@@ -32,8 +32,6 @@ type
 
 implementation
 
-//uses QuadRender;
-
 { TQuadLog }
 
 //=============================================================================
@@ -62,6 +60,8 @@ end;
 destructor TQuadLog.Destroy;
 begin
   FSync.Free;
+
+  inherited;
 end;
 
 //=============================================================================

@@ -33,7 +33,6 @@ uses
   QuadEngine.Log in '..\QuadEngine.Log.pas',
   QuadEngine.Render in '..\QuadEngine.Render.pas',
   QuadEngine.Shader in '..\QuadEngine.Shader.pas',
-  QuadEngine.Sprite in '..\QuadEngine.Sprite.pas',
   QuadEngine.Texture in '..\QuadEngine.Texture.pas',
   QuadEngine.TextureLoader in '..\QuadEngine.TextureLoader.pas',
   QuadEngine.Timer in '..\QuadEngine.Timer.pas',

@@ -467,7 +467,6 @@
         <DCCReference Include="..\QuadEngine.Log.pas"/>
         <DCCReference Include="..\QuadEngine.Render.pas"/>
         <DCCReference Include="..\QuadEngine.Shader.pas"/>
-        <DCCReference Include="..\QuadEngine.Sprite.pas"/>
         <DCCReference Include="..\QuadEngine.Texture.pas"/>
         <DCCReference Include="..\QuadEngine.TextureLoader.pas"/>
         <DCCReference Include="..\QuadEngine.Timer.pas"/>

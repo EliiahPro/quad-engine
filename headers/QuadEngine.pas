@@ -413,15 +413,6 @@ type
     procedure SetState(AIsEnabled: Boolean); stdcall;
   end;
 
-  {Quad Sprite}     {not implemented yet. do not use}
-
-  IQuadSprite = interface(IUnknown)
-  ['{3E6AF547-AB0B-42ED-A40E-8DC10FC6C45F}']
-    procedure Draw; stdcall;
-    procedure SetPosition(X, Y: Double); stdcall;
-    procedure SetVelocity(X, Y: Double); stdcall;
-  end;
-
   TMouseButtons = (mbLeft = 0,
                    mbRight = 1,
                    mbMiddle = 2,
