@@ -63,7 +63,7 @@ type
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
-    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
+    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer; ASourceFormat: TRAWDataFormat = rdfARGB8); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
 
     property Texture[i: Byte]: IDirect3DTexture9 read GetTexture;
@@ -382,11 +382,13 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer);
+procedure TQuadTexture.LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer; ASourceFormat: TRAWDataFormat);
 var
   Texture: IDirect3DTexture9;
   i, j: Integer;
   LockedRect: TD3DLockedRect;
+  PixelData: Cardinal;
+  a, r, g, b: Byte;
 begin
   FIsLoaded := False;
 
@@ -406,7 +408,15 @@ begin
   begin
     for j := 0 to FFrameWidth - 1 do
     begin
-      Move(AData^, LockedRect.pBits^, 4);
+      case ASourceFormat of
+        rdfARGB8: Move(AData^, LockedRect.pBits^, 4);
+        rdfRGBA8: begin
+                    PixelData := Cardinal(AData^);
+                    a := PixelData and $FF;
+                    PixelData := PixelData shr 8 + a shl 24;
+                    Move(PixelData, LockedRect.pBits^, 1);
+                  end;
+      end;
       Inc(NativeInt(LockedRect.pBits), 4);
       Inc(NativeInt(AData), 4);
     end;

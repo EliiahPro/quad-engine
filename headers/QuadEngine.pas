@@ -264,6 +264,11 @@ type
 
   { Quad Texture }
 
+  // RAW data format
+  TRAWDataFormat = (rdfInvalid = 0,
+                    rdfARGB8   = 1,
+                    rdfRGBA8   = 2);
+
   IQuadTexture = interface(IUnknown)
     ['{9A617F86-2CEC-4701-BF33-7F4989031BBA}']
     function GetIsLoaded: Boolean; stdcall;
@@ -291,7 +296,7 @@ type
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
-    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
+    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer; ASourceFormat: TRAWDataFormat = rdfARGB8); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
   end;
 
