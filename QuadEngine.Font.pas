@@ -311,8 +311,8 @@ begin
 
   case AAlign of
     qfaLeft   : sx := Position.X;
-    qfaRight  : sx := Trunc(Position.X - TextWidth(AText, AScale));
-    qfaCenter : sx := Trunc(Position.X - TextWidth(AText, AScale) / 2);
+    qfaRight  : sx := Position.X - Trunc(TextWidth(AText, AScale));
+    qfaCenter : sx := Position.X - Trunc(TextWidth(AText, AScale) / 2);
     qfaJustify: begin
                   sx := Position.X;
 //                  width := TextWidth(AText, AScale);
