@@ -110,6 +110,8 @@ var
   MonitorsCount: Byte;
   i: Byte;
 begin
+  SetProcessDPIAware;
+
   FD3D := Direct3DCreate9(D3D_SDK_VERSION);
 
   FLog := TQuadLog.Create;
@@ -416,6 +418,9 @@ var
   Target: IDirect3DTexture9;
   RenderTarget : PRenderTarget;
 begin
+  if ((AWidth mod 4) > 0) or ((AHeight mod 4) > 0) then
+    Exception.Create('RenderTarget size must be scale of 4.');
+
   if AQuadTexture = nil then
   begin
     Device.CreateTexture(AQuadTexture);

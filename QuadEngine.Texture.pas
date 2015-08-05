@@ -42,13 +42,14 @@ type
     function GetPatternCount: Integer; stdcall;
     function GetPatternHeight: Word; stdcall;
     function GetPatternWidth: Word; stdcall;
-    function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
+    function GetPixelColor(x, y: Integer; ARegister: Byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
     function GetTexture(i: Byte): IDirect3DTexture9; stdcall;
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -62,7 +63,7 @@ type
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
-    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
+    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer; ASourceFormat: TRAWDataFormat = rdfARGB8); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
 
     property Texture[i: Byte]: IDirect3DTexture9 read GetTexture;
@@ -80,7 +81,7 @@ type
 implementation
 
 uses
-  QuadEngine.Utils, QuadEngine.Device, System.SysUtils;
+  QuadEngine.Utils, QuadEngine.Device, System.SysUtils, Math;
 
 { TQuadTexture }
 
@@ -94,6 +95,14 @@ begin
   FTextures[ARegister] := ATexture;
 
   FSync.Leave;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadTexture.AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte);
+begin
+  AddTexture(ATargetRegister, AQuadTexture.GetTexture(ASourceRegister));
 end;
 
 //=============================================================================
@@ -305,7 +314,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: byte): Cardinal; stdcall;
+function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: Byte): Cardinal; stdcall;
 var
   aData : TD3DLockedRect;
 begin
@@ -373,16 +382,26 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer);
+procedure TQuadTexture.LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer; ASourceFormat: TRAWDataFormat);
 var
   Texture: IDirect3DTexture9;
   i, j: Integer;
   LockedRect: TD3DLockedRect;
+  PixelData: Cardinal;
+  a, r, g, b: Byte;
 begin
   FIsLoaded := False;
 
-  FWidth := NormalizeSize(AWidth);
-  FHeight := NormalizeSize(AHeight);
+  if FQuadRender.IsSupportedNonPow2 then
+  begin
+    FWidth := Ceil(AWidth / 4) * 4;
+    FHeight := Ceil(AHeight / 4) * 4;
+  end
+  else
+  begin
+    FWidth := NormalizeSize(AWidth);
+    FHeight := NormalizeSize(AHeight);
+  end;
 
   FFrameWidth := AWidth;
   FFrameHeight := AHeight;
@@ -397,7 +416,27 @@ begin
   begin
     for j := 0 to FFrameWidth - 1 do
     begin
-      Move(AData^, LockedRect.pBits^, 4);
+      case ASourceFormat of
+        rdfARGB8: Move(AData^, LockedRect.pBits^, 4);
+        rdfRGBA8: begin
+                    PixelData := Cardinal(AData^);
+                    a := PixelData and $FF000000 shr 24;
+                    r := PixelData and $FF0000 shr 16;
+                    g := PixelData and $FF00 shr 8;
+                    b := PixelData and $FF;
+                    PixelData := a shl 24 + r shl 16 + g shl 8 + b;
+                    Move(PixelData, LockedRect.pBits^, 4);
+                  end;
+        rdfABGR8: begin
+                    PixelData := Cardinal(AData^);
+                    a := PixelData and $FF000000 shr 24;
+                    b := PixelData and $FF0000 shr 16;
+                    g := PixelData and $FF00 shr 8;
+                    r := PixelData and $FF;
+                    PixelData := a shl 24 + r shl 16 + g shl 8 + b;
+                    Move(PixelData, LockedRect.pBits^, 4);
+                  end;
+      end;
       Inc(NativeInt(LockedRect.pBits), 4);
       Inc(NativeInt(AData), 4);
     end;

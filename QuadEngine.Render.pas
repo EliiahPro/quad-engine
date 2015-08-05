@@ -18,7 +18,7 @@ interface
 {$INCLUDE QUADENGINE.INC}
 
 uses
-  Winapi.Windows, Winapi.direct3d9, Winapi.DXTypes, graphics, VCL.Imaging.pngimage,
+  Winapi.Windows, Winapi.Direct3D9, Winapi.DXTypes, Graphics, VCL.Imaging.pngimage,
   QuadEngine.Utils, QuadEngine.Log, Vec2f, QuadEngine, IniFiles,
   System.SysUtils {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
 
@@ -60,6 +60,7 @@ type
     FVertexBuffer: array [0..MaxBufferCount - 1] of TVertex;
     FTextureAdressing: TQuadTextureAdressing;
     FTextureFiltering: TQuadTextureFiltering;
+    FTextureMirroring: TQuadTextureMirroring;
     FViewMatrix: TD3DMatrix;
     FViewport: TRect;
     FWidth: Integer;
@@ -77,6 +78,7 @@ type
     procedure ReleaseVolatileResources;
     procedure CreateOrthoMatrix;
     procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
+    function GetIsSupportedNonPow2: Boolean;
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -93,7 +95,7 @@ type
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     procedure BeginRender; stdcall;
-    procedure ChangeResolution(AWidth, AHeight: Word); stdcall;
+    procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
@@ -120,6 +122,7 @@ type
     procedure SetTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
+    procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
@@ -149,13 +152,14 @@ type
     property IsInitialized: Boolean read FIsInitialized;
     property ShaderModel: TQuadShaderModel read FShaderModel;
     property ViewMatrix: TD3DMatrix read FViewMatrix write SetViewMatrix;
+    property IsSupportedNonPow2: Boolean read GetIsSupportedNonPow2;
   end;
 
 implementation
 
 uses
   QuadEngine.Texture, QuadEngine.Shader, QuadEngine.Font, QuadEngine.Timer,
-  Math, QuadEngine.Device;
+  QuadEngine.Device;
 
 { TQuadRender }
 
@@ -303,16 +307,20 @@ end;
 //=============================================================================
 // Clears render target with color
 //=============================================================================
-procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word);
+procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True);
 begin
   FlushBuffer;
   FWidth := aWidth;
   FHeight := aHeight;
 
-//  FD3DPP.BackBufferWidth := FWidth;
-//  FD3DPP.BackBufferHeight := FHeight;
+  if not isVirtual then
+  begin
+    FD3DPP.BackBufferWidth := FWidth;
+    FD3DPP.BackBufferHeight := FHeight;
+    GetD3DDevice.Reset(FD3DPP);
 
-//  ResetDevice;
+    ResetDevice;
+  end;
 
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
@@ -350,6 +358,8 @@ begin
   FIsDeviceLost := False;
   FIsAutoCalculateTBN := True;
   FIsInitialized := False;
+
+  FTextureMirroring := qtmNone;
 
   {$IFDEF DEBUG}
   FProfiler := TQuadProfiler.Create;
@@ -391,18 +401,34 @@ var
   ver: array [0..5] of TVertex;
   Origin: TVec2f;
   Alpha: Single;
-  SinA, CosA: Extended;
+  SinA, CosA: Single;
+  realUVA, realUVB, tmp: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
   RenderMode := D3DPT_TRIANGLELIST;
 
+  realUVA := UVA;
+  realUVB := UVB;
+
+  if FTextureMirroring in [qtmHorizontal, qtmBoth] then
+  begin
+    realUVA.X := UVB.X;
+    realUVB.X := UVA.X;
+  end;
+  if FTextureMirroring in [qtmVertical, qtmBoth] then
+  begin
+    realUVA.Y := UVB.Y;
+    realUVB.Y := UVA.Y;
+  end;
+
+
   Origin := (PointB - PointA) / 2 + PointA;
 
   Alpha := Angle * (pi / 180);
 
-  SinCos(Alpha, SinA, CosA);
+  FastSinCos(Alpha, SinA, CosA);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
 
@@ -427,10 +453,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := UVA.U;   ver[0].v := UVA.V;
-  ver[1].u := UVB.U;   ver[1].v := UVA.V;
-  ver[2].u := UVA.U;   ver[2].v := UVB.V;
-  ver[5].u := UVB.U;   ver[5].v := UVB.V;
+  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
+  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
+  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
+  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -447,7 +473,8 @@ procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale
 var
   ver: array [0..5] of TVertex;
   Alpha: Single;
-  SinA, CosA: Extended;
+  SinA, CosA: Single;
+  realUVA, realUVB, tmp: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -455,9 +482,24 @@ begin
 
   RenderMode := D3DPT_TRIANGLELIST;
 
+  realUVA := UVA;
+  realUVB := UVB;
+
+  if FTextureMirroring in [qtmHorizontal, qtmBoth] then
+  begin
+    realUVA.X := UVB.X;
+    realUVB.X := UVA.X;
+  end;
+  if FTextureMirroring in [qtmVertical, qtmBoth] then
+  begin
+    realUVA.Y := UVB.Y;
+    realUVB.Y := UVA.Y;
+  end;
+
+
   Alpha := Angle * (pi / 180);
 
-  SinCos(Alpha, SinA, CosA);
+  FastSinCos(Alpha, SinA, CosA);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
 
@@ -482,10 +524,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := UVA.U;   ver[0].v := UVA.V;
-  ver[1].u := UVB.U;   ver[1].v := UVA.V;
-  ver[2].u := UVA.U;   ver[2].v := UVB.V;
-  ver[5].u := UVB.U;   ver[5].v := UVB.V;
+  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
+  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
+  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
+  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -699,11 +741,27 @@ end;
 //=============================================================================
 procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver : array [0..5] of TVertex;
+  ver: array [0..5] of TVertex;
+  realUVA, realUVB, tmp: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
+
+  realUVA := UVA;
+  realUVB := UVB;
+
+  if FTextureMirroring in [qtmHorizontal, qtmBoth] then
+  begin
+    realUVA.X := UVB.X;
+    realUVB.X := UVA.X;
+  end;
+  if FTextureMirroring in [qtmVertical, qtmBoth] then
+  begin
+    realUVA.Y := UVB.Y;
+    realUVB.Y := UVA.Y;
+  end;
+
 
   RenderMode := D3DPT_TRIANGLELIST;
                                         { NOTE : use only 0, 1, 2, 5 vertex.
@@ -718,10 +776,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := UVA.X;  ver[0].v := UVA.Y;
-  ver[1].u := UVB.X;  ver[1].v := UVA.Y;
-  ver[2].u := UVA.X;  ver[2].v := UVB.Y;
-  ver[5].u := UVB.X;  ver[5].v := UVB.Y;
+  ver[0].u := realUVA.X;  ver[0].v := realUVA.Y;
+  ver[1].u := realUVB.X;  ver[1].v := realUVA.Y;
+  ver[2].u := realUVA.X;  ver[2].v := realUVB.Y;
+  ver[5].u := realUVB.X;  ver[5].v := realUVB.Y;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -831,6 +889,14 @@ end;
 function TQuadRender.GetD3DDevice: IDirect3DDevice9;
 begin
   Result := FD3DDevice;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadRender.GetIsSupportedNonPow2: Boolean;
+begin
+  Result := (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2 = 0) and (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL = 0)
 end;
 
 //=============================================================================
@@ -1606,6 +1672,15 @@ begin
     Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MAGFILTER, Value);
     Device.LastResultCode := FD3DDevice.SetSamplerState(i, D3DSAMP_MINFILTER, Value);
   end;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadRender.SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring);
+begin
+  FlushBuffer;
+  FTextureMirroring := ATextureMirroring;
 end;
 
 //=============================================================================
