@@ -412,9 +412,21 @@ begin
         rdfARGB8: Move(AData^, LockedRect.pBits^, 4);
         rdfRGBA8: begin
                     PixelData := Cardinal(AData^);
-                    a := PixelData and $FF;
-                    PixelData := PixelData shr 8 + a shl 24;
-                    Move(PixelData, LockedRect.pBits^, 1);
+                    a := PixelData and $FF000000 shr 24;
+                    r := PixelData and $FF0000 shr 16;
+                    g := PixelData and $FF00 shr 8;
+                    b := PixelData and $FF;
+                    PixelData := a shl 24 + r shl 16 + g shl 8 + b;
+                    Move(PixelData, LockedRect.pBits^, 4);
+                  end;
+        rdfABGR8: begin
+                    PixelData := Cardinal(AData^);
+                    a := PixelData and $FF000000 shr 24;
+                    b := PixelData and $FF0000 shr 16;
+                    g := PixelData and $FF00 shr 8;
+                    r := PixelData and $FF;
+                    PixelData := a shl 24 + r shl 16 + g shl 8 + b;
+                    Move(PixelData, LockedRect.pBits^, 4);
                   end;
       end;
       Inc(NativeInt(LockedRect.pBits), 4);

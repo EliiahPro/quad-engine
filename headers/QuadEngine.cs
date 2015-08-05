@@ -263,7 +263,8 @@ namespace QuadEngine
     // RAW data format
     public enum TRAWDataFormat{rdfInvalid   = 0,
                                rdfARGB8     = 1,
-                               rdfRGBA8     = 2};
+                               rdfRGBA8     = 2,
+                               rdfABGR8     = 3};
  
     [ComImport]
     [Guid("9A617F86-2CEC-4701-BF33-7F4989031BBA")]
