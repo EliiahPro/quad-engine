@@ -70,6 +70,12 @@ namespace QuadEngine
                                       qtfGaussianQuad    = 6,    /* 4-sample gaussian */
                                       qtfConvolutionMono = 7};   /* Convolution filter for monochrome textures */
 
+  // Texture Mirroring mode
+    public enum TQuadTextureMirroring{qtmInvalid    = 0,
+                                      qtmNone       = 1,   /* No mirroring */
+                                      qtmHorizontal = 2,   /* Horizontal mirroring */
+                                      qtmVertical   = 3,   /* Vertical mirroring */
+                                      qtmBoth       = 4};  /* Horizontal and vertical mirroring */
 
     // Vector record declaration
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -243,6 +249,7 @@ namespace QuadEngine
         void SetTexture(byte ARegister, IntPtr ATexture);
         void SetTextureAdressing(TQuadTextureAdressing ATextureAdressing);
         void SetTextureFiltering(TQuadTextureFiltering ATextureAdressing);
+        void SetTextureMirroring(TQuadTextureMirroring ATextureMirroring);
         void SetPointSize(UInt32 ASize);
         void SkipClipRect();
         void TakeScreenshot(string AFileName);

@@ -80,6 +80,13 @@ type
                            qtfGaussianQuad    = 6,    { 4-sample gaussian }
                            qtfConvolutionMono = 7);   { Convolution filter for monochrome textures }
 
+  // Texture Mirroring mode
+  TQuadTextureMirroring = (qtmInvalid    = 0,
+                           qtmNone       = 1,   { No mirroring }
+                           qtmHorizontal = 2,   { Horizontal mirroring }
+                           qtmVertical   = 3,   { Vertical mirroring }
+                           qtmBoth       = 4);  { Horizontal and vertical mirroring }
+
   // Vector record declaration
   TVector = packed record
     x: Single;
@@ -255,6 +262,7 @@ type
     procedure SetTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
+    procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
