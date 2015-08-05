@@ -451,10 +451,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := UVA.U;   ver[0].v := UVA.V;
-  ver[1].u := UVB.U;   ver[1].v := UVA.V;
-  ver[2].u := UVA.U;   ver[2].v := UVB.V;
-  ver[5].u := UVB.U;   ver[5].v := UVB.V;
+  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
+  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
+  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
+  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -522,10 +522,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := UVA.U;   ver[0].v := UVA.V;
-  ver[1].u := UVB.U;   ver[1].v := UVA.V;
-  ver[2].u := UVA.U;   ver[2].v := UVB.V;
-  ver[5].u := UVB.U;   ver[5].v := UVB.V;
+  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
+  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
+  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
+  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -774,10 +774,10 @@ begin
   ver[2].color := Color;
   ver[5].color := Color;
 
-  ver[0].u := UVA.X;  ver[0].v := UVA.Y;
-  ver[1].u := UVB.X;  ver[1].v := UVA.Y;
-  ver[2].u := UVA.X;  ver[2].v := UVB.Y;
-  ver[5].u := UVB.X;  ver[5].v := UVB.Y;
+  ver[0].u := realUVA.X;  ver[0].v := realUVA.Y;
+  ver[1].u := realUVB.X;  ver[1].v := realUVA.Y;
+  ver[2].u := realUVA.X;  ver[2].v := realUVB.Y;
+  ver[5].u := realUVB.X;  ver[5].v := realUVB.Y;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
