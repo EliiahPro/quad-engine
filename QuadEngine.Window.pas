@@ -81,6 +81,8 @@ end;
 
 function TQuadWindow.WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
 begin
+  Result := 0;
+
   case msg of
   WM_DESTROY:
     begin

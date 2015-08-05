@@ -33,17 +33,16 @@ uses
   QuadEngine.Log in '..\QuadEngine.Log.pas',
   QuadEngine.Render in '..\QuadEngine.Render.pas',
   QuadEngine.Shader in '..\QuadEngine.Shader.pas',
-  QuadEngine.Sprite in '..\QuadEngine.Sprite.pas',
   QuadEngine.Texture in '..\QuadEngine.Texture.pas',
   QuadEngine.TextureLoader in '..\QuadEngine.TextureLoader.pas',
   QuadEngine.Timer in '..\QuadEngine.Timer.pas',
   QuadEngine.Utils in '..\QuadEngine.Utils.pas',
   QuadEngine.Window in '..\QuadEngine.Window.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
+  QuadEngine.Color in '..\headers\QuadEngine.Color.pas',
   Vec2f in '..\headers\Vec2f.pas',
-  QuadEngine.Color in '..\headers\QuadEngine.Color.pas'
+  BeRoDDS in '..\BeRoDDS.pas'
   {$IFDEF DEBUG}
-
 , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
   {$ENDIF};
 

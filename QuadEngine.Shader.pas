@@ -196,7 +196,6 @@ var
   dwpPS: PDWORD;
   filePS: THandle;
   mapPS: THandle;
-  Version: Word;
 begin
   if Assigned(Device.Log) then
   begin

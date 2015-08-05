@@ -80,6 +80,13 @@ type
                            qtfGaussianQuad    = 6,    { 4-sample gaussian }
                            qtfConvolutionMono = 7);   { Convolution filter for monochrome textures }
 
+  // Texture Mirroring mode
+  TQuadTextureMirroring = (qtmInvalid    = 0,
+                           qtmNone       = 1,   { No mirroring }
+                           qtmHorizontal = 2,   { Horizontal mirroring }
+                           qtmVertical   = 3,   { Vertical mirroring }
+                           qtmBoth       = 4);  { Horizontal and vertical mirroring }
+
   // Vector record declaration
   TVector = packed record
     x: Single;
@@ -150,9 +157,15 @@ type
   ///<summary>This is main quad-engine interface. Use it methods to create resources, change states and draw primitives.</summary>
   IQuadDevice = interface(IUnknown)
     ['{E28626FF-738F-43B0-924C-1AFC7DEC26C7}']
+    /// <summary>Load font data from file and return a QuadFont object.</summary>
+    /// <param name="ATextureFilename">Filename of texture file.</param>
+    /// <param name="AUVFilename">Filename of additional font data file.</param>
+    /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
     function CreateAndLoadFont(AFontTextureFilename, AUVFilename: PWideChar; out pQuadFont: IQuadFont): HResult; stdcall;
     function CreateAndLoadTexture(ARegister: Byte; AFilename: PWideChar; out pQuadTexture: IQuadTexture;
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
+    /// <summary>Return a QuadCamera object.</summary>
+    /// <param name="pQuadCamera">IQuadCamera variable to recieve object.</param>
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     /// <summary>Return a QuadFont object.</summary>
     /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
@@ -201,7 +214,7 @@ type
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)
     ['{D9E9C42B-E737-4CF9-A92F-F0AE483BA39B}']
-    /// </summary>Retrieves the available texture memory.
+    /// <summary>Retrieves the available texture memory.
     /// This will return all available texture memory including AGP aperture.</summary>
     /// <returns>Available memory size in bytes</returns>
     function GetClipRect: TRect; stdcall;
@@ -217,12 +230,14 @@ type
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
+    /// <summary>Begin of render. Call this routine before frame render begins.</summary>
     procedure BeginRender; stdcall;
-    procedure ChangeResolution(AWidth, AHeight : Word); stdcall;
+    procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
+    /// <summary>End of render. Call this routine at the end of frame render.</summary>
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
     procedure FlushBuffer; stdcall;
@@ -247,6 +262,7 @@ type
     procedure SetTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
+    procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
@@ -256,19 +272,26 @@ type
 
   { Quad Texture }
 
+  // RAW data format
+  TRAWDataFormat = (rdfInvalid = 0,
+                    rdfARGB8   = 1,
+                    rdfRGBA8   = 2,
+                    rdfABGR8   = 3);
+
   IQuadTexture = interface(IUnknown)
     ['{9A617F86-2CEC-4701-BF33-7F4989031BBA}']
     function GetIsLoaded: Boolean; stdcall;
     function GetPatternCount: Integer; stdcall;
     function GetPatternHeight: Word; stdcall;
     function GetPatternWidth: Word; stdcall;
-    function GetPixelColor(x, y: Integer; ARegister: byte = 0): Cardinal; stdcall;
+    function GetPixelColor(x, y: Integer; ARegister: Byte = 0): Cardinal; stdcall;
     function GetSpriteHeight: Word; stdcall;
     function GetSpriteWidth: Word; stdcall;
     function GetTexture(i: Byte): {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}; stdcall;
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
+    procedure AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;    
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -282,7 +305,7 @@ type
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
     procedure LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer; APatternWidth: Integer = 0;
       APatternHeight: Integer = 0; AColorKey: Integer = -1); stdcall;
-    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer); stdcall;
+    procedure LoadFromRAW(ARegister: Byte; AData: Pointer; AWidth, AHeight: Integer; ASourceFormat: TRAWDataFormat = rdfARGB8); stdcall;
     procedure SetIsLoaded(AWidth, AHeight: Word); stdcall;
   end;
 
@@ -404,15 +427,6 @@ type
     procedure SetState(AIsEnabled: Boolean); stdcall;
   end;
 
-  {Quad Sprite}     {not implemented yet. do not use}
-
-  IQuadSprite = interface(IUnknown)
-  ['{3E6AF547-AB0B-42ED-A40E-8DC10FC6C45F}']
-    procedure Draw; stdcall;
-    procedure SetPosition(X, Y: Double); stdcall;
-    procedure SetVelocity(X, Y: Double); stdcall;
-  end;
-
   TMouseButtons = (mbLeft = 0,
                    mbRight = 1,
                    mbMiddle = 2,
@@ -508,12 +522,15 @@ var
   CheckLibrary: TCheckLibraryVersion;
 begin
   h := LoadLibrary(LibraryName);
-  CheckLibrary := TCheckLibraryVersion(GetProcAddress(h, 'IsSameVersion'));
-  if CheckLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion) then
+  if h <> 0 then
   begin
-    Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
-    if Assigned(Creator) then
-      Creator(Result);
+    CheckLibrary := TCheckLibraryVersion(GetProcAddress(h, 'IsSameVersion'));
+    if CheckLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion) then
+    begin
+      Creator := TCreateQuadDevice(GetProcAddress(h, CreateQuadDeviceProcName));
+      if Assigned(Creator) then
+        Creator(Result);
+    end;
   end;
 end;
 

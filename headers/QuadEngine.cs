@@ -70,6 +70,12 @@ namespace QuadEngine
                                       qtfGaussianQuad    = 6,    /* 4-sample gaussian */
                                       qtfConvolutionMono = 7};   /* Convolution filter for monochrome textures */
 
+  // Texture Mirroring mode
+    public enum TQuadTextureMirroring{qtmInvalid    = 0,
+                                      qtmNone       = 1,   /* No mirroring */
+                                      qtmHorizontal = 2,   /* Horizontal mirroring */
+                                      qtmVertical   = 3,   /* Vertical mirroring */
+                                      qtmBoth       = 4};  /* Horizontal and vertical mirroring */
 
     // Vector record declaration
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -110,9 +116,15 @@ namespace QuadEngine
     ///<summary>This is main quad-engine interface. Use it methods to create resources, change states and draw primitives.</summary>
     public interface IQuadDevice
     {
+        /// <summary>Load font data from file and return a QuadFont object.</summary>
+        /// <param name="ATextureFilename">Filename of texture file.</param>
+        /// <param name="AUVFilename">Filename of additional font data file.</param>
+        /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
         uint CreateAndLoadFont(string AFontTextureFilename, string AUVFilename, out IQuadFont IQuadFont);
         uint CreateAndLoadTexture(byte ARegister, string AFilename, out IQuadTexture IQuadTexture,
                                   int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
+        /// <summary>Return a QuadCamera object.</summary>
+        /// <param name="pQuadCamera">IQuadCamera variable to recieve object.</param>
         uint CreateCamera(out IQuadCamera IQuadCamera);
         /// <summary>Return a QuadFont object.</summary>
         /// <param name="IQuadFont">IQuadFont variable to recieve object.</param>
@@ -206,12 +218,14 @@ namespace QuadEngine
         [PreserveSig] Byte GetVSVersionMajor();
         [PreserveSig] Byte GetVSVersionMinor();
         void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
+        /// <summary>Begin of render. Call this routine before frame render begins.</summary>
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
+        /// <summary>End of render. Call this routine at the end of frame render.</summary>
         void EndRender();
         void Finalize();
         void FlushBuffer();
@@ -235,6 +249,7 @@ namespace QuadEngine
         void SetTexture(byte ARegister, IntPtr ATexture);
         void SetTextureAdressing(TQuadTextureAdressing ATextureAdressing);
         void SetTextureFiltering(TQuadTextureFiltering ATextureAdressing);
+        void SetTextureMirroring(TQuadTextureMirroring ATextureMirroring);
         void SetPointSize(UInt32 ASize);
         void SkipClipRect();
         void TakeScreenshot(string AFileName);
@@ -244,6 +259,12 @@ namespace QuadEngine
     }
  
     /* Quad Texture */
+
+    // RAW data format
+    public enum TRAWDataFormat{rdfInvalid   = 0,
+                               rdfARGB8     = 1,
+                               rdfRGBA8     = 2,
+                               rdfABGR8     = 3};
  
     [ComImport]
     [Guid("9A617F86-2CEC-4701-BF33-7F4989031BBA")]
@@ -271,6 +292,7 @@ namespace QuadEngine
         [PreserveSig]
         UInt16 GetTextureWidth();
         void AddTexture(byte ARegister, IntPtr ATexture);  // ATexture: IDirect3DTexture9
+        void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister); 
         void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(ref Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
@@ -281,7 +303,7 @@ namespace QuadEngine
         void DrawRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
         void DrawRotAxisFrame(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void LoadFromFile(byte ARegister, string AFilename, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
-        void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight);
+        void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight, TRAWDataFormat ASourceFormat = rdfARGB8);
         void SetIsLoaded(UInt16 AWidth, UInt16 AHeight);
     }
 

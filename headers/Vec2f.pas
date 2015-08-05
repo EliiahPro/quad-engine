@@ -105,7 +105,34 @@ type
       3: (a: array[0..2] of Single);
   end;
 
+{$IF CompilerVersion <= 17}
+function TVec2iCreate(X, Y: Integer): TVec2i;
+function TVec2fCreate(X, Y: Single): TVec2f;
+function TVec3fCreate(X, Y, Z: Single): TVec3f;
+{$IFEND}
+
 implementation
+
+{$IF CompilerVersion <= 17}
+function TVec2iCreate(X, Y: Integer): TVec2i;
+begin
+  Result.X := X;
+  Result.Y := Y;
+end;
+
+function TVec2fCreate(X, Y: Single): TVec2f;
+begin
+  Result.X := X;
+  Result.Y := Y;
+end;
+
+function TVec3fCreate(X, Y, Z: Single): TVec3f;
+begin
+  Result.X := X;
+  Result.Y := Y;
+  Result.Z := Z;
+end;
+{$IFEND}
 
   {TVec2f}
 
