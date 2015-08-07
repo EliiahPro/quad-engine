@@ -21,6 +21,9 @@
         <Projects Include="06 - Deffered shading\demo06.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="07 - Fonts\demo07.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -83,14 +86,23 @@
     <Target Name="demo06:Make">
         <MSBuild Projects="06 - Deffered shading\demo06.dproj" Targets="Make"/>
     </Target>
+    <Target Name="demo07">
+        <MSBuild Projects="07 - Fonts\demo07.dproj"/>
+    </Target>
+    <Target Name="demo07:Clean">
+        <MSBuild Projects="07 - Fonts\demo07.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="demo07:Make">
+        <MSBuild Projects="07 - Fonts\demo07.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="demo01;demo02;demo03;demo04;demo05;demo06"/>
+        <CallTarget Targets="demo01;demo02;demo03;demo04;demo05;demo06;demo07"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean;demo05:Clean;demo06:Clean"/>
+        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean;demo05:Clean;demo06:Clean;demo07:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make;demo05:Make;demo06:Make"/>
+        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make;demo05:Make;demo06:Make;demo07:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
