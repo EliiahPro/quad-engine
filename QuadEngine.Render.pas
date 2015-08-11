@@ -1573,6 +1573,9 @@ begin
 
       TQuadShader.DistanceField := TQuadShader.Create(Self);
       TQuadShader.DistanceField.LoadFromResource('DistantFieldPS20');
+
+      TQuadShader.CircleShader := TQuadShader.Create(Self);
+      TQuadShader.CircleShader.LoadFromResource('CirclePS20');
     end;
     qsm30: begin
       if Device.Log <> nil then
@@ -1582,6 +1585,10 @@ begin
       TQuadShader.DistanceField.LoadFromResource('DistantFieldVS30', False);
       TQuadShader.DistanceField.LoadFromResource('DistantFieldPS30');
       TQuadShader.DistanceField.BindVariableToVS(0, @FViewMatrix, 4);
+
+      TQuadShader.CircleShader := TQuadShader.Create(Self);
+      TQuadShader.CircleShader.LoadFromResource('CircleVS30', False);
+      TQuadShader.CircleShader.LoadFromResource('CirclePS30');
     end;
     qsmNone:
       if Device.Log <> nil then

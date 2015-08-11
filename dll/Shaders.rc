@@ -1,3 +1,6 @@
 DistantFieldPS20 RCDATA "DistantFieldPS20.bin"
 DistantFieldVS30 RCDATA "DistantFieldVS30.bin"
 DistantFieldPS30 RCDATA "DistantFieldPS30.bin"
+CirclePS20 RCDATA "CirclePS20.bin"
+CircleVS30 RCDATA "CircleVS30.bin"
+CirclePS30 RCDATA "CirclePS30.bin"

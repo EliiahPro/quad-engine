@@ -47,6 +47,7 @@ type
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
   class var
     DistanceField: TQuadShader;
+    CircleShader: TQuadShader;
   end;
 
 implementation
