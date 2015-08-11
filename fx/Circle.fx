@@ -35,15 +35,15 @@ float4 std_PS(vertexOutput Input) : COLOR0 {
 
     float2 uv = Input.TexCoord;
     
-    float d = distance(float2(0.5, 0.5), uv);
+    float d = distance(float2(0.5, 0.5), uv) * 2.0;
 
     if ((d > 1.0) || (d < Radius))
     {
-	Output = Input.Color;
+	Output = 0.0;
     }
     else
     {
-        Output = 0.0;
+        Output = Input.Color;
     }
             
     return Output;

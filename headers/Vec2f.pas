@@ -53,6 +53,7 @@ type
     class var FZero: TVec2f;
   public
     class operator Add(const A, B: TVec2f): TVec2f;
+    class operator Add(const A: TVec2f; X: Single): TVec2f;
     class operator Implicit(const A: TVec2i): TVec2f;
     class operator Subtract(X: Single; const A: TVec2f): TVec2f;
     class operator Subtract(const A: TVec2f; X: Single): TVec2f;
@@ -142,6 +143,12 @@ class operator TVec2f.Add(const A, B: TVec2f): TVec2f;
 begin
   Result.X := A.X + B.X;
   Result.Y := A.Y + B.Y;
+end;
+
+class operator TVec2f.Add(const A: TVec2f; X: Single): TVec2f;
+begin
+  Result.X := A.X + X;
+  Result.Y := A.Y + X;
 end;
 
 class operator TVec2f.Implicit(const A: TVec2i): TVec2f;

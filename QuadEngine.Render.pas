@@ -68,6 +68,7 @@ type
     FShaderModel: TQuadShaderModel;
     FOldScreenWidth: Integer;
     FOldScreenHeight: Integer;
+    FCircleRadius: Single;
     {$IFDEF DEBUG}
     FProfiler: TQuadProfiler;
     {$ENDIF}
@@ -97,6 +98,7 @@ type
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
+    procedure DrawCircle(const Center: TVec2f; Radius, InnerRadius: Single; Color: Cardinal); stdcall;
     procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
@@ -534,6 +536,19 @@ begin
   {$ENDIF}
 
   AddQuadToBuffer(ver);
+end;
+
+//=============================================================================
+// Draws circle
+//=============================================================================
+procedure TQuadRender.DrawCircle(const Center: TVec2f; Radius,
+  InnerRadius: Single; Color: Cardinal);
+begin
+  TQuadShader.CircleShader.BindVariableToPS(0, @FCircleRadius, 1);
+  FCircleRadius := InnerRadius / Radius;
+  TQuadShader.CircleShader.SetShaderState(True);
+  DrawRect(Center - Radius, Center + Radius, TVec2f.Zero, TVec2f.Create(1.0, 1.0), Color);
+  TQuadShader.CircleShader.SetShaderState(False);
 end;
 
 //=============================================================================
@@ -1589,6 +1604,7 @@ begin
       TQuadShader.CircleShader := TQuadShader.Create(Self);
       TQuadShader.CircleShader.LoadFromResource('CircleVS30', False);
       TQuadShader.CircleShader.LoadFromResource('CirclePS30');
+      TQuadShader.CircleShader.BindVariableToVS(0, @FViewMatrix, 4);
     end;
     qsmNone:
       if Device.Log <> nil then

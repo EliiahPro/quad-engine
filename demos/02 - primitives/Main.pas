@@ -37,6 +37,10 @@ begin
   QuadRender.Rectangle(TVec2f.Create(100, 100), TVec2f.Create(400, 400), TQuadColor.Blue);
   QuadRender.Rectangle(TVec2f.Create(200, 200), TVec2f.Create(500, 500), TQuadColor.Lime.Lerp(TQuadColor.Red, Xpos/800));
 
+  QuadRender.SetBlendMode(qbmSrcAlpha);
+  QuadRender.DrawCircle(TVec2f.Create(400, 400), 100, 95, TQuadColor.Blue);
+  QuadRender.DrawCircle(TVec2f.Create(Xpos, Ypos), 30, 27, TQuadColor.Aqua);
+
   QuadRender.DrawQuadLine(TVec2f.Create(400, 400), TVec2f.Create(Xpos, Ypos), 5, 5, TQuadColor.Blue, TQuadColor.Aqua);
 
   QuadRender.EndRender;

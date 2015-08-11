@@ -229,6 +229,7 @@ namespace QuadEngine
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
+        void DrawCircle(ref Vec2f Center, float Radius, float InnerRadius, UInt32 Color = 0xFFFFFFFF); stdcall;
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
@@ -299,7 +300,7 @@ namespace QuadEngine
         [PreserveSig]
         UInt16 GetTextureWidth();
         void AddTexture(byte ARegister, IntPtr ATexture);  // ATexture: IDirect3DTexture9
-        void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister); 
+        void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
         void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(ref Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
