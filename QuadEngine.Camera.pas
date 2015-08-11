@@ -36,6 +36,7 @@ type
     procedure Disable; stdcall;
     function GetPosition: TVec2f; stdcall;
     function GetAngle: Single; stdcall;
+    function GetMatrix: TMatrix4x4; stdcall;
     function GetScale: Single; stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetPosition(APosition: TVec2f); stdcall;
@@ -211,6 +212,29 @@ end;
 function TQuadCamera.GetAngle: Single;
 begin
   Result := FAngle;
+end;
+
+function TQuadCamera.GetMatrix: TMatrix4x4;
+begin
+  Result._11 := FViewMatrix._11;
+  Result._12 := FViewMatrix._12;
+  Result._13 := FViewMatrix._13;
+  Result._14 := FViewMatrix._14;
+
+  Result._21 := FViewMatrix._21;
+  Result._22 := FViewMatrix._22;
+  Result._23 := FViewMatrix._23;
+  Result._24 := FViewMatrix._24;
+
+  Result._31 := FViewMatrix._31;
+  Result._32 := FViewMatrix._32;
+  Result._33 := FViewMatrix._33;
+  Result._34 := FViewMatrix._34;
+
+  Result._41 := FViewMatrix._41;
+  Result._42 := FViewMatrix._42;
+  Result._43 := FViewMatrix._43;
+  Result._44 := FViewMatrix._44;
 end;
 
 function TQuadCamera.GetScale: Single;

@@ -108,6 +108,13 @@ namespace QuadEngine
         int Bootom;
     }
 
+    public struct TMatrix4x4 {
+        float _11; float _12; float _13; float _14;
+        float _21; float _22; float _23; float _24;
+        float _31; float _32; float _33; float _34;
+        float _41; float _42; float _43; float _44;
+    }
+
     /* Quad Device */
 
     [ComImport]
@@ -561,6 +568,8 @@ namespace QuadEngine
         Vec2f GetPosition();
         [PreserveSig]
         Vec2f GetAngle();
+        [PreserveSig]
+        TMatrix4x4 GetMatrix();
         [PreserveSig]
         Vec2f GetScale();
         void SetAngle(float AAngle);

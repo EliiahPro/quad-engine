@@ -94,6 +94,14 @@ type
     z: Single;
   end;
 
+
+  TMatrix4x4 = packed record
+    _11, _12, _13, _14: Single;
+    _21, _22, _23, _24: Single;
+    _31, _32, _33, _34: Single;
+    _41, _42, _43, _44: Single;
+  end;
+
   // vertex record declaration
   TVertex = packed record
     x, y, z : Single;         { X, Y of vertex. Z is not used }
@@ -501,6 +509,7 @@ type
     procedure Disable; stdcall;
     function GetPosition: TVec2f; stdcall;
     function GetAngle: Single; stdcall;
+    function GetMatrix: TMatrix4x4; stdcall;
     function GetScale: Single; stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetPosition(APosition: TVec2f); stdcall;
