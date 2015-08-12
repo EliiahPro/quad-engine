@@ -1258,7 +1258,7 @@ begin
     Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
 
     for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
-      Device.LastResultCode := FD3DDevice.SetRenderTarget(0, nil);
+      Device.LastResultCode := FD3DDevice.SetRenderTarget(i, nil);
   end;
   {$IFDEF DEBUG}
   FProfiler.EndCount(atSwitchRenderTarget);
