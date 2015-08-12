@@ -117,6 +117,7 @@ type
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
+    procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
     procedure RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
       ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
@@ -1225,6 +1226,27 @@ begin
   RenderToTexture(False);
   Device.FreeRenderTargets;
   FBackBuffer := nil;
+end;
+
+//=============================================================================
+// Enable/disable rendering into GBuffer
+//=============================================================================
+procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
+begin
+  if AIsRenderToGBuffer then
+  begin
+    RenderToTexture(True, AQuadGBuffer.Buffer, 0, 0, AIsCropScreen);
+    RenderToTexture(True, AQuadGBuffer.Buffer, 1, 1, AIsCropScreen);
+    RenderToTexture(True, AQuadGBuffer.Buffer, 2, 2, AIsCropScreen);
+    RenderToTexture(True, AQuadGBuffer.Buffer, 3, 3, AIsCropScreen);
+
+    TQuadShader.MRTShader.SetShaderState(True);
+  end
+  else
+  begin
+    TQuadShader.MRTShader.SetShaderState(False);
+    RenderToTexture(False);
+  end;
 end;
 
 //=============================================================================

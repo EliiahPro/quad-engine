@@ -156,6 +156,7 @@ type
   IQuadTimer   = interface;
   IQuadWindow  = interface;
   IQuadCamera  = interface;
+  IQuadGBuffer = interface;
 
   { Quad Render }
 
@@ -260,6 +261,7 @@ type
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
+    procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
     /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
     /// <param name="AIsRenderToTexture">Enable render to texture.</param>
     /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
@@ -526,6 +528,7 @@ type
     function NormalMap: IQuadTexture; stdcall;
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
+    function Buffer: IQuadTexture; stdcall;
   end;  
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

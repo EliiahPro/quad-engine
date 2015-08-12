@@ -38,6 +38,7 @@ type
     function NormalMap: IQuadTexture; stdcall;
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
+    function Buffer: IQuadTexture; stdcall;
   end;
 
 implementation
@@ -57,10 +58,10 @@ begin
   if FQuadRender.NumSimultaneousRTs < 4 then
     Device.Log.Write('Error: Videocard does not support 4 Simultaneous Render Targets.');
 
-  QuadDevice.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_DIFFUSE);
-  QuadDevice.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_NORMAL);
-  QuadDevice.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_SCPECULAR);
-  QuadDevice.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_HEIGHT);
+  Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_DIFFUSE);
+  Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_NORMAL);
+  Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_SCPECULAR);
+  Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_HEIGHT);
 end;
 
 //=============================================================================
@@ -97,6 +98,14 @@ function TQuadGBuffer.HeightMap: IQuadTexture;
 begin
   Device.CreateTexture(Result);
   Result.AssignTexture(FBuffer, 0, R_HEIGHT);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadGBuffer.Buffer: IQuadTexture; stdcall;
+begin
+  Result := FBuffer;
 end;
 
 end.

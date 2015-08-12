@@ -246,6 +246,7 @@ namespace QuadEngine
         void Polygon(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f PointC, ref Vec2f PointD, UInt32 Color);
         void Rectangle(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void RectangleEx(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4);
+        void RenderToGBuffer(bool AIsRenderToGBuffer, IQuadGBuffer AQuadGBuffer = null, bool AIsCropScreen = false);
         /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
         /// <param name="AIsRenderToTexture">Enable render to texture.</param>
         /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
@@ -595,6 +596,8 @@ namespace QuadEngine
         IQuadTexture SpecularMap;
         [PreserveSig]
         IQuadTexture HeightMap;
+        [PreserveSig]
+        IQuadTexture Buffer;
     }
     
 
