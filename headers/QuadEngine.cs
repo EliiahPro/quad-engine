@@ -584,7 +584,14 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadGBuffer
     {
-
+        [PreserveSig]
+        IQuadTexture DiffuseMap;
+        [PreserveSig]
+        IQuadTexture NormalMap;
+        [PreserveSig]
+        IQuadTexture SpecularMap;
+        [PreserveSig]
+        IQuadTexture HeightMap;
     }
     
 

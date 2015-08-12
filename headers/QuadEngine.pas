@@ -519,6 +519,10 @@ type
   {Quad GBuffer}
   IQuadGBuffer = interface(IUnknown)
   ['{FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9}']
+    function DiffuseMap: IQuadTexture; stdcall;
+    function NormalMap: IQuadTexture; stdcall;
+    function SpecularMap: IQuadTexture; stdcall;
+    function HeightMap: IQuadTexture; stdcall;
   end;  
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

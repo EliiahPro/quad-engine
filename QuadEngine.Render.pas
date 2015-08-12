@@ -80,6 +80,7 @@ type
     procedure CreateOrthoMatrix;
     procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
     function GetIsSupportedNonPow2: Boolean;
+    function GetNumSimultaneousRTs: Cardinal;
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -155,6 +156,7 @@ type
     property ShaderModel: TQuadShaderModel read FShaderModel;
     property ViewMatrix: TD3DMatrix read FViewMatrix write SetViewMatrix;
     property IsSupportedNonPow2: Boolean read GetIsSupportedNonPow2;
+    property NumSimultaneousRTs: Cardinal read GetNumSimultaneousRTs;
   end;
 
 implementation
@@ -912,6 +914,14 @@ end;
 function TQuadRender.GetIsSupportedNonPow2: Boolean;
 begin
   Result := (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2 = 0) and (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL = 0)
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadRender.GetNumSimultaneousRTs: Cardinal;
+begin
+  Result := FD3DCaps.NumSimultaneousRTs;
 end;
 
 //=============================================================================
