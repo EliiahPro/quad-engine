@@ -1224,7 +1224,6 @@ procedure TQuadRender.RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture:
   ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False);
 var
   ARenderSurface: IDirect3DSurface9;
-  ADesc : D3DSURFACE_DESC;
   i: Integer;
 begin
   FlushBuffer;
@@ -1232,10 +1231,11 @@ begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atSwitchRenderTarget);
   {$ENDIF}
-  FIsRenderIntoTexture := AIsRenderToTexture;
 
-  if AQuadTexture = nil then
+  if (AQuadTexture = nil) and AIsRenderToTexture then
     Exit;
+
+  FIsRenderIntoTexture := AIsRenderToTexture;
 
   if AIsRenderToTexture then
   begin
@@ -1250,15 +1250,13 @@ begin
   end
   else
   begin
-    Device.LastResultCode := FBackBuffer.GetDesc(ADesc);
-
     if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
       ChangeResolution(FOldScreenWidth, FOldScreenHeight);
 
-    Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
-
     for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
       Device.LastResultCode := FD3DDevice.SetRenderTarget(i, nil);
+
+    Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
   end;
   {$IFDEF DEBUG}
   FProfiler.EndCount(atSwitchRenderTarget);
