@@ -64,6 +64,7 @@ type
       APatternWidth: Integer = 0; APatternHeight: Integer = 0; AColorKey : Integer = -1): HResult; stdcall;
     function CreateCamera(out pQuadCamera: IQuadCamera): HResult; stdcall;
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
+    function CreateGBuffer(out pQuadGBuffer: IQuadGBuffer): HResult; stdcall;
     function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
@@ -98,7 +99,7 @@ implementation
 
 uses
   System.SysUtils, QuadEngine.Font, QuadEngine.Shader, QuadEngine.Timer,
-  QuadEngine.Texture, QuadEngine.Camera, QuadEngine.Window;
+  QuadEngine.Texture, QuadEngine.Camera, QuadEngine.Window, QuadEngine.GBuffer;
 
 { TQuadDevice }
 
@@ -306,6 +307,17 @@ begin
   else
     Result := E_FAIL;
 end;
+
+function TQuadDevice.CreateGBuffer(out pQuadGBuffer: IQuadGBuffer): HResult;
+begin
+  pQuadGBuffer := TQuadGBuffer.Create(FRender);
+
+  if Assigned(pQuadGBuffer) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
+end;
+
 
 function TQuadDevice.CreateLog(out pQuadLog: IQuadLog): HResult;
 begin

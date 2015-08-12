@@ -178,6 +178,9 @@ type
     /// <summary>Return a QuadFont object.</summary>
     /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
+    /// <summary>Return a QuadGBuffer object.</summary>
+    /// <param name="pQuadGBuffer">IQuadGBuffer variable to recieve object.</param>
+    function CreateGBuffer(out pQuadGBuffer: IQuadGBuffer): HResult; stdcall;
     /// <summary>Return a QuadLog object.</summary>
     /// <param name="pQuadLog">IQuadLog variable to recieve object.</param>
     function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;

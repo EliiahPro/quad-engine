@@ -136,6 +136,9 @@ namespace QuadEngine
         /// <summary>Return a QuadFont object.</summary>
         /// <param name="IQuadFont">IQuadFont variable to recieve object.</param>
         uint CreateFont(out IQuadFont IQuadFont);
+        /// <summary>Return a QuadGBuffer object.</summary>
+        /// <param name="pQuadGBuffer">IQuadGBuffer variable to recieve object.</param>
+        uint CreateGBuffer(out IQuadGBuffer IQuadGBuffer);
         /// <summary>Return a QuadLog object.</summary>
         /// <param name="IQuadLog">IQuadLog variable to recieve object.</param>
         uint CreateLog(out IQuadLog IQuadLog);
