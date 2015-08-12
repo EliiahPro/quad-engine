@@ -516,6 +516,11 @@ type
     procedure SetPosition(APosition: TVec2f); stdcall;
   end;
 
+  {Quad GBuffer}
+  IQuadGBuffer = interface(IUnknown)
+  ['{FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9}']
+  end;  
+
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
   TSecretMagicFunction = function: PWideChar;
   TCheckLibraryVersion = function(ARelease, AMajor, AMinor: Byte): Boolean; stdcall;

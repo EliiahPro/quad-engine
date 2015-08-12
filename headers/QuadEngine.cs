@@ -577,6 +577,17 @@ namespace QuadEngine
         void SetPosition(Vec2f APosition);
     }
 
+    /* Quad GBuffer */
+
+    [ComImport]
+    [Guid("FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IQuadGBuffer
+    {
+
+    }
+    
+
     public static class QuadEngine
     {
         [DllImport("qei.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "CreateQuadDevice", CharSet = CharSet.Unicode)]

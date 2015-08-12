@@ -404,7 +404,7 @@ var
   Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Single;
-  realUVA, realUVB, tmp: TVec2f;
+  realUVA, realUVB: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -476,7 +476,7 @@ var
   ver: array [0..5] of TVertex;
   Alpha: Single;
   SinA, CosA: Single;
-  realUVA, realUVB, tmp: TVec2f;
+  realUVA, realUVB: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -757,7 +757,7 @@ end;
 procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
   ver: array [0..5] of TVertex;
-  realUVA, realUVB, tmp: TVec2f;
+  realUVA, realUVB: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -1589,6 +1589,11 @@ begin
 
       TQuadShader.CircleShader := TQuadShader.Create(Self);
       TQuadShader.CircleShader.LoadFromResource('CirclePS20');
+
+      TQuadShader.mrtShader := TQuadShader.Create(Self);
+      TQuadShader.mrtShader.LoadFromResource('mrtVS20', False);
+      TQuadShader.mrtShader.LoadFromResource('mrtPS20');
+      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);          
     end;
     qsm30: begin
       if Device.Log <> nil then
@@ -1603,6 +1608,11 @@ begin
       TQuadShader.CircleShader.LoadFromResource('CircleVS30', False);
       TQuadShader.CircleShader.LoadFromResource('CirclePS30');
       TQuadShader.CircleShader.BindVariableToVS(0, @FViewMatrix, 4);
+
+      TQuadShader.mrtShader := TQuadShader.Create(Self);
+      TQuadShader.mrtShader.LoadFromResource('mrtVS30', False);
+      TQuadShader.mrtShader.LoadFromResource('mrtPS30');
+      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);      
     end;
     qsmNone:
       if Device.Log <> nil then
