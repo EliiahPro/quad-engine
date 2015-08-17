@@ -30,6 +30,7 @@ type
 
     function SearchTexture(const AID: Integer): PQuadFXTextureInfo;
     procedure AddLog(AString: PWideChar);
+    property QuadDevice: IQuadDevice read FQuadDevice;
   end;
 
 var

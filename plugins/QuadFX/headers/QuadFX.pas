@@ -6,7 +6,7 @@ uses
   Windows, QuadEngine, Vec2f, QuadEngine.Color;
 
 const
-  QuadFXLibraryName: PChar = 'qei.dll';
+  QuadFXLibraryName: PChar = 'qeiFX.dll';
   QuadFXMinorVersion: Byte = 0;
   QuadFXMajorVersion: Byte = 8;
   QuadFXReleaseVersion: Byte = 0;
@@ -21,8 +21,8 @@ type
   PQuadFXTextureInfo = ^TQuadFXTextureInfo;
   IQuadFXEmitter = interface;
 
-  TQuadFXTextureLoadEvent = procedure(out ATexture: Pointer; out ASize: TVec2f; const AFileName: PWideChar);
-  TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object;
+  TQuadFXTextureLoadEvent = procedure(out ATexture: Pointer; out ASize: TVec2f; const AFileName: PWideChar); stdcall;
+  TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object; stdcall;
 
   TQuadFXBlendMode = (
     qpbmInvalid        = 0,
@@ -210,6 +210,7 @@ type
 
   IQuadFXEffectParams = interface(IUnknown)
     ['{8036DBA9-BFDA-4D57-8E8E-E2709930D706}']
+    function CreateEmitterParams: PQuadFXEmitterParams; stdcall;
     function GetEmitterParams(Index: Integer): PQuadFXEmitterParams; stdcall;
     function GetEmitterParamsCount: integer; stdcall;
     function GetLifeTime: Single; stdcall;

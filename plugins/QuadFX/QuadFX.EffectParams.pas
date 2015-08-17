@@ -16,7 +16,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
-    function CreateEmitterParams: PQuadFXEmitterParams;
+    function CreateEmitterParams: PQuadFXEmitterParams; stdcall;
     function GetEmitterParams(Index: Integer): PQuadFXEmitterParams; stdcall;
     function GetEmitterParamsCount: integer; stdcall;
 
@@ -79,7 +79,7 @@ begin
   Result := FEmitters.Count;
 end;
 
-function TQuadFXEffectParams.CreateEmitterParams: PQuadFXEmitterParams;
+function TQuadFXEffectParams.CreateEmitterParams: PQuadFXEmitterParams; stdcall;
 var
   i: Integer;
 begin
