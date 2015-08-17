@@ -46,6 +46,7 @@ type
       2: (a: array[0..1] of Integer);
   end;
 
+  PVec2f = ^TVec2f;
   TVec2f = packed record
   {$IFNDEF FPC}
   {$IF CompilerVersion > 17}

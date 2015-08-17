@@ -8,6 +8,7 @@ uses
 type
   TQuadFXEmitter = class(TInterfacedObject, IQuadFXEmitter)
   private
+    FEffectPosition: PVec2f;
     FIsDebug: Boolean;
     FRect: record
       LeftTop, RightBottom: TVec2f;
@@ -54,7 +55,7 @@ type
     function GetStartAngle: Single;
   public
     FValuesIndex: array[0..2] of Integer;
-    constructor Create(AParams: PQuadFXEmitterParams; APosition: TVec2f);
+    constructor Create(AParams: PQuadFXEmitterParams; APosition: PVec2f);
     destructor Destroy; override;
     procedure Restart;
     procedure RestartParams;
@@ -170,10 +171,11 @@ begin
   Result := FValues[Index];
 end;
 
-constructor TQuadFXEmitter.Create(AParams: PQuadFXEmitterParams; APosition: TVec2f);
+constructor TQuadFXEmitter.Create(AParams: PQuadFXEmitterParams; APosition: PVec2f);
 //var
 //  i: Integer;
 begin
+  FEffectPosition := APosition;
   FActive := True;
   FIsDebug := False;
   FTime := 0;
@@ -186,6 +188,7 @@ begin
 
   FParams := AParams;
   RestartParams;
+  FTime := 0;
   {
 
   //FParams.Texture := AParams.Texture;
@@ -411,7 +414,7 @@ begin
     TextureIndex := Random(FParams.TextureCount);
     RandAnglePosition := 0;
     case FParams.Shape.ShapeType of
-      qeftPoint: Position := Self.Position;
+      qeftPoint: Position := Self.Position + FEffectPosition^;
       qeftLine:
         begin
           RandAnglePosition := DegToRad(FValues[1]);

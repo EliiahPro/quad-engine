@@ -9,6 +9,7 @@ uses
 type
   TQuadFXEffect = class(TInterfacedObject, IQuadFXEffect)
   private
+    FPosition: TVec2f;
     FIsNeedToKill: Boolean;
     FParams: IQuadFXEffectParams;
     FEmmiters: TList<IQuadFXEmitter>;
@@ -19,7 +20,7 @@ type
     constructor Create(AParams: IQuadFXEffectParams; APosition: TVec2f);
     destructor Destroy; override;
 
-    function CreateEmitter(AParams: PQuadFXEmitterParams; APosition: TVec2f): IQuadFXEmitter;
+    function CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
     procedure Update(const ADelta: Double); stdcall;
    // procedure Draw; stdcall;
     function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
@@ -40,6 +41,7 @@ constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f
 var
   i: Integer;
 begin
+  FPosition := APosition;
   FLife := 0;
   FCount := 0;
   FIsNeedToKill := False;
@@ -49,12 +51,12 @@ begin
   FEmmiters := TList<IQuadFXEmitter>.Create;
 
   for i := 0 to AParams.EmitterParamsCount - 1 do
-    CreateEmitter(AParams.EmitterParams[i], APosition);
+    CreateEmitter(AParams.EmitterParams[i]);
 end;
 
-function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams; APosition: TVec2f): IQuadFXEmitter;
+function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
 begin
-  Result := TQuadFXEmitter.Create(AParams, APosition);
+  Result := TQuadFXEmitter.Create(AParams, @FPosition);
   FEmmiters.Add(Result);
 end;
 
@@ -103,7 +105,7 @@ begin     {
   Ac := False;
   FCount := 0;
   for i := 0 to FEmmiters.Count - 1 do
-    if Assigned(FEmmiters[i]) {and FEmmiters[i].Active} then
+    if Assigned(FEmmiters[i]) and FEmmiters[i].Active then
     begin
       FEmmiters[i].Update(ADelta);
       FCount := FCount + FEmmiters[i].ParticleCount;

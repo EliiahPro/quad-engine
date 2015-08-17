@@ -5,7 +5,7 @@ program demo08;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, QuadFX, Vec2f;
+  QuadEngine, QuadFX, Vec2f, QuadFX.Manager;
 
 type
   TEffectDraw = class
@@ -24,6 +24,8 @@ var
 
   EffectDraw: TEffectDraw;
 
+  ic: Integer;
+
 procedure OnMouseDown(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 var
   Effect: IQuadFXEffect;
@@ -38,9 +40,7 @@ begin
 
   QuadRender.BeginRender;
   QuadRender.Clear($FFCCCCCC);
-
-  QuadRender.DrawCircle(TVec2f.Create(5, 5), 3, 0);
-
+  ic := 0;
   QuadFXLayer.Draw;
   QuadRender.EndRender;
 end;
@@ -51,17 +51,22 @@ var
   P: PQuadFXParticle;
 begin
   P := AParticles;
+  QuadRender.DrawCircle(TVec2f.Create(5 * ic, 5), 2, 0, $FFFF0000);
+  inc(ic);
   for i := 0 to AParticleCount - 1 do
   begin
-    QuadRender.DrawCircle(P.Position, 3, 0, P.Color);
+    //QuadRender.DrawCircle(TVec2f.Create(5 * i, 10 + 5 * ic), 2, 0, $FF00FF00);
+    QuadRender.DrawCircle(P.Position, 5, 0, $FF000000);
     Inc(P);
   end;
 end;
 
 begin
+  Randomize;
   QuadDevice := CreateQuadDevice;
 
-  QuadFXManager := CreateQuadFXManager(QuadDevice);
+  QuadFXManager := TQuadFXManager.Create(QuadDevice);
+ // CreateQuadFXManager(QuadDevice);
   QuadFXManager.CreateLayer(QuadFXLayer);
 
   EffectDraw := TEffectDraw.Create;
@@ -76,7 +81,7 @@ begin
   QuadWindow.SetOnMouseDown(OnMouseDown);
 
   QuadDevice.CreateRender(QuadRender);
-  QuadRender.Initialize(QuadWindow.GetHandle, 320, 240, False);
+  QuadRender.Initialize(QuadWindow.GetHandle, 100, 70, False);
 
   QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
 
