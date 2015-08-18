@@ -22,9 +22,6 @@ type
     function SearchSprite(const AID: Integer): PQuadFXTextureInfo;
     function AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
 
-    function ToJson: TJSONObject;
-    procedure FromJson(AJsonObject: TJSONObject);
-
     property Texture: Pointer read FTexture write FTexture;
   end;
 
@@ -70,30 +67,5 @@ begin
   Result.Axis := AAxis;
   Result.Recalculate(FSize);
 end;
-
-function TQuadFXAtlas.ToJson: TJSONObject;
-var
-  i: Integer;
-  SpritesArray: TJSONArray;
-begin
-  Result := TJSONObject.Create;
-
-  Result.AddPair(TJSONPair.Create('Name', FName));
-  Result.AddPair(TJSONPair.Create('Width', TJSONNumber.Create(FSize.X)));
-  Result.AddPair(TJSONPair.Create('Height', TJSONNumber.Create(FSize.Y)));
-
-  SpritesArray := TJSONArray.Create;
-
-  for i := 0 to FSprites.Count - 1 do
-    SpritesArray.Add(FSprites[i].ToJson);
-
-  Result.AddPair(TJSONPair.Create('Sprites', SpritesArray));
-end;
-
-procedure TQuadFXAtlas.FromJson(AJsonObject: TJSONObject);
-begin
-
-end;
-
 
 end.

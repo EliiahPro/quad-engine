@@ -56,7 +56,8 @@ begin
   inc(ic);
   for i := 0 to AParticleCount - 1 do
   begin
-    QuadRender.DrawCircle(P.Position, 3, 2, $FF000000);
+ //   QuadRender.DrawCircle(TVec2f.Create(5 * i, 10 + 5 * ic), 2, 0, $FFFF0000);
+    QuadRender.DrawCircle(P.Position, 3, 2, P.Color);
     Inc(P);
   end;
 end;

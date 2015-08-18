@@ -269,7 +269,6 @@ procedure TQuadFXEmitter.Update(ADelta: Double);
 var
   P: PQuadFXParticle;
   EmissionTime: Double;
-  i: Integer;
   LifePos: Single;
 begin
   if not Assigned(FParams) then
