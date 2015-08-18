@@ -196,21 +196,11 @@ type
     property Active: Boolean read GetActive;
   end;
 
-  IQuadFXEffectParamsList = interface(IUnknown)
-    ['{EF26A9F2-9A77-4D5C-B872-9BE3843109C5}']
-    function GetEffectByName(AFilename: PWideChar): IQuadFXEffectParams; stdcall;
-    function GetEffect(Index: Integer): IQuadFXEffectParams; stdcall;
-    function GetEffectCount: Integer; stdcall;
-    procedure LoadFromFile(AFilename: PWideChar); stdcall;
-    procedure SaveToFile(AFilename: PWideChar); stdcall;
-    property EffectsByName[AFilename: PWideChar]: IQuadFXEffectParams read GetEffectByName;
-    property Effects[Index: Integer]: IQuadFXEffectParams read GetEffect; default;
-    property EffectCount: Integer read GetEffectCount;
-  end;
-
   IQuadFXEffectParams = interface(IUnknown)
     ['{8036DBA9-BFDA-4D57-8E8E-E2709930D706}']
     function CreateEmitterParams: PQuadFXEmitterParams; stdcall;
+    procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
+    procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     function GetEmitterParams(Index: Integer): PQuadFXEmitterParams; stdcall;
     function GetEmitterParamsCount: integer; stdcall;
     function GetLifeTime: Single; stdcall;

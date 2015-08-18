@@ -12,10 +12,12 @@ uses
   QuadFX.Effect in '..\QuadFX.Effect.pas',
   QuadFX.Layer in '..\QuadFX.Layer.pas',
   QuadFX.EffectParams in '..\QuadFX.EffectParams.pas',
-  QuadFX.EffectParamsList in '..\QuadFX.EffectParamsList.pas',
   QuadFX.Manager in '..\QuadFX.Manager.pas',
   QuadFX.Helpers in '..\QuadFX.Helpers.pas',
-  QuadFX.Atlas in '..\QuadFX.Atlas.pas';
+  QuadFX.Atlas in '..\QuadFX.Atlas.pas',
+  QuadFX.EffectParamsLoader in '..\QuadFX.EffectParamsLoader.pas',
+  QuadFX.EffectParamsLoader.CustomFormat in '..\QuadFX.EffectParamsLoader.CustomFormat.pas',
+  QuadFX.EffectParamsLoader.JSON in '..\QuadFX.EffectParamsLoader.JSON.pas';
 
 {$R *.res}
 

@@ -23,9 +23,8 @@ type
     procedure LoadParams(F: TFileStream; AParam: PQuadFXParams);
     function GetLifeTime: Single; stdcall;
   public
-    procedure LoadFromFile(F: TFileStream);
-    procedure SaveToFile(F: TFileStream);
-
+    procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
+    procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
 
     function ToMemory: TMemoryStream;
     procedure FromMemory(AMemory: TStream);
@@ -36,6 +35,9 @@ type
   end;
 
 implementation
+
+uses
+  QuadFX.Manager, QuadFX.EffectParamsLoader;
 
 constructor TQuadFXEffectParams.Create;
 begin
@@ -127,17 +129,51 @@ begin
   SetLength(Result.Textures, Result.TextureCount);
 end;
 
-procedure TQuadFXEffectParams.LoadFromFile(F: TFileStream);
- // NewEmitter: PQuadFXEmitterParams;
+procedure TQuadFXEffectParams.LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
+var
+  Stream: TMemoryStream;
+  Log: IQuadLog;
 begin
- { CreateEmitterParams;
-  CreateEmitterParams;
-  CreateEmitterParams;}
+  if Assigned(Manager.QuadDevice) then
+    Manager.QuadDevice.CreateLog(Log);
+
+  if Assigned(Log) then
+    Log.Write(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from file "' + AFileName + '"'));
+
+  if not FileExists(AFileName) then
+  begin
+    if Assigned(Log) then
+      Log.Write(PWideChar('QuadFX: File "' + AFileName + '" not found!'));
+    Exit;
+  end;
+
+  Stream := TMemoryStream.Create;
+  Stream.LoadFromFile(AFileName);
+  LoadFromStream(AEffectName, Stream.Memory, Stream.Size);
+  FreeAndNil(Stream);
 end;
 
-procedure TQuadFXEffectParams.SaveToFile(F: TFileStream);
+procedure TQuadFXEffectParams.LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
+var
+  Stream: TMemoryStream;
+  Log: IQuadLog;
 begin
+  if Assigned(Manager.QuadDevice) then
+    Manager.QuadDevice.CreateLog(Log);
 
+  if Assigned(Log) then
+    Log.Write(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from stream'));
+
+  Stream := TMemoryStream.Create;
+  Stream.WriteBuffer((AStream)^, AStreamSize);
+  Stream.Seek(0, soFromBeginning);
+  try
+    TQuadFXEffectLoader.LoadFromStream(AEffectName, Stream, Self);
+  except
+    if Assigned(Log) then
+      Log.Write(PWideChar('QuadFX: Error loading effect'));
+    Exit;
+  end;
 end;
 
 procedure TQuadFXEffectParams.LoadParams(F: TFileStream; AParam: PQuadFXParams);

@@ -22,7 +22,7 @@ type
   public
     constructor Create(AQuadDevice: IQuadDevice);
     destructor Destroy; override;
-    procedure CreateEffectParams(out AEffect: IQuadFXEffectParams); stdcall;
+    procedure CreateEffectParams(out AEffectParams: IQuadFXEffectParams); stdcall;
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
     procedure SetOnTextureLoad(AOnTextureLoad: TQuadFXTextureLoadEvent); stdcall;
@@ -58,13 +58,13 @@ begin
   inherited;
 end;
 
-procedure TQuadFXManager.CreateEffectParams(out AEffect: IQuadFXEffectParams); stdcall;
+procedure TQuadFXManager.CreateEffectParams(out AEffectParams: IQuadFXEffectParams); stdcall;
 var
   NewEffectParams: TQuadFXEffectParams;
 begin
   NewEffectParams := TQuadFXEffectParams.Create;
   FEffectParams.Add(NewEffectParams);
-  AEffect := NewEffectParams;
+  AEffectParams := NewEffectParams;
 end;
 
 procedure TQuadFXManager.CreateLayer(out ALayer: IQuadFXLayer); stdcall;

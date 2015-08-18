@@ -41,6 +41,7 @@ begin
   QuadRender.BeginRender;
   QuadRender.Clear($FFCCCCCC);
   ic := 0;
+  QuadRender.SetBlendMode(qbmSrcAlpha);
   QuadFXLayer.Draw;
   QuadRender.EndRender;
 end;
@@ -55,8 +56,7 @@ begin
   inc(ic);
   for i := 0 to AParticleCount - 1 do
   begin
-    //QuadRender.DrawCircle(TVec2f.Create(5 * i, 10 + 5 * ic), 2, 0, $FF00FF00);
-    QuadRender.DrawCircle(P.Position, 5, 0, $FF000000);
+    QuadRender.DrawCircle(P.Position, 3, 2, $FF000000);
     Inc(P);
   end;
 end;
@@ -65,15 +65,17 @@ begin
   Randomize;
   QuadDevice := CreateQuadDevice;
 
-  QuadFXManager := TQuadFXManager.Create(QuadDevice);
- // CreateQuadFXManager(QuadDevice);
+  Manager := TQuadFXManager.Create(QuadDevice);
+  QuadFXManager := Manager;
+  //QuadFXManager := CreateQuadFXManager(QuadDevice);
   QuadFXManager.CreateLayer(QuadFXLayer);
 
   EffectDraw := TEffectDraw.Create;
   QuadFXLayer.SetOnDraw(EffectDraw.Draw);
   QuadFXManager.CreateEffectParams(QuadFXEffectParams);
 
-  QuadFXEffectParams.CreateEmitterParams;
+  QuadFXEffectParams.LoadFromFile('Effect 1', 'data\QuadFX_Effect.json');
+  //QuadFXEffectParams.CreateEmitterParams;
 
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.SetCaption('QuadFX plugin demo');

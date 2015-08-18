@@ -91,21 +91,16 @@ procedure TQuadFXEffect.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
   Ac: Boolean;
-begin     {
+begin
   if FIsNeedToKill then
     Exit;
-        }
+
   FLife := FLife + ADelta;
- { if (FParams.LifeTime > 0) and (FLife >= FParams.LifeTime)  then
-  begin
-    FIsNeedToKill := True;
-    Exit;
-  end;
-      }
+
   Ac := False;
   FCount := 0;
   for i := 0 to FEmmiters.Count - 1 do
-    if Assigned(FEmmiters[i]) and FEmmiters[i].Active then
+    if Assigned(FEmmiters[i]) then
     begin
       FEmmiters[i].Update(ADelta);
       FCount := FCount + FEmmiters[i].ParticleCount;
@@ -114,7 +109,10 @@ begin     {
     end;
 
   if not Ac and (FCount = 0) then
+  begin
     FAction := False;
+    FIsNeedToKill := True;
+  end;
 end;
                  {
 procedure TQuadFXEffect.Draw; stdcall;

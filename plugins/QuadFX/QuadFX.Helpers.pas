@@ -677,14 +677,14 @@ begin
   Direction.FromJson(AJsonObject.GetValue('Direction') as TJSONObject);
   Spread.FromJson(AJsonObject.GetValue('Spread') as TJSONObject);
 
-  if Assigned(AJsonObject.GetValue('Textures')) then
+ { if Assigned(AJsonObject.GetValue('Textures')) then
   begin
     JSONArray := AJsonObject.GetValue('Textures') as TJSONArray;
     TextureCount := JSONArray.Count;
     SetLength(Textures, TextureCount);
     for i := 0 to TextureCount - 1 do
     begin
-  {    Sprite := fTextures.Sprite[(JSONArray.Get(i) as TJSONNumber).AsInt];
+      Sprite := fTextures.Sprite[(JSONArray.Get(i) as TJSONNumber).AsInt];
       if Assigned(Sprite) then
       begin
         Atlas := TAtlasNode(Sprite.Parent);
@@ -695,9 +695,9 @@ begin
         Textures[i].Size := TVec2f.Create(Sprite.Width, Sprite.Height);
         Textures[i].UVA := Textures[i].Position / AtlasSize;
         Textures[i].UVB := (Textures[i].Position + Textures[i].Size) / AtlasSize;
-      end;      }
+      end;
     end;
-  end;
+  end;   }
 
   if Assigned(AJsonObject.GetValue('Shape')) then
     Shape.FromJson(AJsonObject.GetValue('Shape') as TJSONObject);
