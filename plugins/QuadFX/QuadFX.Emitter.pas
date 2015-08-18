@@ -414,17 +414,16 @@ begin
     TextureIndex := Random(FParams.TextureCount);
     RandAnglePosition := 0;
     case FParams.Shape.ShapeType of
-      qeftPoint: Position := Self.Position + FEffectPosition^;
       qeftLine:
         begin
           RandAnglePosition := DegToRad(FValues[1]);
-          Position := Self.Position + TVec2f.Create(cos(RandAnglePosition), sin(RandAnglePosition)) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
+          Position := TVec2f.Create(cos(RandAnglePosition), sin(RandAnglePosition)) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
         end;
       qeftCircle:
         begin
           Radius := FValues[0] + Random(MaxInt) / MaxInt * (FValues[1] - FValues[0]);
           RandAnglePosition := Random(MaxInt) / MaxInt * 2 * Pi;
-          Position := Self.Position + TVec2f.Create(Cos(RandAnglePosition), Sin(RandAnglePosition)) * Radius;
+          Position := TVec2f.Create(Cos(RandAnglePosition), Sin(RandAnglePosition)) * Radius;
         end;
       qeftRect:
         begin
@@ -436,10 +435,14 @@ begin
             (Random(MaxInt) / MaxInt) * FValues[1] - FValues[1] / 2
           );
 
-          Position.X := Self.Position.X + (P.X * CosRad - P.Y * SinRad);
-          Position.Y := Self.Position.Y + (P.X * SinRad + P.Y * CosRad);
+          Position.X := (P.X * CosRad - P.Y * SinRad);
+          Position.Y := (P.X * SinRad + P.Y * CosRad);
         end;
+      else
+        Position := TVec2f.Zero;
     end;
+
+    Position := Position + Self.Position + FEffectPosition^;
 
     Life := 0;
     Time := 0;
