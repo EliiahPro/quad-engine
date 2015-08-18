@@ -21,6 +21,7 @@ type
     function LoadEmitterShape(AJsonObject: TJSONObject): TQuadFXEmitterShape;
     function LoadEmitterParams(AJsonObject: TJSONObject): PQuadFXEmitterParams;
     function LoadTextureInfo(AJsonObject: TJSONObject): TQuadFXTextureInfo;
+   // function LoadAtlas(AJsonObject: TJSONObject);
   end;
 
 implementation
@@ -118,9 +119,9 @@ begin
 end;
 
 function TQuadFXJSONEffectFormat.LoadEmitterParams(AJsonObject: TJSONObject): PQuadFXEmitterParams;
-//var
- // i: Integer;
- // JSONArray: TJSONArray;
+var
+  i: Integer;
+  JSONArray: TJSONArray;
 begin
   Result := FEffectParams.CreateEmitterParams;
   Result.Name := (AJsonObject.GetValue('Name') as TJSONString).Value;
@@ -135,14 +136,15 @@ begin
   Result.Direction := LoadParams(AJsonObject.GetValue('Direction') as TJSONObject);
   Result.Spread := LoadParams(AJsonObject.GetValue('Spread') as TJSONObject);
 
- { if Assigned(AJsonObject.GetValue('Textures')) then
+  if Assigned(AJsonObject.GetValue('Textures')) then
   begin
     JSONArray := AJsonObject.GetValue('Textures') as TJSONArray;
-    TextureCount := JSONArray.Count;
-    SetLength(Textures, TextureCount);
-    for i := 0 to TextureCount - 1 do
-    begin
-      Sprite := fTextures.Sprite[(JSONArray.Get(i) as TJSONNumber).AsInt];
+    Result.TextureCount := JSONArray.Count;
+    SetLength(Result.Textures, Result.TextureCount);
+    for i := 0 to Result.TextureCount - 1 do
+      Result.Textures[i].ID := (JSONArray.Get(i) as TJSONNumber).AsInt;
+    {
+      Sprite := fTextures.Sprite[];
       if Assigned(Sprite) then
       begin
         Atlas := TAtlasNode(Sprite.Parent);
@@ -155,7 +157,8 @@ begin
         Textures[i].UVB := (Textures[i].Position + Textures[i].Size) / AtlasSize;
       end;
     end;
-  end;   }
+    }
+  end;
 
   if Assigned(AJsonObject.GetValue('Shape')) then
     Result.Shape := LoadEmitterShape(AJsonObject.GetValue('Shape') as TJSONObject);
@@ -192,18 +195,18 @@ var
   JSONObject: TJSONObject;
   JSONEffects: TJSONArray;
   S: TStringList;
-  Log: IQuadLog;
   IsLoaded: Boolean;
   Name: String;
 begin
   FEffectParams := AEffectParams;
   IsLoaded := False;
-  if Assigned(Manager.QuadDevice) then
-    Manager.QuadDevice.CreateLog(Log);
   S := TStringList.Create;
   S.LoadFromStream(AStream);
   JSONObject := TJSONObject.ParseJSONValue(S.Text) as TJSONObject;
   try
+    if Assigned(JSONObject.Get('PackName')) then
+      FPackName := JSONObject.GetValue('PackName').Value;
+    FEffectName := AEffectName;
 
     if Assigned(JSONObject.Get('Effects')) then
     begin
@@ -219,8 +222,8 @@ begin
         end;
       end;
 
-      if not IsLoaded and Assigned(Log) then
-        Log.Write(PWideChar('QuadFX: Effect "' + AEffectName + '" not found'));
+      if not IsLoaded then
+        Manager.AddLog(PWideChar('QuadFX: Effect "' + AEffectName + '" not found'));
     end;
 
   finally

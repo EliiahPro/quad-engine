@@ -127,18 +127,12 @@ end;
 procedure TQuadFXEffectParams.LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
 var
   Stream: TMemoryStream;
-  Log: IQuadLog;
 begin
-  if Assigned(Manager.QuadDevice) then
-    Manager.QuadDevice.CreateLog(Log);
-
-  if Assigned(Log) then
-    Log.Write(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from file "' + AFileName + '"'));
+  Manager.AddLog(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from file "' + AFileName + '"'));
 
   if not FileExists(AFileName) then
   begin
-    if Assigned(Log) then
-      Log.Write(PWideChar('QuadFX: File "' + AFileName + '" not found!'));
+    Manager.AddLog(PWideChar('QuadFX: File "' + AFileName + '" not found!'));
     Exit;
   end;
 
@@ -151,13 +145,8 @@ end;
 procedure TQuadFXEffectParams.LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
 var
   Stream: TMemoryStream;
-  Log: IQuadLog;
 begin
-  if Assigned(Manager.QuadDevice) then
-    Manager.QuadDevice.CreateLog(Log);
-
-  if Assigned(Log) then
-    Log.Write(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from stream'));
+  Manager.AddLog(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from stream'));
 
   Stream := TMemoryStream.Create;
   Stream.WriteBuffer((AStream)^, AStreamSize);
@@ -165,8 +154,7 @@ begin
   try
     TQuadFXEffectLoader.LoadFromStream(AEffectName, Stream, Self);
   except
-    if Assigned(Log) then
-      Log.Write(PWideChar('QuadFX: Error loading effect'));
+    Manager.AddLog(PWideChar('QuadFX: Error loading effect'));
   end;
   Stream.Free;
 end;

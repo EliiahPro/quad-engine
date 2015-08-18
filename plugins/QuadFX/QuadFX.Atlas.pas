@@ -10,7 +10,7 @@ type
   TQuadFXAtlas = class(TInterfacedObject, IQuadFXAtlas)
   private
     FName: WideString;
-    FFileName: WideString;
+    FPackName: WideString;
     FSprites: TList<PQuadFXTextureInfo>;
     FTexture: Pointer;
     FSize: TVec2f;

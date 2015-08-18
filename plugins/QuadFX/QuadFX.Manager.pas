@@ -18,15 +18,16 @@ type
     FEffectParams: TList<TQuadFXEffectParams>;
     FAtlases: TList<TQuadFXAtlas>;
 
-    FOnTextureLoad: TQuadFXTextureLoadEvent;
+    FOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent;
+    FOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent;
   public
     constructor Create(AQuadDevice: IQuadDevice);
     destructor Destroy; override;
     procedure CreateEffectParams(out AEffectParams: IQuadFXEffectParams); stdcall;
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
-    procedure SetOnTextureLoad(AOnTextureLoad: TQuadFXTextureLoadEvent); stdcall;
-    procedure LoadFromFile(AFileName: PWideChar); stdcall;
+    procedure SetOnSpriteLoadFromFile(AOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent); stdcall;
+    procedure SetOnSpriteLoadFromStream(AOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent); stdcall;
 
     function SearchTexture(const AID: Integer): PQuadFXTextureInfo;
     procedure AddLog(AString: PWideChar);
@@ -38,9 +39,14 @@ var
 
 implementation
 
-procedure TQuadFXManager.SetOnTextureLoad(AOnTextureLoad: TQuadFXTextureLoadEvent); stdcall;
+procedure TQuadFXManager.SetOnSpriteLoadFromFile(AOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent); stdcall;
 begin
-  FOnTextureLoad := AOnTextureLoad;
+  FOnSpriteLoadFromFile := AOnSpriteLoadFromFile;
+end;
+
+procedure TQuadFXManager.SetOnSpriteLoadFromStream(AOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent); stdcall;
+begin
+  FOnSpriteLoadFromStream := AOnSpriteLoadFromStream;
 end;
 
 constructor TQuadFXManager.Create(AQuadDevice: IQuadDevice);
@@ -97,11 +103,6 @@ begin
       if Assigned(Result) then
         Exit;
     end;
-end;
-
-procedure TQuadFXManager.LoadFromFile(AFileName: PWideChar); stdcall;
-begin
-  //
 end;
 
 procedure TQuadFXManager.AddLog(AString: PWideChar);

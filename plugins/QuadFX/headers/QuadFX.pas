@@ -21,7 +21,8 @@ type
   PQuadFXTextureInfo = ^TQuadFXTextureInfo;
   IQuadFXEmitter = interface;
 
-  TQuadFXTextureLoadEvent = procedure(out ATexture: Pointer; out ASize: TVec2f; const AFileName: PWideChar); stdcall;
+  TQuadFXSpriteLoadFromFileEvent = procedure(out ATexture: Pointer; out ASize: TVec2f; const AFileName: PWideChar); stdcall;
+  TQuadFXSpriteLoadFromStreamEvent = procedure(out ATexture: Pointer; const AStream: Pointer; const AStreamSize: Integer); stdcall;
   TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object; stdcall;
 
   TQuadFXBlendMode = (
@@ -239,8 +240,8 @@ type
     procedure CreateEffectParams(out AEffect: IQuadFXEffectParams); stdcall;
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
-    procedure LoadFromFile(AFileName: PWideChar); stdcall;
-    procedure SetOnTextureLoad(AOnTextureLoad: TQuadFXTextureLoadEvent); stdcall;
+    procedure SetOnSpriteLoadFromFile(AOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent); stdcall;
+    procedure SetOnSpriteLoadFromStream(AOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent); stdcall;
   end;
 
   TCreateQuadFXManager    = function(AQuadDevice: IQuadDevice; out AQuadFXManager: IQuadFXManager): HResult; stdcall;
