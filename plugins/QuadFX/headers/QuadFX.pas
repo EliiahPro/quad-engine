@@ -21,22 +21,7 @@ type
   PQuadFXTextureInfo = ^TQuadFXTextureInfo;
   IQuadFXEmitter = interface;
 
-  TQuadFXSpriteLoadFromFileEvent = procedure(out ATexture: Pointer; out ASize: TVec2f; const AFileName: PWideChar); stdcall;
-  TQuadFXSpriteLoadFromStreamEvent = procedure(out ATexture: Pointer; const AStream: Pointer; const AStreamSize: Integer); stdcall;
   TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object; stdcall;
-
-  TQuadFXBlendMode = (
-    qpbmInvalid        = 0,
-    qpbmNone           = 1,
-    qpbmAdd            = 2,
-    qpbmSrcAlpha       = 3,
-    qpbmSrcAlphaAdd    = 4,
-    qpbmSrcAlphaMul    = 5,
-    qpbmMul            = 6,
-    qpbmSrcColor       = 7,
-    qpbmSrcColorAdd    = 8,
-    qpbmInvertSrcColor = 9
-  );
 
   TQuadFXParticleValue = record
   public
@@ -128,8 +113,7 @@ type
 
   TQuadFXTextureInfo = record
     ID: Integer;
-    Data: Pointer;
-    Texture: ^IQuadTexture;
+    Texture: IQuadTexture;
     Position: TVec2f;
     Size: TVec2f;
     Axis: TVec2f;
@@ -142,7 +126,7 @@ type
     Textures: array of TQuadFXTextureInfo;
     TextureCount: Integer;
 
-    BlendMode: TQuadFXBlendMode;
+    BlendMode: TQuadBlendMode;
     EndTime: Single;
     BeginTime: Single;
     IsLoop: Boolean;
@@ -180,9 +164,11 @@ type
   ['{5277308B-9D5E-4B5A-B554-97D19552B899}']
     function GetSprite(Index: Integer): PQuadFXTextureInfo;
     function GetSpriteCount: Integer;
+    function GetSize: TVec2f;
     function AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
     property Sprites[Index: Integer]: PQuadFXTextureInfo read GetSprite; default;
     property SpriteCount: Integer read GetSpriteCount;
+    property Size: TVec2f read GetSize;
   end;
 
   IQuadFXEmitter = interface(IUnknown)
@@ -240,8 +226,6 @@ type
     procedure CreateEffectParams(out AEffect: IQuadFXEffectParams); stdcall;
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
-    procedure SetOnSpriteLoadFromFile(AOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent); stdcall;
-    procedure SetOnSpriteLoadFromStream(AOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent); stdcall;
   end;
 
   TCreateQuadFXManager    = function(AQuadDevice: IQuadDevice; out AQuadFXManager: IQuadFXManager): HResult; stdcall;

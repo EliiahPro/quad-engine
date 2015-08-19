@@ -86,7 +86,7 @@ begin
 
   Result.EndTime := 2;
   Result.BeginTime := 0.5;
-  Result.BlendMode := qpbmSrcAlphaAdd;
+  Result.BlendMode := qbmSrcAlphaAdd;
   Result.IsLoop := False;
 
   Result.Position.X := TQuadFXParams.Create(0);

@@ -14,24 +14,23 @@ type
   TQuadFXManager = class(TInterfacedObject, IQuadFXManager)
   private
     FQuadDevice: IQuadDevice;
+    FQuadRender: IQuadRender;
     FLayers: TList<TQuadFXLayer>;
     FEffectParams: TList<TQuadFXEffectParams>;
     FAtlases: TList<TQuadFXAtlas>;
 
-    FOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent;
-    FOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent;
   public
     constructor Create(AQuadDevice: IQuadDevice);
     destructor Destroy; override;
     procedure CreateEffectParams(out AEffectParams: IQuadFXEffectParams); stdcall;
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
-    procedure SetOnSpriteLoadFromFile(AOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent); stdcall;
-    procedure SetOnSpriteLoadFromStream(AOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent); stdcall;
 
-    function SearchTexture(const AID: Integer): PQuadFXTextureInfo;
+    function SearchTexture(const APackName: WideString; const AID: Integer): PQuadFXTextureInfo;
+    function SearchAtlas(const APackName, AAtlasName: WideString): IQuadFXAtlas;
     procedure AddLog(AString: PWideChar);
     property QuadDevice: IQuadDevice read FQuadDevice;
+    property QuadRender: IQuadRender read FQuadRender;
   end;
 
 var
@@ -39,28 +38,21 @@ var
 
 implementation
 
-procedure TQuadFXManager.SetOnSpriteLoadFromFile(AOnSpriteLoadFromFile: TQuadFXSpriteLoadFromFileEvent); stdcall;
-begin
-  FOnSpriteLoadFromFile := AOnSpriteLoadFromFile;
-end;
-
-procedure TQuadFXManager.SetOnSpriteLoadFromStream(AOnSpriteLoadFromStream: TQuadFXSpriteLoadFromStreamEvent); stdcall;
-begin
-  FOnSpriteLoadFromStream := AOnSpriteLoadFromStream;
-end;
-
 constructor TQuadFXManager.Create(AQuadDevice: IQuadDevice);
 begin
   FQuadDevice := AQuadDevice;
+  FQuadDevice.CreateRender(FQuadRender);
   AddLog(QuadFXVersion);
   FLayers := TList<TQuadFXLayer>.Create;
   FEffectParams := TList<TQuadFXEffectParams>.Create;
+  FAtlases := TList<TQuadFXAtlas>.Create;
 end;
 
 destructor TQuadFXManager.Destroy;
 begin
   FEffectParams.Free;
   FLayers.Free;
+  FAtlases.Free;
   inherited;
 end;
 
@@ -91,18 +83,28 @@ begin
   AAtlas := NewAtlas;
 end;
 
-function TQuadFXManager.SearchTexture(const AID: Integer): PQuadFXTextureInfo;
+function TQuadFXManager.SearchTexture(const APackName: WideString; const AID: Integer): PQuadFXTextureInfo;
 var
   i: Integer;
 begin
   Result := nil;
   for i := 0 to FAtlases.Count - 1 do
-    if Assigned(FAtlases[i]) then
+    if Assigned(FAtlases[i]) and (TQuadFXAtlas(FAtlases[i]).PackName = APackName) then
     begin
       Result := FAtlases[i].SearchSprite(AID);
       if Assigned(Result) then
         Exit;
     end;
+end;
+
+function TQuadFXManager.SearchAtlas(const APackName, AAtlasName: WideString): IQuadFXAtlas;
+var
+  i: Integer;
+begin
+  Result := nil;
+  for i := 0 to FAtlases.Count - 1 do
+    if Assigned(FAtlases[i]) and (TQuadFXAtlas(FAtlases[i]).PackName = APackName) and (TQuadFXAtlas(FAtlases[i]).Name = AAtlasName) then
+      Exit(FAtlases[i]);
 end;
 
 procedure TQuadFXManager.AddLog(AString: PWideChar);

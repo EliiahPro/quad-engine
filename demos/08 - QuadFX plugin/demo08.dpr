@@ -5,12 +5,7 @@ program demo08;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, QuadFX, Vec2f, QuadFX.Manager;
-
-type
-  TEffectDraw = class
-    procedure Draw(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer); stdcall;
-  end;
+  QuadEngine, QuadFX, Vec2f{, QuadFX.Manager};
 
 var
   QuadDevice: IQuadDevice;
@@ -21,10 +16,7 @@ var
   QuadFXManager: IQuadFXManager;
   QuadFXLayer: IQuadFXLayer;
   QuadFXEffectParams: IQuadFXEffectParams;
-
-  EffectDraw: TEffectDraw;
-
-  ic: Integer;
+  QuadFXEffectParams2: IQuadFXEffectParams;
 
 procedure OnMouseDown(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 var
@@ -32,6 +24,9 @@ var
 begin
   if AButtons = mbLeft then
     QuadFXLayer.CreateEffect(QuadFXEffectParams, APosition, Effect);
+
+  if AButtons = mbRight then
+    QuadFXLayer.CreateEffect(QuadFXEffectParams2, APosition, Effect);
 end;
 
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
@@ -40,53 +35,36 @@ begin
 
   QuadRender.BeginRender;
   QuadRender.Clear($FFCCCCCC);
-  ic := 0;
-  QuadRender.SetBlendMode(qbmSrcAlpha);
   QuadFXLayer.Draw;
   QuadRender.EndRender;
-end;
-
-procedure TEffectDraw.Draw(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer); stdcall;
-var
-  i: Integer;
-  P: PQuadFXParticle;
-begin
-  P := AParticles;
-  QuadRender.DrawCircle(TVec2f.Create(5 * ic, 5), 2, 0, $FFFF0000);
-  inc(ic);
-  for i := 0 to AParticleCount - 1 do
-  begin
- //   QuadRender.DrawCircle(TVec2f.Create(5 * i, 10 + 5 * ic), 2, 0, $FFFF0000);
-    QuadRender.DrawCircle(P.Position, 3, 2, P.Color);
-    Inc(P);
-  end;
 end;
 
 begin
   Randomize;
   QuadDevice := CreateQuadDevice;
 
-  Manager := TQuadFXManager.Create(QuadDevice);
-  QuadFXManager := Manager;
-  //QuadFXManager := CreateQuadFXManager(QuadDevice);
-  QuadFXManager.CreateLayer(QuadFXLayer);
-
-  EffectDraw := TEffectDraw.Create;
-  QuadFXLayer.SetOnDraw(EffectDraw.Draw);
-  QuadFXManager.CreateEffectParams(QuadFXEffectParams);
-
-  QuadFXEffectParams.LoadFromFile('Effect 1', 'data\QuadFX_Effect.json');
-  //QuadFXEffectParams.CreateEmitterParams;
-
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.SetCaption('QuadFX plugin demo');
-  QuadWindow.SetSize(100, 70);
+  QuadWindow.SetSize(1024, 768);
   QuadWindow.SetOnMouseDown(OnMouseDown);
 
   QuadDevice.CreateRender(QuadRender);
-  QuadRender.Initialize(QuadWindow.GetHandle, 100, 70, False);
+  QuadRender.Initialize(QuadWindow.GetHandle, 1024, 768, False);
 
   QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
+
+  //Manager := TQuadFXManager.Create(QuadDevice);
+  //QuadFXManager := Manager;
+  QuadFXManager := CreateQuadFXManager(QuadDevice);
+
+  QuadFXManager.CreateLayer(QuadFXLayer);
+
+  QuadFXManager.CreateEffectParams(QuadFXEffectParams);
+  QuadFXEffectParams.LoadFromFile('Effect1', 'data\QuadFX_Effect.json');
+
+  QuadFXManager.CreateEffectParams(QuadFXEffectParams2);
+  QuadFXEffectParams2.LoadFromFile('Effect2', 'data\QuadFX_Effect.json');
+  //QuadFXEffectParams.CreateEmitterParams;
 
   QuadWindow.Start;
 end.

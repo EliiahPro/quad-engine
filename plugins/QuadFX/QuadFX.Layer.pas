@@ -27,6 +27,9 @@ type
 
 implementation
 
+uses
+  QuadFX.Manager;
+
 procedure TQuadFXLayer.SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
 begin
   FOnDraw := AOnDraw;
@@ -95,17 +98,37 @@ procedure TQuadFXLayer.Draw; stdcall;
 var
   Ef, Em: Integer;
   Emitter: TQuadFXEmitter;
+  i: Integer;
+  P: PQuadFXParticle;
+  Texture: PQuadFXTextureInfo;
 begin
-  if not Assigned(FOnDraw) then
-    Exit;
-
-
   for Ef := 0 to FEffects.Count - 1 do
   begin
     for Em := 0 to FEffects[Ef].GetEmitterCount - 1 do
     begin
       Emitter := TQuadFXEmitter(FEffects[Ef].GetEmitter(Em));
-      FOnDraw(Emitter, Emitter.Particle, Emitter.ParticleCount);
+      Manager.QuadRender.SetBlendMode(Emitter.EmitterParams.BlendMode);
+      if not Assigned(FOnDraw) then
+      begin
+        P := Emitter.Particle;
+        for i := 0 to Emitter.ParticleCount - 1 do
+        begin
+          if (Emitter.EmitterParams.TextureCount > 0) then
+          begin
+            Texture := @Emitter.EmitterParams.Textures[P.TextureIndex];
+            if Assigned(Texture) then
+              Texture.Texture.DrawMapRotAxis(
+                P.Position - Texture.Size / 2, P.Position + Texture.Size / 2,
+                Texture.UVA, Texture.UVB, P.Position, P.Angle, P.Scale.Value, P.Color
+              );
+          end;
+         // else
+         //   QuadRender.DrawCircle(P.Position, 3 * P.Scale.Value, 2 * P.Scale.Value, P.Color);
+          Inc(P);
+        end;
+      end
+      else
+        FOnDraw(Emitter, Emitter.Particle, Emitter.ParticleCount);
     end;
   end;
  // for i := 0 to FEffects.Count - 1 do
