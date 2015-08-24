@@ -26,7 +26,7 @@ type
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
 
-    function SearchAtlas(const APackName, AAtlasName: WideString): IQuadFXAtlas;
+    function AtlasByName(const APackName, AAtlasName: WideString): IQuadFXAtlas;
     procedure AddLog(AString: PWideChar);
     property QuadDevice: IQuadDevice read FQuadDevice;
     property QuadRender: IQuadRender read FQuadRender;
@@ -82,7 +82,7 @@ begin
   AAtlas := NewAtlas;
 end;
 
-function TQuadFXManager.SearchAtlas(const APackName, AAtlasName: WideString): IQuadFXAtlas;
+function TQuadFXManager.AtlasByName(const APackName, AAtlasName: WideString): IQuadFXAtlas;
 var
   i: Integer;
 begin

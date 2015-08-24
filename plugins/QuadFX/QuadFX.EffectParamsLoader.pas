@@ -47,14 +47,15 @@ end;
 
 class procedure TQuadFXEffectLoader.Register(AQuadFXCustomEffectFormatClass: TQuadFXCustomEffectFormatClass);
 begin
+  if not Assigned(FFormats) then
+    FFormats := TList<TQuadFXCustomEffectFormatClass>.Create;
   FFormats.Add(AQuadFXCustomEffectFormatClass);
 end;
 
 initialization
-  TQuadFXEffectLoader.FFormats := TList<TQuadFXCustomEffectFormatClass>.Create;
-  TQuadFXEffectLoader.Register(TQuadFXJSONEffectFormat);
 
 finalization
-  TQuadFXEffectLoader.FFormats.Free;
+  if Assigned(TQuadFXEffectLoader.FFormats) then
+    TQuadFXEffectLoader.FFormats.Free;
 
 end.

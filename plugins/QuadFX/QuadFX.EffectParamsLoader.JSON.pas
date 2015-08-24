@@ -29,7 +29,7 @@ type
 implementation
 
 uses
-  QuadFX.Manager, QuadFX.EffectParams, QuadFX.Atlas;
+  QuadFX.Manager, QuadFX.EffectParams, QuadFX.Atlas, QuadFX.EffectParamsLoader;
 
 function TQuadFXJSONEffectFormat.LoadSingleDiagram(AJSONArray: TJSONArray): TQuadFXSingleDiagram;
 var
@@ -111,7 +111,7 @@ var
   AtlasName: WideString;
 begin
   AtlasName := (AJsonObject.GetValue('Name') as TJSONString).Value;
-  Result := Manager.SearchAtlas(FPackName, AtlasName);
+  Result := Manager.AtlasByName(FPackName, AtlasName);
   if Assigned(Result) then
     Exit;
 
@@ -294,5 +294,8 @@ class function TQuadFXJSONEffectFormat.CheckSignature(ASignature: TEffectSignatu
 begin
   Result := Copy(ASignature, 1, 1) = '{';
 end;
+
+initialization
+  TQuadFXEffectLoader.Register(TQuadFXJSONEffectFormat);
 
 end.
