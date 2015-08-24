@@ -111,7 +111,7 @@ var
   AtlasName: WideString;
 begin
   AtlasName := (AJsonObject.GetValue('Name') as TJSONString).Value;
-//  Result := Manager.SearchAtlas(FPackName, AtlasName);
+  Result := Manager.SearchAtlas(FPackName, AtlasName);
   if Assigned(Result) then
     Exit;
 

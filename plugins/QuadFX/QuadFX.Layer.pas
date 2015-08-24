@@ -12,6 +12,7 @@ type
     FOnDraw: TQuadFXEmitterDrawEvent;
     FOnDebugDraw: TQuadFXEmitterDrawEvent;
     FEffects: TList<IQuadFXEffect>;
+    FParticleCount: Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -23,6 +24,7 @@ type
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
+    function GetParticleCount: Integer; stdcall;
   end;
 
 implementation
@@ -42,6 +44,7 @@ end;
 
 constructor TQuadFXLayer.Create;
 begin
+  FParticleCount := 0;
   FEffects := TList<IQuadFXEffect>.Create;
 end;
 
@@ -71,6 +74,11 @@ begin
   Result := FEffects.Count;
 end;
 
+function TQuadFXLayer.GetParticleCount: Integer; stdcall;
+begin
+  Result := FParticleCount;
+end;
+
 procedure TQuadFXLayer.Clear; stdcall;
 var
   i: Integer;
@@ -84,6 +92,7 @@ procedure TQuadFXLayer.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
 begin
+  FParticleCount := 0;
   for i := FEffects.Count - 1 downto 0 do
     if TQuadFXEffect(FEffects[i]).IsNeedToKill then
     begin
@@ -91,7 +100,10 @@ begin
       FEffects.Delete(i);
     end
     else
+    begin
       FEffects[i].Update(ADelta);
+      FParticleCount := FParticleCount + FEffects[i].ParticleCount;
+    end;
 end;
 
 procedure TQuadFXLayer.Draw; stdcall;

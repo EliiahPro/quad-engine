@@ -15,9 +15,9 @@ type
   private
     FQuadDevice: IQuadDevice;
     FQuadRender: IQuadRender;
-    FLayers: TList<TQuadFXLayer>;
-    FEffectParams: TList<TQuadFXEffectParams>;
-    FAtlases: TList<TQuadFXAtlas>;
+    FLayers: TList<IQuadFXLayer>;
+    FEffectParams: TList<IQuadFXEffectParams>;
+    FAtlases: TList<IQuadFXAtlas>;
 
   public
     constructor Create(AQuadDevice: IQuadDevice);
@@ -26,7 +26,6 @@ type
     procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
     procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
 
-    function SearchTexture(const APackName: WideString; const AID: Integer): PQuadFXTextureInfo;
     function SearchAtlas(const APackName, AAtlasName: WideString): IQuadFXAtlas;
     procedure AddLog(AString: PWideChar);
     property QuadDevice: IQuadDevice read FQuadDevice;
@@ -43,9 +42,9 @@ begin
   FQuadDevice := AQuadDevice;
   FQuadDevice.CreateRender(FQuadRender);
   AddLog(QuadFXVersion);
-  FLayers := TList<TQuadFXLayer>.Create;
-  FEffectParams := TList<TQuadFXEffectParams>.Create;
-  FAtlases := TList<TQuadFXAtlas>.Create;
+  FLayers := TList<IQuadFXLayer>.Create;
+  FEffectParams := TList<IQuadFXEffectParams>.Create;
+  FAtlases := TList<IQuadFXAtlas>.Create;
 end;
 
 destructor TQuadFXManager.Destroy;
@@ -83,27 +82,13 @@ begin
   AAtlas := NewAtlas;
 end;
 
-function TQuadFXManager.SearchTexture(const APackName: WideString; const AID: Integer): PQuadFXTextureInfo;
-var
-  i: Integer;
-begin
-  Result := nil;
-  for i := 0 to FAtlases.Count - 1 do
-    if Assigned(FAtlases[i]) and (TQuadFXAtlas(FAtlases[i]).PackName = APackName) then
-    begin
-      Result := FAtlases[i].SearchSprite(AID);
-      if Assigned(Result) then
-        Exit;
-    end;
-end;
-
 function TQuadFXManager.SearchAtlas(const APackName, AAtlasName: WideString): IQuadFXAtlas;
 var
   i: Integer;
 begin
   Result := nil;
   for i := 0 to FAtlases.Count - 1 do
-    if Assigned(FAtlases[i]) and (TQuadFXAtlas(FAtlases[i]).PackName = APackName) and (TQuadFXAtlas(FAtlases[i]).Name = AAtlasName) then
+    if Assigned(FAtlases[i]) and ( FAtlases[i].GetPackName = APackName) and (FAtlases[i].GetName = AAtlasName) then
       Exit(FAtlases[i]);
 end;
 

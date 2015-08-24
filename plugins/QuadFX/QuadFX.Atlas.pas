@@ -19,6 +19,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function GetName: PWideChar; stdcall;
+    function GetPackName: PWideChar; stdcall;
     function SearchSprite(const AID: Integer): PQuadFXTextureInfo;
     function AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
 
@@ -62,6 +64,16 @@ begin
   for i := 0 to FSprites.Count - 1 do
     if Assigned(FSprites[i]) and (FSprites[i].ID = AID) then
       Exit(FSprites[i]);
+end;
+
+function TQuadFXAtlas.GetName: PWideChar; stdcall;
+begin
+  Result := PWideChar(FName);
+end;
+
+function TQuadFXAtlas.GetPackName: PWideChar; stdcall;
+begin
+  Result := PWideChar(FPackName);
 end;
 
 function TQuadFXAtlas.AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;

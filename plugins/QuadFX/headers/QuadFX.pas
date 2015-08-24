@@ -11,7 +11,7 @@ const
   QuadFXMajorVersion: Byte = 8;
   QuadFXReleaseVersion: Byte = 0;
 
-  QUADFX_EMITTER_MAX_PARTICLES = 10240;
+  QUADFX_EMITTER_MAX_PARTICLES = 1024;
 
 type
   PQuadFXParticle = ^TQuadFXParticle;
@@ -165,6 +165,8 @@ type
     function GetSprite(Index: Integer): PQuadFXTextureInfo;
     function GetSpriteCount: Integer;
     function GetSize: TVec2f;
+    function GetName: PWideChar; stdcall;
+    function GetPackName: PWideChar; stdcall;
     function AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
     property Sprites[Index: Integer]: PQuadFXTextureInfo read GetSprite; default;
     property SpriteCount: Integer read GetSpriteCount;
@@ -219,6 +221,7 @@ type
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
+    function GetParticleCount: Integer; stdcall;
   end;
 
   IQuadFXManager = interface(IUnknown)
