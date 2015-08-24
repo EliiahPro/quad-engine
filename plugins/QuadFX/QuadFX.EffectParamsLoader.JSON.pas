@@ -194,6 +194,8 @@ begin
   Result.EndTime := (AJsonObject.GetValue('EndTime') as TJSONNumber).AsDouble;
   Result.IsLoop := AJsonObject.GetValue('Loop') is TJSONTrue;
 
+  Result.MaxParticles := (AJsonObject.GetValue('MaxParticles') as TJSONNumber).AsInt;
+
   Result.Position.X := LoadParams(AJsonObject.GetValue('PositionX') as TJSONObject);
   Result.Position.Y := LoadParams(AJsonObject.GetValue('PositionY') as TJSONObject);
   Result.Direction := LoadParams(AJsonObject.GetValue('Direction') as TJSONObject);
