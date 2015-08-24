@@ -39,12 +39,23 @@ begin
             (AMinor = QuadFXMinorVersion);
 
   if not Result then
-    raise Exception.Create('Quad Engine: QuadFX version and header version does not match!');
+    raise Exception.Create('QuadFX version and header version does not match!');
+end;
+
+function IsSameQuadVersion(ARelease, AMajor, AMinor: Byte): Boolean; stdcall;
+begin
+  Result := (ARelease = QuadEngineReleaseVersion) and
+            (AMajor = QuadEngineMajorVersion) and
+            (AMinor = QuadEngineMinorVersion);
+
+  if not Result then
+    raise Exception.Create('QuadFX: Quad Engine version and header version does not match!');
 end;
 
 exports
   CreateQuadFXManager,
-  IsSameVersion;
+  IsSameVersion,
+  IsSameQuadVersion;
 
 begin
   {$IFDEF DEBUG}

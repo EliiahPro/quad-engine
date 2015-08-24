@@ -242,13 +242,16 @@ function CreateQuadFXManager(AQuadDevice: IQuadDevice): IQuadFXManager;
 var
   h: THandle;
   Creator: TCreateQuadFXManager;
+  CheckQuadLibrary: TCheckLibraryVersion;
   CheckLibrary: TCheckQuadFXLibraryVersion;
 begin
   h := LoadLibrary(QuadFXLibraryName);
   if h <> 0 then
   begin
     CheckLibrary := TCheckQuadFXLibraryVersion(GetProcAddress(h, 'IsSameVersion'));
-    if CheckLibrary(QuadFXReleaseVersion, QuadFXMajorVersion, QuadFXMinorVersion) then
+    CheckQuadLibrary := TCheckQuadFXLibraryVersion(GetProcAddress(h, 'IsSameQuadVersion'));
+    if CheckLibrary(QuadFXReleaseVersion, QuadFXMajorVersion, QuadFXMinorVersion) and
+       CheckQuadLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion) then
     begin
       Creator := TCreateQuadFXManager(GetProcAddress(h, 'CreateQuadFXManager'));
       if Assigned(Creator) then
