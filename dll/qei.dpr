@@ -30,6 +30,7 @@ uses
   QuadEngine in '..\headers\QuadEngine.pas',
   QuadEngine.Device in '..\QuadEngine.Device.pas',
   QuadEngine.Font in '..\QuadEngine.Font.pas',
+  QuadEngine.GBuffer in '..\QuadEngine.GBuffer.pas',  
   QuadEngine.Log in '..\QuadEngine.Log.pas',
   QuadEngine.Render in '..\QuadEngine.Render.pas',
   QuadEngine.Shader in '..\QuadEngine.Shader.pas',

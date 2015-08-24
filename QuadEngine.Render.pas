@@ -80,6 +80,7 @@ type
     procedure CreateOrthoMatrix;
     procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
     function GetIsSupportedNonPow2: Boolean;
+    function GetNumSimultaneousRTs: Cardinal;
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -116,6 +117,7 @@ type
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
+    procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
     procedure RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
       ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
@@ -155,6 +157,7 @@ type
     property ShaderModel: TQuadShaderModel read FShaderModel;
     property ViewMatrix: TD3DMatrix read FViewMatrix write SetViewMatrix;
     property IsSupportedNonPow2: Boolean read GetIsSupportedNonPow2;
+    property NumSimultaneousRTs: Cardinal read GetNumSimultaneousRTs;
   end;
 
 implementation
@@ -404,7 +407,7 @@ var
   Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Single;
-  realUVA, realUVB, tmp: TVec2f;
+  realUVA, realUVB: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -476,7 +479,7 @@ var
   ver: array [0..5] of TVertex;
   Alpha: Single;
   SinA, CosA: Single;
-  realUVA, realUVB, tmp: TVec2f;
+  realUVA, realUVB: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -757,7 +760,7 @@ end;
 procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
   ver: array [0..5] of TVertex;
-  realUVA, realUVB, tmp: TVec2f;
+  realUVA, realUVB: TVec2f;
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
@@ -912,6 +915,14 @@ end;
 function TQuadRender.GetIsSupportedNonPow2: Boolean;
 begin
   Result := (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2 = 0) and (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL = 0)
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadRender.GetNumSimultaneousRTs: Cardinal;
+begin
+  Result := FD3DCaps.NumSimultaneousRTs;
 end;
 
 //=============================================================================
@@ -1215,6 +1226,27 @@ begin
   RenderToTexture(False);
   Device.FreeRenderTargets;
   FBackBuffer := nil;
+end;
+
+//=============================================================================
+// Enable/disable rendering into GBuffer
+//=============================================================================
+procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
+begin
+  if AIsRenderToGBuffer then
+  begin
+    RenderToTexture(True, AQuadGBuffer.Buffer, 0, 0, AIsCropScreen);
+    RenderToTexture(True, AQuadGBuffer.Buffer, 1, 1, AIsCropScreen);
+    RenderToTexture(True, AQuadGBuffer.Buffer, 2, 2, AIsCropScreen);
+    RenderToTexture(True, AQuadGBuffer.Buffer, 3, 3, AIsCropScreen);
+
+    TQuadShader.MRTShader.SetShaderState(True);
+  end
+  else
+  begin
+    TQuadShader.MRTShader.SetShaderState(False);
+    RenderToTexture(False);
+  end;
 end;
 
 //=============================================================================
@@ -1589,6 +1621,11 @@ begin
 
       TQuadShader.CircleShader := TQuadShader.Create(Self);
       TQuadShader.CircleShader.LoadFromResource('CirclePS20');
+
+      TQuadShader.mrtShader := TQuadShader.Create(Self);
+      TQuadShader.mrtShader.LoadFromResource('mrtVS20', False);
+      TQuadShader.mrtShader.LoadFromResource('mrtPS20');
+      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);          
     end;
     qsm30: begin
       if Device.Log <> nil then
@@ -1603,6 +1640,11 @@ begin
       TQuadShader.CircleShader.LoadFromResource('CircleVS30', False);
       TQuadShader.CircleShader.LoadFromResource('CirclePS30');
       TQuadShader.CircleShader.BindVariableToVS(0, @FViewMatrix, 4);
+
+      TQuadShader.mrtShader := TQuadShader.Create(Self);
+      TQuadShader.mrtShader.LoadFromResource('mrtVS30', False);
+      TQuadShader.mrtShader.LoadFromResource('mrtPS30');
+      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);      
     end;
     qsmNone:
       if Device.Log <> nil then

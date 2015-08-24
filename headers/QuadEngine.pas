@@ -156,6 +156,7 @@ type
   IQuadTimer   = interface;
   IQuadWindow  = interface;
   IQuadCamera  = interface;
+  IQuadGBuffer = interface;
 
   { Quad Render }
 
@@ -178,6 +179,9 @@ type
     /// <summary>Return a QuadFont object.</summary>
     /// <param name="pQuadFont">IQuadFont variable to recieve object.</param>
     function CreateFont(out pQuadFont: IQuadFont): HResult; stdcall;
+    /// <summary>Return a QuadGBuffer object.</summary>
+    /// <param name="pQuadGBuffer">IQuadGBuffer variable to recieve object.</param>
+    function CreateGBuffer(out pQuadGBuffer: IQuadGBuffer): HResult; stdcall;
     /// <summary>Return a QuadLog object.</summary>
     /// <param name="pQuadLog">IQuadLog variable to recieve object.</param>
     function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;
@@ -257,6 +261,7 @@ type
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
+    procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
     /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
     /// <param name="AIsRenderToTexture">Enable render to texture.</param>
     /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
@@ -515,6 +520,16 @@ type
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetPosition(APosition: TVec2f); stdcall;
   end;
+
+  {Quad GBuffer}
+  IQuadGBuffer = interface(IUnknown)
+  ['{FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9}']
+    function DiffuseMap: IQuadTexture; stdcall;
+    function NormalMap: IQuadTexture; stdcall;
+    function SpecularMap: IQuadTexture; stdcall;
+    function HeightMap: IQuadTexture; stdcall;
+    function Buffer: IQuadTexture; stdcall;
+  end;  
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
   TSecretMagicFunction = function: PWideChar;

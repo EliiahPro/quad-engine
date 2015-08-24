@@ -48,6 +48,7 @@ type
   class var
     DistanceField: TQuadShader;
     CircleShader: TQuadShader;
+    MRTShader: TQuadShader;
   end;
 
 implementation
