@@ -136,6 +136,9 @@ namespace QuadEngine
         /// <summary>Return a QuadFont object.</summary>
         /// <param name="IQuadFont">IQuadFont variable to recieve object.</param>
         uint CreateFont(out IQuadFont IQuadFont);
+        /// <summary>Return a QuadGBuffer object.</summary>
+        /// <param name="pQuadGBuffer">IQuadGBuffer variable to recieve object.</param>
+        uint CreateGBuffer(out IQuadGBuffer IQuadGBuffer);
         /// <summary>Return a QuadLog object.</summary>
         /// <param name="IQuadLog">IQuadLog variable to recieve object.</param>
         uint CreateLog(out IQuadLog IQuadLog);
@@ -243,6 +246,7 @@ namespace QuadEngine
         void Polygon(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f PointC, ref Vec2f PointD, UInt32 Color);
         void Rectangle(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void RectangleEx(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4);
+        void RenderToGBuffer(bool AIsRenderToGBuffer, IQuadGBuffer AQuadGBuffer = null, bool AIsCropScreen = false);
         /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
         /// <param name="AIsRenderToTexture">Enable render to texture.</param>
         /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
@@ -576,6 +580,26 @@ namespace QuadEngine
         void SetAngle(float AAngle);
         void SetPosition(Vec2f APosition);
     }
+
+    /* Quad GBuffer */
+
+    [ComImport]
+    [Guid("FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IQuadGBuffer
+    {
+        [PreserveSig]
+        IQuadTexture DiffuseMap;
+        [PreserveSig]
+        IQuadTexture NormalMap;
+        [PreserveSig]
+        IQuadTexture SpecularMap;
+        [PreserveSig]
+        IQuadTexture HeightMap;
+        [PreserveSig]
+        IQuadTexture Buffer;
+    }
+    
 
     public static class QuadEngine
     {
