@@ -182,7 +182,7 @@ begin
   FLife := 0;
   FParticlesCount := 0;
   FParticleSize := SizeOf(TQuadFXParticle);
-  FParticlesSize := FParticleSize * QUADFX_EMITTER_MAX_PARTICLES;
+  FParticlesSize := FParticleSize * AParams.MaxParticles;
   GetMem(FParticles, FParticlesSize);
   FParticlesLastRecord := FParticles;
 
@@ -320,7 +320,7 @@ begin
     LifePos := FLife + FLastTime;
     EmissionTime := 1 / FEmission.Value;{ FParams.Emission.List[0].Value};
     FLastTime := FLastTime + ADelta;
-    while (FLastTime >= EmissionTime) and (FParticlesCount < QUADFX_EMITTER_MAX_PARTICLES) do
+    while (FLastTime >= EmissionTime) and (FParticlesCount < FParams.MaxParticles) do
     begin
       FPosition.X.Update(LifePos);
       FPosition.Y.Update(LifePos);

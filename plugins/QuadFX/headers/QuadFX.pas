@@ -11,8 +11,6 @@ const
   QuadFXMajorVersion: Byte = 8;
   QuadFXReleaseVersion: Byte = 0;
 
-  QUADFX_EMITTER_MAX_PARTICLES = 1024;
-
 type
   PQuadFXParticle = ^TQuadFXParticle;
   PQuadFXEmitterParams = ^TQuadFXEmitterParams;
@@ -130,6 +128,7 @@ type
     EndTime: Single;
     BeginTime: Single;
     IsLoop: Boolean;
+    MaxParticles: Integer;
 
     Position: record
       X: TQuadFXParams;
