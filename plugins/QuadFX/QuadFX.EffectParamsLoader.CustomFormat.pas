@@ -11,21 +11,28 @@ type
   TQuadFXCustomEffectFormatClass = class of TQuadFXCustomEffectFormat;
 
   TQuadFXCustomEffectFormat = class abstract
+  private
+    FIsLoadTexture: Boolean;
+    FEffectParams: IQuadFXEffectParams;
   protected
     FPackName: WideString;
     FEffectName: WideString;
+    property IsLoadTexture: Boolean read FIsLoadTexture;
+    property EffectParams: IQuadFXEffectParams read FEffectParams;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; virtual; abstract;
-    constructor Create;
-    procedure LoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); virtual; abstract;
+    constructor Create(AEffectParams: IQuadFXEffectParams; AIsLoadTexture: Boolean = True);
+    procedure LoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream); virtual; abstract;
   end;
 
 implementation
 
-constructor TQuadFXCustomEffectFormat.Create;
+constructor TQuadFXCustomEffectFormat.Create(AEffectParams: IQuadFXEffectParams; AIsLoadTexture: Boolean = True);
 begin
   FPackName := '';
   FEffectName := '';
+  FEffectParams := AEffectParams;
+  FIsLoadTexture := AIsLoadTexture;
 end;
 
 end.

@@ -9,12 +9,11 @@ uses
 type
   TQuadFXJSONEffectFormat = class sealed(TQuadFXCustomEffectFormat)
   private
-    FEffectParams: IQuadFXEffectParams;
     FJSONObject: TJSONObject;
     FJSONAtlases: TJSONArray;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; override;
-    procedure LoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); override;
+    procedure LoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream); override;
     procedure LoadEffectParams(AJsonObject: TJSONObject);
 
     function LoadSingleDiagram(AJSONArray: TJSONArray): TQuadFXSingleDiagram;
@@ -22,7 +21,7 @@ type
     function LoadColorDiagram(AJSONArray: TJSONArray): TQuadFXColorDiagram;
     function LoadEmitterShape(AJsonObject: TJSONObject): TQuadFXEmitterShape;
     function LoadEmitterParams(AJsonObject: TJSONObject): PQuadFXEmitterParams;
-    function LoadTextureInfo(AId: Integer): TQuadFXTextureInfo;
+    function LoadSprite(AId: Integer): PQuadFXSprite;
     function LoadAtlas(AJsonObject: TJSONObject): IQuadFXAtlas;
   end;
 
@@ -136,7 +135,7 @@ begin
   end;
 end;
 
-function TQuadFXJSONEffectFormat.LoadTextureInfo(AId: Integer): TQuadFXTextureInfo;
+function TQuadFXJSONEffectFormat.LoadSprite(AId: Integer): PQuadFXSprite;
 var
   i, j: Integer;
   AtlasObject: TJSONObject;
@@ -145,7 +144,7 @@ var
   IsFind: Boolean;
   Atlas: IQuadFXAtlas;
 begin
-  if not Assigned(FJSONAtlases) then
+  if not Assigned(FJSONAtlases) or not IsLoadTexture then
     Exit;
 
   for i := 0 to FJSONAtlases.Count - 1 do
@@ -158,21 +157,25 @@ begin
       if (SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt = AId then
       begin
         Atlas := LoadAtlas(AtlasObject);
-        Result.Texture := TQuadFXAtlas(Atlas).Texture;
-        Result.ID := (SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt;
-        Result.Position := TVec2f.Create(
-          (SpriteObject.Get('Left').JsonValue as TJSONNumber).AsInt,
-          (SpriteObject.Get('Top').JsonValue as TJSONNumber).AsInt
-        );
-        Result.Size := TVec2f.Create(
-          (SpriteObject.Get('Width').JsonValue as TJSONNumber).AsInt,
-          (SpriteObject.Get('Height').JsonValue as TJSONNumber).AsInt
-        );
-        Result.Axis := TVec2f.Create(
-          (SpriteObject.Get('AxisLeft').JsonValue as TJSONNumber).AsInt,
-          (SpriteObject.Get('AxisTop').JsonValue as TJSONNumber).AsInt
-        );
-        Result.Recalculate(Atlas.Size);
+        Atlas.FindSprite(AId, Result);
+        if not Assigned(Result) then
+        begin
+          Atlas.CreateSprite(Result);
+          Result.ID := AId;
+          Result.Position := TVec2f.Create(
+            (SpriteObject.Get('Left').JsonValue as TJSONNumber).AsInt,
+            (SpriteObject.Get('Top').JsonValue as TJSONNumber).AsInt
+          );
+          Result.Size := TVec2f.Create(
+            (SpriteObject.Get('Width').JsonValue as TJSONNumber).AsInt,
+            (SpriteObject.Get('Height').JsonValue as TJSONNumber).AsInt
+          );
+          Result.Axis := TVec2f.Create(
+            (SpriteObject.Get('AxisLeft').JsonValue as TJSONNumber).AsInt,
+            (SpriteObject.Get('AxisTop').JsonValue as TJSONNumber).AsInt
+          );
+          Result.Recalculate(Atlas.Size);
+        end;
         Exit;
       end;
     end;
@@ -184,9 +187,9 @@ function TQuadFXJSONEffectFormat.LoadEmitterParams(AJsonObject: TJSONObject): PQ
 var
   i: Integer;
   JSONArray: TJSONArray;
-  Texture: PQuadFXTextureInfo;
+  Texture: PQuadFXSprite;
 begin
-  Result := FEffectParams.CreateEmitterParams;
+  Result := EffectParams.CreateEmitterParams;
   Result.Name := (AJsonObject.GetValue('Name') as TJSONString).Value;
   Result.BlendMode := TQuadBlendMode((AJsonObject.GetValue('BlendMode') as TJSONNumber).AsInt);
 
@@ -207,7 +210,7 @@ begin
     Result.TextureCount := JSONArray.Count;
     SetLength(Result.Textures, Result.TextureCount);
     for i := 0 to Result.TextureCount - 1 do
-      Result.Textures[i] := LoadTextureInfo((JSONArray.Get(i) as TJSONNumber).AsInt);
+      Result.Textures[i] := LoadSprite((JSONArray.Get(i) as TJSONNumber).AsInt);
   end;
 
   if Assigned(AJsonObject.GetValue('Shape')) then
@@ -232,14 +235,14 @@ var
   i: Integer;
   JSONEmitters: TJSONArray;
 begin
-  TQuadFXEffectParams(FEffectParams).Clear;
-  TQuadFXEffectParams(FEffectParams).Name := AJsonObject.GetValue('Name').Value;
+  TQuadFXEffectParams(EffectParams).Clear;
+  TQuadFXEffectParams(EffectParams).Name := AJsonObject.GetValue('Name').Value;
   JSONEmitters := AJsonObject.GetValue('Emitters') as TJSONArray;
   for i := 0 to JSONEmitters.Count - 1 do
     LoadEmitterParams(JSONEmitters.Get(i) as TJSONObject);
 end;
 
-procedure TQuadFXJSONEffectFormat.LoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams);
+procedure TQuadFXJSONEffectFormat.LoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream);
 var
   i: Integer;
   JSONEffects: TJSONArray;
@@ -249,7 +252,6 @@ var
   Name: String;
 begin
   FJSONAtlases := nil;
-  FEffectParams := AEffectParams;
   IsLoaded := False;
   S := TStringList.Create;
   S.LoadFromStream(AStream);

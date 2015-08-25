@@ -16,7 +16,7 @@ type
   PQuadFXEmitterParams = ^TQuadFXEmitterParams;
   PQuadFXParams = ^TQuadFXParams;
   PQuadFXParticleValue = ^TQuadFXParticleValue;
-  PQuadFXTextureInfo = ^TQuadFXTextureInfo;
+  PQuadFXSprite = ^TQuadFXSprite;
   IQuadFXEmitter = interface;
 
   TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object; stdcall;
@@ -109,7 +109,7 @@ type
     Diagram: array[0..1] of TQuadFXSingleDiagram;
   end;
 
-  TQuadFXTextureInfo = record
+  TQuadFXSprite = record
     ID: Integer;
     Texture: IQuadTexture;
     Position: TVec2f;
@@ -121,7 +121,7 @@ type
   TQuadFXEmitterParams = record
     Name: WideString;
 
-    Textures: array of TQuadFXTextureInfo;
+    Textures: array of PQuadFXSprite;
     TextureCount: Integer;
 
     BlendMode: TQuadBlendMode;
@@ -161,13 +161,14 @@ type
 
   IQuadFXAtlas = interface(IUnknown)
   ['{5277308B-9D5E-4B5A-B554-97D19552B899}']
-    function GetSprite(Index: Integer): PQuadFXTextureInfo;
+    function GetSprite(Index: Integer): PQuadFXSprite;
     function GetSpriteCount: Integer;
     function GetSize: TVec2f;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
-    function AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
-    property Sprites[Index: Integer]: PQuadFXTextureInfo read GetSprite; default;
+    procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
+    procedure FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
+    property Sprites[Index: Integer]: PQuadFXSprite read GetSprite; default;
     property SpriteCount: Integer read GetSpriteCount;
     property Size: TVec2f read GetSize;
   end;

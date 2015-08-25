@@ -11,9 +11,9 @@ type
   private
     FName: WideString;
     FPackName: WideString;
-    FSprites: TList<PQuadFXTextureInfo>;
+    FSprites: TList<PQuadFXSprite>;
     FTexture: IQuadTexture;
-    function GetSprite(Index: Integer): PQuadFXTextureInfo;
+    function GetSprite(Index: Integer): PQuadFXSprite;
     function GetSpriteCount: Integer;
     function GetSize: TVec2f;
   public
@@ -21,8 +21,8 @@ type
     destructor Destroy; override;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
-    function SearchSprite(const AID: Integer): PQuadFXTextureInfo;
-    function AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
+    procedure FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
+    procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
 
     property Texture: IQuadTexture read FTexture write FTexture;
     property Name: WideString read FName write FName;
@@ -33,11 +33,17 @@ implementation
 
 constructor TQuadFXAtlas.Create;
 begin
-  FSprites := TList<PQuadFXTextureInfo>.Create;
+  FSprites := TList<PQuadFXSprite>.Create;
 end;
 
 destructor TQuadFXAtlas.Destroy;
+var
+  i: Integer;
 begin
+  for i := FSprites.count - 1 downto 0 do
+    if Assigned(FSprites[i]) then
+      Dispose(FSprites[i]);
+
   FSprites.Free;
 end;
 
@@ -46,7 +52,7 @@ begin
   Result := TVec2f.Create(FTexture.GetTextureWidth, FTexture.GetTextureHeight);
 end;
 
-function TQuadFXAtlas.GetSprite(Index: Integer): PQuadFXTextureInfo;
+function TQuadFXAtlas.GetSprite(Index: Integer): PQuadFXSprite;
 begin
   Result := FSprites[Index];
 end;
@@ -56,14 +62,17 @@ begin
   Result := FSprites.Count;
 end;
 
-function TQuadFXAtlas.SearchSprite(const AID: Integer): PQuadFXTextureInfo;
+procedure TQuadFXAtlas.FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
 var
   i: Integer;
 begin
-  Result := nil;
+  ASprite := nil;
   for i := 0 to FSprites.Count - 1 do
     if Assigned(FSprites[i]) and (FSprites[i].ID = AID) then
-      Exit(FSprites[i]);
+    begin
+      ASprite := FSprites[i];
+      Exit;
+    end;
 end;
 
 function TQuadFXAtlas.GetName: PWideChar; stdcall;
@@ -76,15 +85,15 @@ begin
   Result := PWideChar(FPackName);
 end;
 
-function TQuadFXAtlas.AddSprite(APosition, ASize, AAxis: TVec2f): PQuadFXTextureInfo;
+procedure TQuadFXAtlas.CreateSprite(out ASprite: PQuadFXSprite); stdcall;
 begin
-  new(Result);
-  FSprites.Add(Result);
-  Result.Texture := nil;
-  Result.Position := APosition;
-  Result.Size := ASize;
-  Result.Axis := AAxis;
-  Result.Recalculate(GetSize);
+  new(ASprite);
+  FSprites.Add(ASprite);
+  ASprite.Texture := FTexture;
+  ASprite.Position := TVec2f.Zero;
+  ASprite.Size := GetSize;
+  ASprite.Axis := GetSize / 2;
+  ASprite.Recalculate(ASprite.Size);
 end;
 
 end.

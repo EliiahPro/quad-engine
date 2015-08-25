@@ -34,7 +34,7 @@ type
     function RandomValue: Single;
   end;
 
-  TQuadFXTextureInfoHelper = record helper for TQuadFXTextureInfo
+  TQuadFXSpriteHelper = record helper for TQuadFXSprite
   public
     procedure Recalculate(AAtlasSize: TVec2f);
   end;
@@ -183,9 +183,9 @@ begin
   Value[1] := AValueMax;
 end;
 
-{ TQuadFXTextureInfoHelper }
+{ TQuadFXSpriteHelper }
 
-procedure TQuadFXTextureInfoHelper.Recalculate(AAtlasSize: TVec2f);
+procedure TQuadFXSpriteHelper.Recalculate(AAtlasSize: TVec2f);
 begin
   UVA := Position / AAtlasSize;
   UVB := (Position + Size) / AAtlasSize;

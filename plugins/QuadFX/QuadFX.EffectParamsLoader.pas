@@ -35,9 +35,9 @@ begin
     if EffectClass.CheckSignature(Signature) then
     begin
       AStream.Seek(0, soFromBeginning);
-      EffectFormat := EffectClass.Create;
+      EffectFormat := EffectClass.Create(AEffectParams);
       try
-        EffectFormat.LoadFromStream(AEffectName, AStream, AEffectParams);
+        EffectFormat.LoadFromStream(AEffectName, AStream);
       finally
         EffectFormat.Free;
       end;

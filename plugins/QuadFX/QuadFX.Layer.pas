@@ -112,7 +112,7 @@ var
   Emitter: TQuadFXEmitter;
   i: Integer;
   P: PQuadFXParticle;
-  Texture: PQuadFXTextureInfo;
+  Sprite: PQuadFXSprite;
 begin
   for Ef := 0 to FEffects.Count - 1 do
   begin
@@ -127,11 +127,11 @@ begin
         begin
           if (Emitter.EmitterParams.TextureCount > 0) then
           begin
-            Texture := @Emitter.EmitterParams.Textures[P.TextureIndex];
-            if Assigned(Texture) then
-              Texture.Texture.DrawMapRotAxis(
-                P.Position - Texture.Size / 2, P.Position + Texture.Size / 2,
-                Texture.UVA, Texture.UVB, P.Position, P.Angle, P.Scale.Value, P.Color
+            Sprite := Emitter.EmitterParams.Textures[P.TextureIndex];
+            if Assigned(Sprite) and Assigned(Sprite.Texture) then
+                Sprite.Texture.DrawMapRotAxis(
+                P.Position - Sprite.Size / 2, P.Position + Sprite.Size / 2,
+                Sprite.UVA, Sprite.UVB, P.Position, P.Angle, P.Scale.Value, P.Color
               );
           end;
          // else
