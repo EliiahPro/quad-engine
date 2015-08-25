@@ -58,7 +58,7 @@ type
     class function LoadFromStream(AStream: TMemoryStream): TTextureResult;
   end;
 
-  TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadDDSTextureFormat);
+  TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadDDSTextureClass);
 
 implementation
 

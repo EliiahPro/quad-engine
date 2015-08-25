@@ -81,6 +81,7 @@ type
     procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
     function GetIsSupportedNonPow2: Boolean;
     function GetNumSimultaneousRTs: Cardinal;
+    function GetIsSeparateAlphaBlend: Boolean;
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -157,6 +158,7 @@ type
     property ShaderModel: TQuadShaderModel read FShaderModel;
     property ViewMatrix: TD3DMatrix read FViewMatrix write SetViewMatrix;
     property IsSupportedNonPow2: Boolean read GetIsSupportedNonPow2;
+    property IsSeparateAlphaBlend: Boolean read GetIsSeparateAlphaBlend;
     property NumSimultaneousRTs: Cardinal read GetNumSimultaneousRTs;
   end;
 
@@ -912,6 +914,14 @@ end;
 //=============================================================================
 //
 //=============================================================================
+function TQuadRender.GetIsSeparateAlphaBlend: Boolean;
+begin
+  Result := (FD3DCaps.PrimitiveMiscCaps and D3DPMISCCAPS_SEPARATEALPHABLEND) <> 0;
+end;
+
+//=============================================================================
+//
+//=============================================================================
 function TQuadRender.GetIsSupportedNonPow2: Boolean;
 begin
   Result := (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2 = 0) and (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL = 0)
@@ -1247,6 +1257,8 @@ begin
     TQuadShader.MRTShader.SetShaderState(False);
     RenderToTexture(False);
   end;
+
+  FIsRenderIntoTexture := AIsRenderToGBuffer;
 end;
 
 //=============================================================================
@@ -1359,76 +1371,100 @@ begin
     qbmAdd:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-      FIsEnabledBlending := True;
     end;
     qbmSrcAlpha:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-      FIsEnabledBlending := True;
     end;
     qbmSrcAlphaAdd:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;        
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-      FIsEnabledBlending := True;
     end;
     qbmSrcAlphaMul:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;        
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-      FIsEnabledBlending := True;
     end;
     qbmMul:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;        
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
-      FIsEnabledBlending := True;
     end;
     qbmSrcColor:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;        
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
-      FIsEnabledBlending := True;
     end;
     qbmSrcColorAdd:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;        
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-      FIsEnabledBlending := True;
     end;
     qbmInvertSrcColor:
     begin
       if not FIsEnabledBlending then
+      begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;        
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCCOLOR);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
-      FIsEnabledBlending := True;
     end;
   end;
+
+  if FIsRenderIntoTexture and GetIsSeparateAlphaBlend then
+  begin
+    FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iTrue);
+    FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
+    FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+  end;
+
   {$IFDEF DEBUG}
   FProfiler.EndCount(atSetBlendMode);
   {$ENDIF}
