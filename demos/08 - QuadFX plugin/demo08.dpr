@@ -17,6 +17,8 @@ var
   QuadRender: IQuadRender;
   QuadTimer: IQuadTimer;
 
+  Background: IQuadTexture;
+
   QuadFXManager: IQuadFXManager;
   QuadFXLayer: IQuadFXLayer;
   QuadFXEffectParams: IQuadFXEffectParams;
@@ -36,6 +38,16 @@ begin
     QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position, Effect);
 end;
 
+procedure DrawBackground;
+var
+  X, Y: Integer;
+begin
+  QuadRender.SetBlendMode(qbmNone);
+  for Y := 0 to RENDER_SIZE.Y div 65 do
+    for X := 0 to RENDER_SIZE.X div 65 do
+      Background.Draw(TVec2f.Create(X * 65, Y * 65));
+end;
+
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
 var
   Effect: IQuadFXEffect;
@@ -46,10 +58,11 @@ begin
 
   QuadFXLayer.Update(delta);
 
-  QuadWindow.SetCaption(PWideChar(Format('%f %d', [QuadTimer.GetFPS, QuadFXLayer.GetParticleCount])));
+  QuadWindow.SetCaption(PWideChar(Format('%f %f %d', [QuadTimer.GetCPUload, QuadTimer.GetFPS, QuadFXLayer.GetParticleCount])));
 
   QuadRender.BeginRender;
   QuadRender.Clear($FFCCCCCC);
+  DrawBackground;
   QuadFXLayer.Draw;
   QuadRender.EndRender;
 end;
@@ -66,7 +79,7 @@ begin
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, RENDER_SIZE.X, RENDER_SIZE.Y, False);
 
-  QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
+  QuadDevice.CreateAndLoadTexture(0, 'data\Background.png', Background);
 
   //Manager := TQuadFXManager.Create(QuadDevice);
   //QuadFXManager := Manager;
@@ -81,5 +94,6 @@ begin
   QuadFXEffectParams2.LoadFromFile('Effect2', 'data\QuadFX_Effect.json');
   //QuadFXEffectParams.CreateEmitterParams;
 
+  QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
   QuadWindow.Start;
 end.
