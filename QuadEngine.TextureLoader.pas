@@ -43,11 +43,6 @@ type
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
-  TQuadRAWTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
-    class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
-  end;
-
   TQuadDDSTextureFormat = class sealed(TQuadCustomTextureFormat)
     class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
@@ -63,7 +58,7 @@ type
     class function LoadFromStream(AStream: TMemoryStream): TTextureResult;
   end;
 
-  TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadRAWTextureClass);
+  TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadDDSTextureFormat);
 
 implementation
 
@@ -124,18 +119,6 @@ begin
   Device.LastResultCode := Result.UnlockRect(0);
 
   bmp.Free;
-end;
-
-{ TQuadRAWTextureFormat }
-
-class function TQuadRAWTextureFormat.CheckSignature(ASignature: TTextureSignature): Boolean;
-begin
-  Result := False;
-end;
-
-class function TQuadRAWTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
-begin
-
 end;
 
 { TQuadTGATextureFormat }
@@ -406,7 +389,7 @@ initialization
   TQuadTextureLoader.Register(TQuadPNGTextureFormat);
   TQuadTextureLoader.Register(TQuadTGATextureFormat);
   TQuadTextureLoader.Register(TQuadJPGTextureFormat);
-  TQuadTextureLoader.Register(TQuadRAWTextureFormat);
+  TQuadTextureLoader.Register(TQuadDDSTextureFormat);
 
 finalization
   TQuadTextureLoader.FFormats.Free;
