@@ -14,6 +14,7 @@ type
     FJSONEffects: TJSONArray;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; override;
+    destructor Destroy; override;
     procedure EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); override;
     procedure AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas); override;
 
@@ -334,6 +335,13 @@ begin
   finally
     S.Free;
   end;
+end;
+
+destructor TQuadFXJSONFileFormat.Destroy;
+begin
+  if Assigned(FJSONEffects) then
+    FJSONEffects.Destroy;
+  inherited;
 end;
 
 class function TQuadFXJSONFileFormat.CheckSignature(ASignature: TEffectSignature): Boolean;

@@ -14,14 +14,14 @@ type
   private
     FEffectParams: IQuadFXEffectParams;
     FAtlas: IQuadFXAtlas;
-    FEffectName: WideString;
-    FAtlasName: WideString;
   protected
     FPackName: WideString;
     property EffectParams: IQuadFXEffectParams read FEffectParams;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; virtual; abstract;
     constructor Create;
+    procedure SetEffectParams(AEffectParams: IQuadFXEffectParams);
+    procedure SetAtlas(AAtlas: IQuadFXAtlas);
     procedure EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); virtual;
     procedure AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas); virtual;
   end;
@@ -31,8 +31,6 @@ implementation
 constructor TQuadFXCustomFileFormat.Create;
 begin
   FPackName := '';
-  FEffectName := '';
-  FAtlasName := '';
   FEffectParams := nil;
   FAtlas := nil;
 end;
@@ -40,13 +38,20 @@ end;
 procedure TQuadFXCustomFileFormat.EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams);
 begin
   FEffectParams := AEffectParams;
-  FEffectName := AEffectName;
 end;
 
 procedure TQuadFXCustomFileFormat.AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas);
 begin
   FAtlas := AAtlas;
-  FAtlasName := AAtlasName;
 end;
 
+procedure TQuadFXCustomFileFormat.SetEffectParams(AEffectParams: IQuadFXEffectParams);
+begin
+  FEffectParams := AEffectParams;
+end;
+
+procedure TQuadFXCustomFileFormat.SetAtlas(AAtlas: IQuadFXAtlas);
+begin
+  FAtlas := AAtlas;
+end;
 end.
