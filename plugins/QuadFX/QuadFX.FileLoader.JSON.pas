@@ -3,7 +3,7 @@ unit QuadFX.FileLoader.JSON;
 interface
 
 uses
-  QuadFX, QuadEngine, Generics.Collections, sysutils, classes, System.Json, Vec2f,
+  QuadFX, QuadEngine, QuadEngine.Color, Generics.Collections, sysutils, classes, System.Json, Vec2f,
   QuadFX.FileLoader.CustomFormat, QuadFX.Helpers, EncdDecd;
 
 type
@@ -42,7 +42,7 @@ begin
   SetLength(Result.List, Result.Count);
   for i := 0 to Result.Count - 1 do
   begin
-    Item := (AJSONArray.Get(i) as TJSONObject);
+    Item := (AJSONArray.Items[i] as TJSONObject);
     Result.List[i].Life := (Item.GetValue('Life') as TJSONNumber).AsDouble;
     Result.List[i].Value := (Item.GetValue('Value') as TJSONNumber).AsDouble;
   end;
@@ -81,9 +81,9 @@ begin
   SetLength(Result.List, Result.Count);
   for i := 0 to Result.Count - 1 do
   begin
-    Item := AJSONArray.Get(i) as TJSONObject;
+    Item := AJSONArray.Items[i] as TJSONObject;
     Result.List[i].Life := (Item.GetValue('Life') as TJSONNumber).AsDouble;
-    Result.List[i].Value := StrToIntDef(Item.GetValue('Color').Value, $FFFFFFFF);
+    Result.List[i].Value := StrToIntDef(Item.GetValue('Color').Value, MaxInt);
   end;
 end;
 
@@ -144,7 +144,6 @@ var
   AtlasObject: TJSONObject;
   Sprites: TJSONArray;
   SpriteObject: TJSONObject;
-  IsFind: Boolean;
   Atlas: IQuadFXAtlas;
 begin
   if not Assigned(FJSONAtlases) then
@@ -152,11 +151,11 @@ begin
 
   for i := 0 to FJSONAtlases.Count - 1 do
   begin
-    AtlasObject := (FJSONAtlases.Get(i) as TJSONObject);
+    AtlasObject := (FJSONAtlases.Items[i] as TJSONObject);
     Sprites := AtlasObject.Get('Sprites').JsonValue as TJSONArray;
     for j := 0 to Sprites.Count - 1 do
     begin
-      SpriteObject := (Sprites.Get(j) as TJSONObject);
+      SpriteObject := (Sprites.Items[j] as TJSONObject);
       if (SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt = AId then
       begin
         Atlas := LoadAtlas(AtlasObject);
@@ -190,7 +189,6 @@ function TQuadFXJSONFileFormat.LoadEmitterParams(AJsonObject: TJSONObject): PQua
 var
   i: Integer;
   JSONArray: TJSONArray;
-  Texture: PQuadFXSprite;
 begin
   Result := EffectParams.CreateEmitterParams;
   Result.Name := (AJsonObject.GetValue('Name') as TJSONString).Value;
@@ -213,7 +211,7 @@ begin
     Result.TextureCount := JSONArray.Count;
     SetLength(Result.Textures, Result.TextureCount);
     for i := 0 to Result.TextureCount - 1 do
-      Result.Textures[i] := LoadSprite((JSONArray.Get(i) as TJSONNumber).AsInt);
+      Result.Textures[i] := LoadSprite((JSONArray.Items[i] as TJSONNumber).AsInt);
   end;
 
   if Assigned(AJsonObject.GetValue('Shape')) then
@@ -242,7 +240,7 @@ begin
   TQuadFXEffectParams(EffectParams).Name := AJsonObject.GetValue('Name').Value;
   JSONEmitters := AJsonObject.GetValue('Emitters') as TJSONArray;
   for i := 0 to JSONEmitters.Count - 1 do
-    LoadEmitterParams(JSONEmitters.Get(i) as TJSONObject);
+    LoadEmitterParams(JSONEmitters.Items[i] as TJSONObject);
 end;
 
 procedure TQuadFXJSONFileFormat.AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas);
@@ -265,11 +263,11 @@ begin
       Name := (FJSONAtlases.Items[i] as TJSONObject).GetValue('Name').Value;
       if Name = AAtlasName then
       begin
-        AtlasObject := (FJSONAtlases.Get(i) as TJSONObject);
+        AtlasObject := (FJSONAtlases.Items[i] as TJSONObject);
         Sprites := AtlasObject.Get('Sprites').JsonValue as TJSONArray;
         for j := 0 to Sprites.Count - 1 do
         begin
-          SpriteObject := (Sprites.Get(j) as TJSONObject);
+          SpriteObject := (Sprites.Items[j] as TJSONObject);
           Manager.AddLog(PWideChar('QuadFX: Load sprite "' + AAtlasName + '"'));
           LoadSprite((SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt);
         end;

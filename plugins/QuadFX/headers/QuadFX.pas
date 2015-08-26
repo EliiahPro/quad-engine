@@ -128,7 +128,7 @@ type
     EndTime: Single;
     BeginTime: Single;
     IsLoop: Boolean;
-    MaxParticles: Integer;
+    MaxParticles: Cardinal;
 
     Position: record
       X: TQuadFXParams;
