@@ -166,6 +166,8 @@ type
     function GetSize: TVec2f;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
+    procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
     procedure FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
     property Sprites[Index: Integer]: PQuadFXSprite read GetSprite; default;

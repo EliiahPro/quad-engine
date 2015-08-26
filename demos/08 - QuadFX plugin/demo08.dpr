@@ -24,6 +24,8 @@ var
   QuadFXEffectParams: IQuadFXEffectParams;
   QuadFXEffectParams2: IQuadFXEffectParams;
 
+  QuadFXAtlas: IQuadFXAtlas;
+
 procedure OnMouseDown(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 var
   Effect: IQuadFXEffect;
@@ -86,6 +88,9 @@ begin
   QuadFXManager := CreateQuadFXManager(QuadDevice);
 
   QuadFXManager.CreateLayer(QuadFXLayer);
+
+  QuadFXManager.CreateAtlas(QuadFXAtlas);
+  QuadFXAtlas.LoadFromFile('Atlas', 'data\QuadFX_Effect.json');
 
   QuadFXManager.CreateEffectParams(QuadFXEffectParams);
   QuadFXEffectParams.LoadFromFile('Effect1', 'data\QuadFX_Effect.json');

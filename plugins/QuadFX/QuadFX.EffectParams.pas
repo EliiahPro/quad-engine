@@ -12,6 +12,7 @@ type
     FEmitters: TList<PQuadFXEmitterParams>;
     FName: WideString;
     FLifeTime: Single;
+    FLoadFromFile: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -32,10 +33,11 @@ type
 implementation
 
 uses
-  QuadFX.Manager, QuadFX.EffectParamsLoader;
+  QuadFX.Manager, QuadFX.FileLoader;
 
 constructor TQuadFXEffectParams.Create;
 begin
+  FLoadFromFile := False;
   FEmitters := TList<PQuadFXEmitterParams>.Create;
   FName := 'Effect 1';
 
@@ -128,6 +130,7 @@ procedure TQuadFXEffectParams.LoadFromFile(AEffectName, AFileName: PWideChar); s
 var
   Stream: TMemoryStream;
 begin
+  FLoadFromFile := True;
   Manager.AddLog(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from file "' + AFileName + '"'));
 
   if not FileExists(AFileName) then
@@ -146,13 +149,15 @@ procedure TQuadFXEffectParams.LoadFromStream(AEffectName: PWideChar; AStream: Po
 var
   Stream: TMemoryStream;
 begin
-  Manager.AddLog(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from stream'));
+  if not FLoadFromFile then
+    Manager.AddLog(PWideChar('QuadFX: Loading effect "' + AEffectName + '" from stream'));
+  FLoadFromFile := False;
 
   Stream := TMemoryStream.Create;
   Stream.WriteBuffer((AStream)^, AStreamSize);
   Stream.Seek(0, soFromBeginning);
   try
-    TQuadFXEffectLoader.LoadFromStream(AEffectName, Stream, Self);
+    TQuadFXFileLoader.EffectLoadFromStream(AEffectName, Stream, Self);
   except
     Manager.AddLog(PWideChar('QuadFX: Error loading effect'));
   end;

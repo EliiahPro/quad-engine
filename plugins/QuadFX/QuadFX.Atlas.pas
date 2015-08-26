@@ -3,7 +3,7 @@ unit QuadFX.Atlas;
 interface
 
 uses
-  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f,
+  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, System.SysUtils,
   System.Generics.Collections, System.Classes, System.Json;
 
 type
@@ -13,6 +13,7 @@ type
     FPackName: WideString;
     FSprites: TList<PQuadFXSprite>;
     FTexture: IQuadTexture;
+    FLoadFromFile: Boolean;
     function GetSprite(Index: Integer): PQuadFXSprite;
     function GetSpriteCount: Integer;
     function GetSize: TVec2f;
@@ -21,6 +22,8 @@ type
     destructor Destroy; override;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    procedure LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
+    procedure LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     procedure FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
     procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
 
@@ -31,8 +34,11 @@ type
 
 implementation
 
+uses QuadFX.Manager, QuadFX.FileLoader;
+
 constructor TQuadFXAtlas.Create;
 begin
+  FLoadFromFile := False;
   FSprites := TList<PQuadFXSprite>.Create;
 end;
 
@@ -94,6 +100,44 @@ begin
   ASprite.Size := GetSize;
   ASprite.Axis := GetSize / 2;
   ASprite.Recalculate(ASprite.Size);
+end;
+
+procedure TQuadFXAtlas.LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
+var
+  Stream: TMemoryStream;
+begin
+  FLoadFromFile := True;
+  Manager.AddLog(PWideChar('QuadFX: Loading atlas "' + AAtlasName + '" from file "' + AFileName + '"'));
+
+  if not FileExists(AFileName) then
+  begin
+    Manager.AddLog(PWideChar('QuadFX: File "' + AFileName + '" not found!'));
+    Exit;
+  end;
+
+  Stream := TMemoryStream.Create;
+  Stream.LoadFromFile(AFileName);
+  LoadFromStream(AAtlasName, Stream.Memory, Stream.Size);
+  FreeAndNil(Stream);
+end;
+
+procedure TQuadFXAtlas.LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
+var
+  Stream: TMemoryStream;
+begin
+  if not FLoadFromFile then
+    Manager.AddLog(PWideChar('QuadFX: Loading atlas "' + AAtlasName + '" from stream'));
+  FLoadFromFile := False;
+
+  Stream := TMemoryStream.Create;
+  Stream.WriteBuffer((AStream)^, AStreamSize);
+  Stream.Seek(0, soFromBeginning);
+  try
+    TQuadFXFileLoader.AtlasLoadFromStream(AAtlasName, Stream, Self);
+  except
+    Manager.AddLog(PWideChar('QuadFX: Error loading atlas'));
+  end;
+  Stream.Free;
 end;
 
 end.
