@@ -916,7 +916,7 @@ end;
 //=============================================================================
 function TQuadRender.GetIsSeparateAlphaBlend: Boolean;
 begin
-  Result := (FD3DCaps.PrimitiveMiscCaps and D3DPMISCCAPS_SEPARATEALPHABLEND) <> 0;
+  Result := (FD3DCaps.PrimitiveMiscCaps and D3DPMISCCAPS_SEPARATEALPHABLEND) = D3DPMISCCAPS_SEPARATEALPHABLEND;
 end;
 
 //=============================================================================
@@ -924,7 +924,7 @@ end;
 //=============================================================================
 function TQuadRender.GetIsSupportedNonPow2: Boolean;
 begin
-  Result := (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2 = 0) and (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL = 0)
+  Result := (FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2) = D3DPTEXTURECAPS_POW2;
 end;
 
 //=============================================================================
@@ -1638,6 +1638,10 @@ begin
     Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));
     Device.Log.Write(PChar('Vertex shaders: ' + PixelShaderVersionString));
     Device.Log.Write(PChar('Pixel shaders: ' + PixelShaderVersionString));
+    if IsSeparateAlphaBlend then
+      Device.Log.Write('Separate alpha blending');
+    if IsSupportedNonPow2 then
+      Device.Log.Write('Supported non power of 2 textures');
   end;
   {$ENDREGION}
 
