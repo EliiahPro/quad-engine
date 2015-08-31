@@ -274,6 +274,7 @@ end;
 destructor TQuadFXEmitter.Destroy;
 begin
   FreeMem(FParticles);
+  FreeMem(FVertexes);
 
   inherited;
 end;
@@ -357,7 +358,7 @@ procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Doub
   end;
 var
   CPrev, CNext: PQuadFXColorDiagramValue;
-  cs, sn: Single;
+  SinRad, CosRad: Single;
   p1, p2: TVec2f;
 begin
   with AParticle^ do
@@ -400,21 +401,41 @@ begin
     Opacity.Update(Life);
     Color.A := Opacity.Value;
 
-    FastSinCos(Angle, cs, sn);
+    if Angle <> 0 then
+    begin
+      FastSinCos(Angle * (pi / 180), CosRad, SinRad);
+      p1 := -FParams.Textures[TextureIndex].Size / 2 * Scale.Value;
+      p2 := -p1;
 
-    p1 := -FParams.Textures[TextureIndex].Size / 2 * Scale.Value;
-    p2 := -p1;
-    Vertexes[0].x := p1.X * cs - p1.Y * sn + Position.X;
-    Vertexes[0].y := p1.X * sn - p1.Y * cs + Position.Y;
+      Vertexes[0].x := p1.X * CosRad - p1.Y * SinRad + Position.X;
+      Vertexes[0].y := p1.X * SinRad + p1.Y * CosRad + Position.Y;
 
-    Vertexes[1].x := p2.X * cs - p1.Y * sn + Position.X;
-    Vertexes[1].y := p2.X * sn - p1.Y * cs + Position.Y;
+      Vertexes[1].x := p2.X * CosRad - p1.Y * SinRad + Position.X;
+      Vertexes[1].y := p2.X * SinRad + p1.Y * CosRad + Position.Y;
 
-    Vertexes[2].x := p2.X * cs - p2.Y * sn + Position.X;
-    Vertexes[2].y := p2.X * sn - p2.Y * cs + Position.Y;
+      Vertexes[2].x := p1.X * CosRad - p2.Y * SinRad + Position.X;
+      Vertexes[2].y := p1.X * SinRad + p2.Y * CosRad + Position.Y;
 
-    Vertexes[5].x := p1.X * cs - p2.Y * sn + Position.X;
-    Vertexes[5].y := p1.X * sn - p2.Y * cs + Position.Y;
+      Vertexes[5].x := p2.X * CosRad - p2.Y * SinRad + Position.X;
+      Vertexes[5].y := p2.X * SinRad + p2.Y * CosRad + Position.Y;
+    end
+    else
+    begin
+      p2 := FParams.Textures[TextureIndex].Size * Scale.Value;
+      p1 := Position - p2 / 2;
+
+      Vertexes[0].x := p1.X;
+      Vertexes[0].y := p1.Y;
+
+      Vertexes[1].x := p1.X + p2.X;
+      Vertexes[1].y := p1.Y;
+
+      Vertexes[2].x := p1.X;
+      Vertexes[2].y := p1.Y + p2.Y;
+
+      Vertexes[5].x := p1.X + p2.X;
+      Vertexes[5].y := p1.Y + p2.Y;
+    end;
 
     Vertexes[0].Color := Color;
     Vertexes[1].Color := Color;
@@ -457,8 +478,9 @@ begin
     case FParams.Shape.ShapeType of
       qeftLine:
         begin
+          FastSinCos(RandAnglePosition, CosRad, SinRad);
           RandAnglePosition := DegToRad(FValues[1]);
-          Position := TVec2f.Create(cos(RandAnglePosition), sin(RandAnglePosition)) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
+          Position := TVec2f.Create(CosRad, SinRad) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
         end;
       qeftCircle:
         begin
@@ -468,8 +490,7 @@ begin
         end;
       qeftRect:
         begin
-          SinRad := sin(FValues[2]);
-          CosRad := cos(FValues[2]);
+          FastSinCos(FValues[2], CosRad, SinRad);
 
           P := Tvec2f.Create(
             (Random(MaxInt) / MaxInt) * FValues[0] - FValues[0] / 2,
@@ -532,9 +553,6 @@ begin
       Result.Vertexes[5].u := UVB.X;
       Result.Vertexes[5].v := UVB.Y;
     end;
-
-    Result.Vertexes[3] := Result.Vertexes[2];
-    Result.Vertexes[4] := Result.Vertexes[1];
   end;
 end;
 
