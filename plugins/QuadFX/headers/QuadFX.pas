@@ -12,6 +12,9 @@ const
   QuadFXReleaseVersion: Byte = 0;
 
 type
+  PVertexes = ^TVertexes;
+  TVertexes = array[0..5] of TVertex;
+
   PQuadFXParticle = ^TQuadFXParticle;
   PQuadFXEmitterParams = ^TQuadFXEmitterParams;
   PQuadFXParams = ^TQuadFXParams;
@@ -30,6 +33,7 @@ type
   end;
 
   TQuadFXParticle = record
+    Vertexes: PVertexes;
     Time: Double;
     Life: Double;
     Position: TVec2f;

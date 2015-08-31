@@ -15,9 +15,9 @@ uses
   QuadFX.Manager in '..\QuadFX.Manager.pas',
   QuadFX.Helpers in '..\QuadFX.Helpers.pas',
   QuadFX.Atlas in '..\QuadFX.Atlas.pas',
-  QuadFX.EffectParamsLoader in '..\QuadFX.EffectParamsLoader.pas',
-  QuadFX.EffectParamsLoader.CustomFormat in '..\QuadFX.EffectParamsLoader.CustomFormat.pas',
-  QuadFX.EffectParamsLoader.JSON in '..\QuadFX.EffectParamsLoader.JSON.pas';
+  QuadFX.FileLoader in '..\QuadFX.FileLoader.pas',
+  QuadFX.FileLoader.CustomFormat in '..\QuadFX.FileLoader.CustomFormat.pas',
+  QuadFX.FileLoader.JSON in '..\QuadFX.FileLoader.JSON.pas';
 
 {$R *.res}
 

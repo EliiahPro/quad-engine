@@ -16,6 +16,11 @@ type
     FActive: Boolean;
     FParams: PQuadFXEmitterParams;
 
+    FVertexes: PVertexes;
+    FVertexesLastRecord: PVertexes;
+    FVertexeSize: Cardinal;
+    FVertexesSize: Cardinal;
+
     FParticles: PQuadFXParticle;
     FParticlesCount: Cardinal;
     FParticlesLastRecord: PQuadFXParticle;
@@ -65,6 +70,7 @@ type
     property IsDebug: Boolean read FIsDebug write FIsDebug;
 
     property EmitterParams: PQuadFXEmitterParams read GetEmitterParams;
+    property Vertexes: PVertexes read FVertexes;
     property Particle: PQuadFXParticle read FParticles;
     property ParticleCount: Cardinal read FParticlesCount;
 
@@ -82,7 +88,7 @@ type
 implementation
 
 uses
-  Math;
+  Math, QuadEngine.Utils;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 begin
@@ -131,6 +137,7 @@ begin
   while Cardinal(P) < Cardinal(FParticlesLastRecord) do
   begin
     Dec(FParticlesLastRecord);
+    Dec(FVertexesLastRecord);
     P^ := FParticlesLastRecord^;
     Dec(FParticlesCount);
   end;
@@ -184,6 +191,12 @@ begin
   FParticleSize := SizeOf(TQuadFXParticle);
   FParticlesSize := FParticleSize * AParams.MaxParticles;
   GetMem(FParticles, FParticlesSize);
+
+  FVertexeSize := SizeOf(TVertexes);
+  FVertexesSize := FVertexeSize * AParams.MaxParticles;
+  GetMem(FVertexes, FVertexesSize);
+
+  FVertexesLastRecord := FVertexes;
   FParticlesLastRecord := FParticles;
 
   FParams := AParams;
@@ -292,6 +305,7 @@ begin
     else
     begin
       Dec(FParticlesLastRecord);
+      Dec(FVertexesLastRecord);
       P^ := FParticlesLastRecord^;
       Dec(FParticlesCount);
     end;
@@ -343,6 +357,8 @@ procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Doub
   end;
 var
   CPrev, CNext: PQuadFXColorDiagramValue;
+  cs, sn: Single;
+  p1, p2: TVec2f;
 begin
   with AParticle^ do
   begin
@@ -384,6 +400,30 @@ begin
     Opacity.Update(Life);
     Color.A := Opacity.Value;
 
+    FastSinCos(Angle, cs, sn);
+
+    p1 := -FParams.Textures[TextureIndex].Size / 2 * Scale.Value;
+    p2 := -p1;
+    Vertexes[0].x := p1.X * cs - p1.Y * sn + Position.X;
+    Vertexes[0].y := p1.X * sn - p1.Y * cs + Position.Y;
+
+    Vertexes[1].x := p2.X * cs - p1.Y * sn + Position.X;
+    Vertexes[1].y := p2.X * sn - p1.Y * cs + Position.Y;
+
+    Vertexes[2].x := p2.X * cs - p2.Y * sn + Position.X;
+    Vertexes[2].y := p2.X * sn - p2.Y * cs + Position.Y;
+
+    Vertexes[5].x := p1.X * cs - p2.Y * sn + Position.X;
+    Vertexes[5].y := p1.X * sn - p2.Y * cs + Position.Y;
+
+    Vertexes[0].Color := Color;
+    Vertexes[1].Color := Color;
+    Vertexes[2].Color := Color;
+    Vertexes[5].Color := Color;
+
+    Vertexes[3] := Vertexes[2];
+    Vertexes[4] := Vertexes[1];
+
        {
     if FIsDebug then
     begin
@@ -405,7 +445,9 @@ var
   P: TVec2f;
 begin
   Result := FParticlesLastRecord;
+  Result.Vertexes := FVertexesLastRecord;
   Inc(FParticlesLastRecord);
+  Inc(FVertexesLastRecord);
   Inc(FParticlesCount);
 
   with Result^ do
@@ -473,6 +515,26 @@ begin
     Spin := TQuadFXParticleValue.Create(@FParams.Particle.Spin);
     Angle := RadToDeg(RandomAngle) + FStartAngle.RandomValue;
     StartAngle := Angle;
+
+    Vertexes[0].z := 0;
+    Vertexes[1].z := 0;
+    Vertexes[2].z := 0;
+    Vertexes[5].z := 0;
+
+    with FParams.Textures[TextureIndex]^ do
+    begin
+      Result.Vertexes[0].u := UVA.X;
+      Result.Vertexes[0].v := UVA.Y;
+      Result.Vertexes[1].u := UVB.X;
+      Result.Vertexes[1].v := UVA.Y;
+      Result.Vertexes[2].u := UVA.X;
+      Result.Vertexes[2].v := UVB.Y;
+      Result.Vertexes[5].u := UVB.X;
+      Result.Vertexes[5].v := UVB.Y;
+    end;
+
+    Result.Vertexes[3] := Result.Vertexes[2];
+    Result.Vertexes[4] := Result.Vertexes[1];
   end;
 end;
 

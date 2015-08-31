@@ -119,10 +119,14 @@ begin
     for Em := 0 to FEffects[Ef].GetEmitterCount - 1 do
     begin
       Emitter := TQuadFXEmitter(FEffects[Ef].GetEmitter(Em));
-      Manager.QuadRender.SetBlendMode(Emitter.EmitterParams.BlendMode);
       if not Assigned(FOnDraw) then
       begin
-        P := Emitter.Particle;
+        Manager.QuadRender.SetBlendMode(Emitter.EmitterParams.BlendMode);
+        Manager.QuadRender.FlushBuffer;
+        Manager.QuadRender.SetTexture(0, Emitter.EmitterParams.Textures[0].Texture.GetTexture(0));
+        Manager.QuadRender.AddTrianglesToBuffer(Emitter.Vertexes^, 6 * Emitter.ParticleCount);
+        Manager.QuadRender.FlushBuffer;
+       { P := Emitter.Particle;
         for i := 0 to Emitter.ParticleCount - 1 do
         begin
           if (Emitter.EmitterParams.TextureCount > 0) then
@@ -137,7 +141,7 @@ begin
          // else
          //   QuadRender.DrawCircle(P.Position, 3 * P.Scale.Value, 2 * P.Scale.Value, P.Color);
           Inc(P);
-        end;
+        end;  }
       end
       else
         FOnDraw(Emitter, Emitter.Particle, Emitter.ParticleCount);
