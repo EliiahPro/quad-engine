@@ -9,16 +9,15 @@ uses
 type
   TQuadFXJSONFileFormat = class sealed(TQuadFXCustomFileFormat)
   private
-    FJSONObject: TJSONObject;
     FJSONAtlases: TJSONArray;
     FJSONEffects: TJSONArray;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; override;
-    destructor Destroy; override;
     procedure EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); override;
     procedure AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas); override;
 
-    procedure JSONInit(AStream: TMemoryStream);
+    //procedure JSONInit(AStream: TMemoryStream);
+    function JSONInit(AStream: TMemoryStream): TJSONObject;
     procedure LoadEffectParams(AJsonObject: TJSONObject);
     function LoadSingleDiagram(AJSONArray: TJSONArray): TQuadFXSingleDiagram;
     function LoadParams(AJsonObject: TJSONObject): TQuadFXParams;
@@ -252,31 +251,36 @@ var
   Name: String;
   Sprites: TJSONArray;
   SpriteObject: TJSONObject;
+  JSONObject: TJSONObject;
 begin
   inherited;
-  JSONInit(AStream);
-  IsLoaded := False;
+  JSONObject := JSONInit(AStream);
+  try
+    IsLoaded := False;
 
-  if Assigned(FJSONAtlases) then
-  begin
-    for i := 0 to FJSONAtlases.Count - 1 do
+    if Assigned(FJSONAtlases) then
     begin
-      Name := (FJSONAtlases.Items[i] as TJSONObject).GetValue('Name').Value;
-      if Name = AAtlasName then
+      for i := 0 to FJSONAtlases.Count - 1 do
       begin
-        AtlasObject := (FJSONAtlases.Items[i] as TJSONObject);
-        Sprites := AtlasObject.Get('Sprites').JsonValue as TJSONArray;
-        for j := 0 to Sprites.Count - 1 do
+        Name := (FJSONAtlases.Items[i] as TJSONObject).GetValue('Name').Value;
+        if Name = AAtlasName then
         begin
-          SpriteObject := (Sprites.Items[j] as TJSONObject);
-          Manager.AddLog(PWideChar('QuadFX: Load sprite "' + AAtlasName + '"'));
-          LoadSprite((SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt);
+          AtlasObject := (FJSONAtlases.Items[i] as TJSONObject);
+          Sprites := AtlasObject.Get('Sprites').JsonValue as TJSONArray;
+          for j := 0 to Sprites.Count - 1 do
+          begin
+            SpriteObject := (Sprites.Items[j] as TJSONObject);
+            Manager.AddLog(PWideChar('QuadFX: Load sprite "' + AAtlasName + '"'));
+            LoadSprite((SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt);
+          end;
         end;
       end;
-    end;
 
-    if not IsLoaded then
-      Manager.AddLog(PWideChar('QuadFX: Atlas "' + AAtlasName + '" not found'));
+      if not IsLoaded then
+        Manager.AddLog(PWideChar('QuadFX: Atlas "' + AAtlasName + '" not found'));
+    end;
+  finally
+    JSONObject.Destroy;
   end;
 end;
 
@@ -285,31 +289,35 @@ var
   i: Integer;
   IsLoaded: Boolean;
   Name: String;
+  JSONObject: TJSONObject;
 begin
   inherited;
-  JSONInit(AStream);
+  JSONObject := JSONInit(AStream);
+  try
+    IsLoaded := False;
 
-  IsLoaded := False;
-
-  if Assigned(FJSONEffects) then
-  begin
-    for i := 0 to FJSONEffects.Count - 1 do
+    if Assigned(FJSONEffects) then
     begin
-      Name := (FJSONEffects.Items[i] as TJSONObject).GetValue('Name').Value;
-      if Name = AEffectName then
+      for i := 0 to FJSONEffects.Count - 1 do
       begin
-        LoadEffectParams(FJSONEffects.Items[i] as TJSONObject);
-        IsLoaded := True;
-        Break;
+        Name := (FJSONEffects.Items[i] as TJSONObject).GetValue('Name').Value;
+        if Name = AEffectName then
+        begin
+          LoadEffectParams(FJSONEffects.Items[i] as TJSONObject);
+          IsLoaded := True;
+          Break;
+        end;
       end;
-    end;
 
-    if not IsLoaded then
-      Manager.AddLog(PWideChar('QuadFX: Effect "' + AEffectName + '" not found'));
+      if not IsLoaded then
+        Manager.AddLog(PWideChar('QuadFX: Effect "' + AEffectName + '" not found'));
+    end;
+  finally
+    JSONObject.Destroy;
   end;
 end;
 
-procedure TQuadFXJSONFileFormat.JSONInit(AStream: TMemoryStream);
+function TQuadFXJSONFileFormat.JSONInit(AStream: TMemoryStream): TJSONObject;
 var
   S: TStringList;
   JSONTextures: TJSONObject;
@@ -317,31 +325,24 @@ begin
   S := TStringList.Create;
   try
     S.LoadFromStream(AStream);
-    FJSONObject := TJSONObject.ParseJSONValue(S.Text) as TJSONObject;
+    Result := TJSONObject.ParseJSONValue(S.Text) as TJSONObject;
 
-    if Assigned(FJSONObject.Get('PackName')) then
-      FPackName := FJSONObject.GetValue('PackName').Value;
+    if Assigned(Result.Get('PackName')) then
+      FPackName := Result.GetValue('PackName').Value;
 
-    if Assigned(FJSONObject.Get('Textures')) then
+    if Assigned(Result.Get('Textures')) then
     begin
-      JSONTextures := FJSONObject.Get('Textures').JsonValue as TJSONObject;
+      JSONTextures := Result.Get('Textures').JsonValue as TJSONObject;
       if Assigned(JSONTextures.Get('Atlases')) then
         FJSONAtlases := JSONTextures.Get('Atlases').JsonValue as TJSONArray;
     end;
 
-    if Assigned(FJSONObject.Get('Effects')) then
-      FJSONEffects := FJSONObject.Get('Effects').JsonValue as TJSONArray;
+    if Assigned(Result.Get('Effects')) then
+      FJSONEffects := Result.Get('Effects').JsonValue as TJSONArray;
 
   finally
     S.Free;
   end;
-end;
-
-destructor TQuadFXJSONFileFormat.Destroy;
-begin
-  if Assigned(FJSONEffects) then
-    FJSONEffects.Destroy;
-  inherited;
 end;
 
 class function TQuadFXJSONFileFormat.CheckSignature(ASignature: TEffectSignature): Boolean;

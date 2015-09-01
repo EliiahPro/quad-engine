@@ -5,10 +5,10 @@ program demo08;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, QuadFX, Vec2f{, QuadFX.Manager}, System.SysUtils;
+  QuadEngine, QuadFX, Vec2f, QuadFX.Manager, System.SysUtils;
 
 const
-  WIN_SIZE: TVec2i = (X: 1024; Y: 768);
+  WIN_SIZE: TVec2i = (X: 160; Y: 90);
   RENDER_SIZE: TVec2i = (X: 1024; Y: 768);
 
 var
@@ -69,7 +69,27 @@ begin
   QuadRender.EndRender;
 end;
 
+procedure OnClose; stdcall;
 begin
+  QuadTimer.SetState(False);
+  sleep(500);
+
+  Background := nil;
+
+  QuadFXEffectParams := nil;
+  QuadFXEffectParams2 := nil;
+  QuadFXAtlas := nil;
+  QuadFXLayer := nil;
+  QuadFXManager := nil;
+
+  QuadTimer := nil;
+  QuadRender := nil;
+  QuadWindow := nil;
+  QuadDevice := nil;
+end;
+
+begin
+  ReportMemoryLeaksOnShutdown := True;
   Randomize;
   QuadDevice := CreateQuadDevice;
 
@@ -77,15 +97,16 @@ begin
   QuadWindow.SetCaption('QuadFX plugin demo');
   QuadWindow.SetSize(WIN_SIZE.X, WIN_SIZE.Y);
   QuadWindow.SetOnMouseDown(OnMouseDown);
+  QuadWindow.SetOnClose(OnClose);
 
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, RENDER_SIZE.X, RENDER_SIZE.Y, False);
 
   QuadDevice.CreateAndLoadTexture(0, 'data\Background.png', Background);
 
-  //Manager := TQuadFXManager.Create(QuadDevice);
-  //QuadFXManager := Manager;
-  QuadFXManager := CreateQuadFXManager(QuadDevice);
+  Manager := TQuadFXManager.Create(QuadDevice);
+  QuadFXManager := Manager;
+  //QuadFXManager := CreateQuadFXManager(QuadDevice);
 
   QuadFXManager.CreateLayer(QuadFXLayer);
 
