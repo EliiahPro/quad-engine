@@ -478,15 +478,16 @@ begin
     case FParams.Shape.ShapeType of
       qeftLine:
         begin
+          RandAnglePosition := RadToDeg(FValues[1]);
           FastSinCos(RandAnglePosition, CosRad, SinRad);
-          RandAnglePosition := DegToRad(FValues[1]);
           Position := TVec2f.Create(CosRad, SinRad) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
         end;
       qeftCircle:
         begin
           Radius := FValues[0] + Random(MaxInt) / MaxInt * (FValues[1] - FValues[0]);
           RandAnglePosition := Random(MaxInt) / MaxInt * 2 * Pi;
-          Position := TVec2f.Create(Cos(RandAnglePosition), Sin(RandAnglePosition)) * Radius;
+          FastSinCos(RandAnglePosition, CosRad, SinRad);
+          Position := TVec2f.Create(CosRad, SinRad) * Radius;
         end;
       qeftRect:
         begin
@@ -512,13 +513,13 @@ begin
     FParticleLastTime.Update(FLife);
     LifeTime := FParticleLastTime.Value;
 
-
     RandomAngle := (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
     if FParams.DirectionFromCenter then
       RandomAngle := RandomAngle + RandAnglePosition;
 
     Rand := FStartVelocity.RandomValue;
-    StartVelocity := TVec2f.Create(Cos(RandomAngle) * Rand, Sin(RandomAngle) * Rand);
+    FastSinCos(RandomAngle, CosRad, SinRad);
+    StartVelocity := TVec2f.Create(CosRad * Rand, SinRad * Rand);
     Velocity := TQuadFXParticleValue.Create(@FParams.Particle.Velocity);
 
     ColorIndex := 0;
