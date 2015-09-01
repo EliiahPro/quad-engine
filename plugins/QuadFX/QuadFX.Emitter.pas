@@ -269,6 +269,7 @@ begin
   FEmission.Update(FLife);
   FDirection.Update(FLife);
   FSpread.Update(FLife);
+  FParticleLastTime.Update(FLife);
 end;
 
 destructor TQuadFXEmitter.Destroy;
@@ -510,7 +511,6 @@ begin
     Life := 0;
     Time := 0;
 
-    FParticleLastTime.Update(FLife);
     LifeTime := FParticleLastTime.Value;
 
     RandomAngle := (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
