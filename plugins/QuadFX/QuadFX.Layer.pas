@@ -113,6 +113,7 @@ var
   i: Integer;
   P: PQuadFXParticle;
   Sprite: PQuadFXSprite;
+  Color: TQuadColor;
 begin
   for Ef := 0 to FEffects.Count - 1 do
   begin
@@ -126,22 +127,29 @@ begin
         Manager.QuadRender.SetTexture(0, Emitter.EmitterParams.Textures[0].Texture.GetTexture(0));
         Manager.QuadRender.AddTrianglesToBuffer(Emitter.Vertexes^, 6 * Emitter.ParticleCount);
         Manager.QuadRender.FlushBuffer;
-       { P := Emitter.Particle;
+        P := Emitter.Particle;
         for i := 0 to Emitter.ParticleCount - 1 do
         begin
           if (Emitter.EmitterParams.TextureCount > 0) then
           begin
-            Sprite := Emitter.EmitterParams.Textures[P.TextureIndex];
-            if Assigned(Sprite) and Assigned(Sprite.Texture) then
-                Sprite.Texture.DrawMapRotAxis(
-                P.Position - Sprite.Size / 2, P.Position + Sprite.Size / 2,
-                Sprite.UVA, Sprite.UVB, P.Position, P.Angle, P.Scale.Value, P.Color
-              );
+            Color := $FF00FF00;
+            Color.A := 1 - P.Time / P.LifeTime;
+            Manager.QuadRender.DrawCircle(TVec2f.Create((i mod 100) * 1, 1 + (i div 100) * 5), 1, 0, Color );
+
+          //  Manager.QuadRender.DrawQuadLine(TVec2f.Create(P.Vertexes[0].x, P.Vertexes[0].Y), TVec2f.Create(P.Vertexes[1].x, P.Vertexes[1].Y), 2, 2, $FFFF0000, $FF00FF00);
+          //  Manager.QuadRender.DrawQuadLine(TVec2f.Create(P.Vertexes[2].x, P.Vertexes[2].Y), TVec2f.Create(P.Vertexes[5].x, P.Vertexes[5].Y), 2, 2, $FFFF0000, $FF00FF00);
+
+           // Sprite := Emitter.EmitterParams.Textures[P.TextureIndex];
+           // if Assigned(Sprite) and Assigned(Sprite.Texture) then
+           //     Sprite.Texture.DrawMapRotAxis(
+           //     P.Position - Sprite.Size / 2, P.Position + Sprite.Size / 2,
+           //     Sprite.UVA, Sprite.UVB, P.Position, P.Angle, P.Scale.Value, P.Color
+           //   );
           end;
          // else
          //   QuadRender.DrawCircle(P.Position, 3 * P.Scale.Value, 2 * P.Scale.Value, P.Color);
           Inc(P);
-        end;  }
+        end;
       end
       else
         FOnDraw(Emitter, Emitter.Particle, Emitter.ParticleCount);
