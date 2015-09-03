@@ -127,7 +127,7 @@ begin
         Manager.QuadRender.SetTexture(0, Emitter.EmitterParams.Textures[0].Texture.GetTexture(0));
         Manager.QuadRender.AddTrianglesToBuffer(Emitter.Vertexes^, 6 * Emitter.ParticleCount);
         Manager.QuadRender.FlushBuffer;
-        P := Emitter.Particle;
+       { P := Emitter.Particle;
         for i := 0 to Emitter.ParticleCount - 1 do
         begin
           if (Emitter.EmitterParams.TextureCount > 0) then
@@ -149,7 +149,7 @@ begin
          // else
          //   QuadRender.DrawCircle(P.Position, 3 * P.Scale.Value, 2 * P.Scale.Value, P.Color);
           Inc(P);
-        end;
+        end;  }
       end
       else
         FOnDraw(Emitter, Emitter.Particle, Emitter.ParticleCount);

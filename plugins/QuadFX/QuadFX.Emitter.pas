@@ -139,9 +139,10 @@ begin
   begin
     Dec(FParticlesLastRecord);
     Dec(FVertexesLastRecord);
-    V := P^.Vertexes;
+    V := P.Vertexes;
     P^ := FParticlesLastRecord^;
-    P^.Vertexes := V;
+    V^ := FParticlesLastRecord.Vertexes^;
+    P.Vertexes := V;
     Dec(FParticlesCount);
   end;
 end;
@@ -312,9 +313,10 @@ begin
     begin
       Dec(FParticlesLastRecord);
       Dec(FVertexesLastRecord);
-      V := P^.Vertexes;
+      V := P.Vertexes;
       P^ := FParticlesLastRecord^;
-      P^.Vertexes := V;
+      V^ := FParticlesLastRecord.Vertexes^;
+      P.Vertexes := V;
       Dec(FParticlesCount);
     end;
   end;
