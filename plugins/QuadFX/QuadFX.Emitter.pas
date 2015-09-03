@@ -129,6 +129,7 @@ end;
 procedure TQuadFXEmitter.Restart;
 var
   P: PQuadFXParticle;
+  V: PVertexes;
 begin
   RestartParams;
   FTime := 0;
@@ -138,7 +139,9 @@ begin
   begin
     Dec(FParticlesLastRecord);
     Dec(FVertexesLastRecord);
+    V := P^.Vertexes;
     P^ := FParticlesLastRecord^;
+    P^.Vertexes := V;
     Dec(FParticlesCount);
   end;
 end;
@@ -285,6 +288,7 @@ var
   P: PQuadFXParticle;
   EmissionTime: Double;
   LifePos: Single;
+  V: PVertexes;
 begin
   if not Assigned(FParams) then
     Exit;
@@ -308,7 +312,9 @@ begin
     begin
       Dec(FParticlesLastRecord);
       Dec(FVertexesLastRecord);
+      V := P^.Vertexes;
       P^ := FParticlesLastRecord^;
+      P^.Vertexes := V;
       Dec(FParticlesCount);
     end;
   end;
