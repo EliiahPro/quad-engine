@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.6.2 Umber header file for Embarcadero™ Delphi® and FreePascal
+  Quad engine 0.7.1 Umber header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -33,7 +33,7 @@ const
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
   QuadEngineMinorVersion: Byte = 0;
   QuadEngineMajorVersion: Byte = 7;
-  QuadEngineReleaseVersion: Byte = 0;
+  QuadEngineReleaseVersion: Byte = 1;
 
 type
   ///<summary>Blending mode types.</summary>

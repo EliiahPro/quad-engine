@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.6.2 Umber header file for Visual C#
+  Quad engine 0.7.1 Umber header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -23,7 +23,7 @@ namespace QuadEngine
 {
     public static byte QuadEngineMinorVersion = 0;
     public static byte QuadEngineMajorVersion = 7;
-    public static byte QuadEngineReleaseVersion = 0;
+    public static byte QuadEngineReleaseVersion = 1;
 
     // Blending mode types
     ///<summary>Blending mode types.</summary>     

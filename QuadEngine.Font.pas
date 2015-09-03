@@ -322,6 +322,7 @@ begin
   end;
 
   startX := sx;
+  ypos := Position.Y;
 
   i := 0;
   repeat
@@ -339,7 +340,11 @@ begin
 
     if l = Ord(#13) then
     begin
-      ypos := Position.Y + FLetters[CHAR_SPACE].H * AScale;
+      if not FIsDistanceField then
+        ypos := ypos + FLetters[CHAR_SPACE].H * AScale
+      else
+        ypos := ypos + (FQuadChars[Ord('M')].IncY / FQuadFontHeader.ScaleFactor) * AScale;
+
       sx := startX;
     end
     else

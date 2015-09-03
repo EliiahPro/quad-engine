@@ -115,7 +115,7 @@
                     <VersionInfo Name="MajorVer">0</VersionInfo>
                     <VersionInfo Name="MinorVer">4</VersionInfo>
                     <VersionInfo Name="Release">0</VersionInfo>
-                    <VersionInfo Name="Build">406</VersionInfo>
+                    <VersionInfo Name="Build">409</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -127,7 +127,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">0.4.0.406</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">0.4.0.409</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
@@ -464,6 +464,7 @@
         <DCCReference Include="..\headers\QuadEngine.pas"/>
         <DCCReference Include="..\QuadEngine.Device.pas"/>
         <DCCReference Include="..\QuadEngine.Font.pas"/>
+        <DCCReference Include="..\QuadEngine.GBuffer.pas"/>
         <DCCReference Include="..\QuadEngine.Log.pas"/>
         <DCCReference Include="..\QuadEngine.Render.pas"/>
         <DCCReference Include="..\QuadEngine.Shader.pas"/>
@@ -493,3 +494,11 @@
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 </Project>
+
+<!-- EurekaLog First Line
+[Exception Log]
+EurekaLog Version=7007
+Activate=0
+DeleteMapAfterCompile=0
+Encrypt Password=""
+EurekaLog Last Line -->
