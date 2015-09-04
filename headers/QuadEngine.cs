@@ -315,6 +315,7 @@ namespace QuadEngine
         void DrawRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
         void DrawRotAxisFrame(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void LoadFromFile(byte ARegister, string AFilename, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
+        void LoadFromStream(byte ARegister, IntPtr AStream, int AStreamSize, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
         void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight, TRAWDataFormat ASourceFormat = rdfARGB8);
         void SetIsLoaded(UInt16 AWidth, UInt16 AHeight);
     }
