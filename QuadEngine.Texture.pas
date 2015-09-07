@@ -54,6 +54,9 @@ type
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f; Angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawPart(const Position: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawPartRot(const Center: TVec2f; angle, Scale: Double; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawPartRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRot(const Center: TVec2f; angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotFrame(const Center: TVec2f; angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -184,6 +187,42 @@ begin
 
   FQuadRender.DrawRectRotAxis(PointA - 0.5, PointB - 0.5, angle, Scale, Axis,
                               UVA, UVB, Color);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadTexture.DrawPart(const Position: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+begin
+  SetTextureStages;
+
+  FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + RightBottom - LeftTop,
+                       TVec2f(LeftTop) / FWidth, TVec2f(RightBottom) / FHeight,
+                       Color);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadTexture.DrawPartRot(const Center: TVec2f; angle, Scale: Double; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+begin
+  SetTextureStages;
+
+  FQuadRender.DrawRectRot(Center - 0.5, Center - 0.5 + RightBottom - LeftTop, angle, Scale,
+                          TVec2f(LeftTop) / FWidth, TVec2f(RightBottom) / FHeight,
+                          Color);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadTexture.DrawPartRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+begin
+  SetTextureStages;
+
+  FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + RightBottom - LeftTop, angle, Scale, Axis,
+                              TVec2f(LeftTop) / FWidth, TVec2f(RightBottom) / FHeight,
+                              Color);
 end;
 
 //=============================================================================
