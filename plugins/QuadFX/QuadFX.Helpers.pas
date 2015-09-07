@@ -36,10 +36,13 @@ type
 
   TQuadFXSpriteHelper = record helper for TQuadFXSprite
   public
-    procedure Recalculate(AAtlasSize: TVec2f);
+    procedure Recalculate(AAtlas: IQuadFXAtlas);
   end;
 
 implementation
+
+uses
+  QuadFX.Atlas;
 
 { TQuadFXSingleDiagramValue }
 
@@ -185,10 +188,20 @@ end;
 
 { TQuadFXSpriteHelper }
 
-procedure TQuadFXSpriteHelper.Recalculate(AAtlasSize: TVec2f);
+procedure TQuadFXSpriteHelper.Recalculate(AAtlas: IQuadFXAtlas);
 begin
-  UVA := Position / AAtlasSize;
-  UVB := (Position + Size) / AAtlasSize;
+  if Assigned(AAtlas) then
+  begin
+    Texture := TQuadFXAtlas(AAtlas).Texture;
+    UVA := Position / AAtlas.Size;
+    UVB := (Position + Size) / AAtlas.Size;
+  end
+  else
+  begin
+    Texture := nil;
+    UVA := TVec2f.Zero;
+    UVB := TVec2f.Create(1, 1);
+  end;
 end;
 
 end.

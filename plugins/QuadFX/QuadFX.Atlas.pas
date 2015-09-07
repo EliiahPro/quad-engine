@@ -14,20 +14,21 @@ type
     FSprites: TList<PQuadFXSprite>;
     FTexture: IQuadTexture;
     FLoadFromFile: Boolean;
-    function GetSprite(Index: Integer): PQuadFXSprite;
-    function GetSpriteCount: Integer;
     function GetSize: TVec2f;
   public
     constructor Create;
     destructor Destroy; override;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    function GetSprite(Index: Integer): PQuadFXSprite; stdcall;
+    function GetSpriteCount: Integer; stdcall;
     procedure LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
-    procedure FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
+    procedure SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
     procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
+    procedure SetTexture(ATesture: IQuadTexture); stdcall;
 
-    property Texture: IQuadTexture read FTexture write FTexture;
+    property Texture: IQuadTexture read FTexture write SetTexture;
     property Name: WideString read FName write FName;
     property PackName: WideString read FPackName write FPackName;
   end;
@@ -53,22 +54,30 @@ begin
   FSprites.Free;
 end;
 
-function TQuadFXAtlas.GetSize: TVec2f;
+procedure TQuadFXAtlas.SetTexture(ATesture: IQuadTexture); stdcall;
 begin
-  Result := TVec2f.Create(FTexture.GetTextureWidth, FTexture.GetTextureHeight);
+  FTexture := ATesture;
 end;
 
-function TQuadFXAtlas.GetSprite(Index: Integer): PQuadFXSprite;
+function TQuadFXAtlas.GetSize: TVec2f;
+begin
+  if Assigned(FTexture) then
+    Result := TVec2f.Create(FTexture.GetTextureWidth, FTexture.GetTextureHeight)
+  else
+    Result := TVec2f.Zero;
+end;
+
+function TQuadFXAtlas.GetSprite(Index: Integer): PQuadFXSprite; stdcall;
 begin
   Result := FSprites[Index];
 end;
 
-function TQuadFXAtlas.GetSpriteCount: Integer;
+function TQuadFXAtlas.GetSpriteCount: Integer; stdcall;
 begin
   Result := FSprites.Count;
 end;
 
-procedure TQuadFXAtlas.FindSprite(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
+procedure TQuadFXAtlas.SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
 var
   i: Integer;
 begin
@@ -99,7 +108,7 @@ begin
   ASprite.Position := TVec2f.Zero;
   ASprite.Size := GetSize;
   ASprite.Axis := GetSize / 2;
-  ASprite.Recalculate(ASprite.Size);
+  ASprite.Recalculate(nil);
 end;
 
 procedure TQuadFXAtlas.LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;

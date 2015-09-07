@@ -21,6 +21,7 @@ type
     class function CheckSignature(ASignature: TEffectSignature): Boolean; virtual; abstract;
     constructor Create;
     procedure SetEffectParams(AEffectParams: IQuadFXEffectParams);
+    procedure SetPackName(APackName: WideString);
     procedure SetAtlas(AAtlas: IQuadFXAtlas);
     procedure EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); virtual;
     procedure AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas); virtual;
@@ -33,6 +34,11 @@ begin
   FPackName := '';
   FEffectParams := nil;
   FAtlas := nil;
+end;
+
+procedure TQuadFXCustomFileFormat.SetPackName(APackName: WideString);
+begin
+  FPackName := APackName;
 end;
 
 procedure TQuadFXCustomFileFormat.EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams);

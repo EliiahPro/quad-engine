@@ -24,8 +24,11 @@ type
     function LoadColorDiagram(AJSONArray: TJSONArray): TQuadFXColorDiagram;
     function LoadEmitterShape(AJsonObject: TJSONObject): TQuadFXEmitterShape;
     function LoadEmitterParams(AJsonObject: TJSONObject): PQuadFXEmitterParams;
-    function LoadSprite(AId: Integer): PQuadFXSprite;
+    function LoadSprite(AId: Integer): PQuadFXSprite; overload;
+    procedure LoadSprite(ASprite: PQuadFXSprite; AJsonObject: TJSONObject); overload;
     function LoadAtlas(AJsonObject: TJSONObject): IQuadFXAtlas;
+
+    property JSONAtlases: TJSONArray read FJSONAtlases write FJSONAtlases;
   end;
 
 implementation
@@ -131,11 +134,29 @@ begin
 
       Manager.QuadDevice.CreateTexture(Texture);
       Texture.LoadFromStream(0, Stream.Memory, Stream.Size);
-      TQuadFXAtlas(Result).Texture := Texture;
+      Result.SetTexture(Texture);
     finally
       FreeAndNil(Stream);
     end;
   end;
+end;
+
+procedure TQuadFXJSONFileFormat.LoadSprite(ASprite: PQuadFXSprite; AJsonObject: TJSONObject);
+begin
+  ASprite.Texture := nil;
+  ASprite.ID := (AJsonObject.Get('ID').JsonValue as TJSONNumber).AsInt;
+  ASprite.Position := TVec2f.Create(
+    (AJsonObject.Get('Left').JsonValue as TJSONNumber).AsInt,
+    (AJsonObject.Get('Top').JsonValue as TJSONNumber).AsInt
+  );
+  ASprite.Size := TVec2f.Create(
+    (AJsonObject.Get('Width').JsonValue as TJSONNumber).AsInt,
+    (AJsonObject.Get('Height').JsonValue as TJSONNumber).AsInt
+  );
+  ASprite.Axis := TVec2f.Create(
+    (AJsonObject.Get('AxisLeft').JsonValue as TJSONNumber).AsInt,
+    (AJsonObject.Get('AxisTop').JsonValue as TJSONNumber).AsInt
+  );
 end;
 
 function TQuadFXJSONFileFormat.LoadSprite(AId: Integer): PQuadFXSprite;
@@ -146,43 +167,30 @@ var
   SpriteObject: TJSONObject;
   Atlas: IQuadFXAtlas;
 begin
-  if not Assigned(FJSONAtlases) then
-    Exit;
-
-  for i := 0 to FJSONAtlases.Count - 1 do
+  if Assigned(FJSONAtlases) then
   begin
-    AtlasObject := (FJSONAtlases.Items[i] as TJSONObject);
-    Sprites := AtlasObject.Get('Sprites').JsonValue as TJSONArray;
-    for j := 0 to Sprites.Count - 1 do
+    for i := 0 to FJSONAtlases.Count - 1 do
     begin
-      SpriteObject := (Sprites.Items[j] as TJSONObject);
-      if (SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt = AId then
+      AtlasObject := (FJSONAtlases.Items[i] as TJSONObject);
+      Sprites := AtlasObject.Get('Sprites').JsonValue as TJSONArray;
+      for j := 0 to Sprites.Count - 1 do
       begin
-        Atlas := LoadAtlas(AtlasObject);
-        Atlas.FindSprite(AId, Result);
-        if not Assigned(Result) then
+        SpriteObject := (Sprites.Items[j] as TJSONObject);
+        if (SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt = AId then
         begin
-          Atlas.CreateSprite(Result);
-          Result.ID := AId;
-          Result.Position := TVec2f.Create(
-            (SpriteObject.Get('Left').JsonValue as TJSONNumber).AsInt,
-            (SpriteObject.Get('Top').JsonValue as TJSONNumber).AsInt
-          );
-          Result.Size := TVec2f.Create(
-            (SpriteObject.Get('Width').JsonValue as TJSONNumber).AsInt,
-            (SpriteObject.Get('Height').JsonValue as TJSONNumber).AsInt
-          );
-          Result.Axis := TVec2f.Create(
-            (SpriteObject.Get('AxisLeft').JsonValue as TJSONNumber).AsInt,
-            (SpriteObject.Get('AxisTop').JsonValue as TJSONNumber).AsInt
-          );
-          Result.Recalculate(Atlas.Size);
+          Atlas := LoadAtlas(AtlasObject);
+          Atlas.SpriteByID(AId, Result);
+          if not Assigned(Result) then
+          begin
+            Atlas.CreateSprite(Result);
+            LoadSprite(Result, SpriteObject);
+            Result.Recalculate(Atlas);
+          end;
+          Exit;
         end;
-        Exit;
       end;
     end;
   end;
-
 end;
 
 function TQuadFXJSONFileFormat.LoadEmitterParams(AJsonObject: TJSONObject): PQuadFXEmitterParams;
