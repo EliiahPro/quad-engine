@@ -131,7 +131,7 @@ begin
   WM_SETCURSOR:
     if Device.IsHardwareCursor then
     begin
-      SetCursor(0);
+//      SetCursor(0);
       Device.Render.D3DDevice.ShowCursor(True);
       Result := 1;
     end;
