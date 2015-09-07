@@ -92,7 +92,7 @@ begin
   FFPS := 0.0;
   FWholeTime := 0.0;
 
-  FThread := TTimerThread.Create(False);
+  FThread := TTimerThread.Create(True);
   FThread.FOwner := Self;
   FThread.FreeOnTerminate := True;
   FThread.Priority := tpNormal;
@@ -185,10 +185,18 @@ begin
     Exit;
 
   FIsEnabled := AIsEnabled;
-  if AIsEnabled then
+  if FIsEnabled then
   begin
     QueryPerformanceCounter(FPerformanceLastCounter);
     QueryPerformanceCounter(FPerformanceCounter);
+    FThread.Start;
+  end
+  else
+  begin
+    FThread.Terminate;
+    repeat
+      WaitForSingleObject(0, 10);
+    until FThread.Terminated;
   end;
 end;
 
