@@ -101,7 +101,6 @@ type
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawCircle(const Center: TVec2f; Radius, InnerRadius: Single; Color: Cardinal); stdcall;
-    procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; u1, v1, u2, v2: Double; Color: Cardinal); stdcall;
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
@@ -554,109 +553,6 @@ begin
   TQuadShader.CircleShader.SetShaderState(True);
   DrawRect(Center - Radius, Center + Radius, TVec2f.Zero, TVec2f.Create(1.0, 1.0), Color);
   TQuadShader.CircleShader.SetShaderState(False);
-end;
-
-//=============================================================================
-// Draws textured polygon
-//=============================================================================
-procedure TQuadRender.DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double;
-  u1, v1, u2, v2 : Double; Color: Cardinal);
-var
-  ver : array [0..11] of TVertex;
-  cx, cy : Single;
-  vec1, vec2, vec3, vec4 : TVec2f;
-//  res : TVec2f;
-//  zn, ch1, ch2 : Single;
-//  ua, ub : Single;
-  i : Integer;
-begin
-  {$IFDEF DEBUG}
-  FProfiler.BeginCount(atDraw);
-  {$ENDIF}
-
-  RenderMode := D3DPT_TRIANGLELIST;
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
-
-  vec1.Create(x1, y1);   //1.A
-  vec3.Create(x3, y3);   //1.B
-
-  vec2.Create(x2, y2);   //2.A
-  vec4.Create(x4, y4);   //2.B
-
-{  zn :=(vec1.x - vec3.x) * (vec4.y - vec2.y) - (vec1.y - vec3.y) * (vec4.x - vec2.x);
-  ch1 :=(vec1.x - vec2.x) * (vec4.y - vec2.y) - (vec1.y - vec2.y) * (vec4.x - vec2.x);
-  ch2 :=(vec1.x - vec3.x) * (vec1.y - vec2.y) - (vec1.y - vec3.y) * (vec1.x - vec2.x);
-
-  ua := ch1 / Zn;
-  ub := ch2 / Zn;
-
-  cx := vec1.x + (vec3.x - vec1.x) * Ub;
-  cy := vec1.y + (vec3.y - vec1.y) * Ub;
- }
-
-
- { ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[5].color := Color;
-
-  ver[0].u := u1;  ver[0].v := v1;
-  ver[1].u := u2;  ver[1].v := v1;
-  ver[2].u := u1;  ver[2].v := v2;
-  ver[5].u := u2;  ver[5].v := v2;
-
-  ver[0].x := x1;    ver[0].y := y1;     ver[0].z := 0;
-  ver[1].x := x2;    ver[1].y := y2;     ver[1].z := 0;
-  ver[2].x := x4;    ver[2].y := y4;     ver[2].z := 0;
-  ver[5].x := x3;    ver[5].y := y3;     ver[5].z := 0;       }
-
-  for i := 0 to 11 do
-  ver[i].color := Color;
-
-  cx := 256;
-  cy := 256;       {todo : подумать. дисторт искажает спрайт сильно :(}
-
-
-  ver[0].u := u1;  ver[0].v := v1;
-  ver[1].u := u2;  ver[1].v := v1;
-  ver[2].u := 0.5; ver[2].v := 0.5;
-
-  ver[3].u := u2;  ver[3].v := v1;
-  ver[4].u := u2;  ver[4].v := v2;
-  ver[5].u := 0.5; ver[5].v := 0.5;
-
-  ver[6].u := u2;   ver[6].v := v2;
-  ver[7].u := u1;   ver[7].v := v2;
-  ver[8].u := 0.5;  ver[8].v := 0.5;
-
-  ver[9].u := u1;   ver[9].v := v2;
-  ver[10].u := u1;  ver[10].v := v1;
-  ver[11].u := 0.5; ver[11].v := 0.5;
-
-
-
-  ver[0].x := x1;    ver[0].y := y1;     ver[0].z := 0;
-  ver[1].x := x2;    ver[1].y := y2;     ver[1].z := 0;
-  ver[2].x := cx;    ver[2].y := cy;     ver[2].z := 0;
-
-  ver[3].x := x2;    ver[3].y := y2;     ver[3].z := 0;
-  ver[4].x := x3;    ver[4].y := y3;     ver[4].z := 0;
-  ver[5].x := cx;    ver[5].y := cy;     ver[5].z := 0;
-
-  ver[6].x := x3;    ver[6].y := y3;     ver[6].z := 0;
-  ver[7].x := x4;    ver[7].y := y4;     ver[7].z := 0;
-  ver[8].x := cx;    ver[8].y := cy;     ver[8].z := 0;
-
-  ver[9].x := x4;    ver[9].y := y4;     ver[9].z := 0;
-  ver[10].x := x1;   ver[10].y := y1;    ver[10].z := 0;
-  ver[11].x := cx;   ver[11].y := cy;    ver[11].z := 0;
-
-  {$IFDEF DEBUG}
-  FProfiler.EndCount(atDraw);
-  {$ENDIF}
-
-  AddTrianglesToBuffer(ver, 12);
 end;
 
 //=============================================================================

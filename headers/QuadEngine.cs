@@ -19,12 +19,10 @@
 using System;
 using System.Runtime.InteropServices;
 
+
+
 namespace QuadEngine
 {
-    public static byte QuadEngineMinorVersion = 0;
-    public static byte QuadEngineMajorVersion = 7;
-    public static byte QuadEngineReleaseVersion = 1;
-
     // Blending mode types
     ///<summary>Blending mode types.</summary>     
     public enum TQuadBlendMode{qbmInvalid        = 0,
@@ -215,7 +213,7 @@ namespace QuadEngine
         /// <summary>Retrieves the available texture memory.
         /// This will return all available texture memory including AGP aperture.</summary>
         /// <returns>Available memory size in bytes</returns>
-        [preserveSig] TRect GetClipRect();
+        [PreserveSig] TRect GetClipRect();
         [PreserveSig] UInt32 GetAvailableTextureMemory();
         [PreserveSig] UInt32 GetMaxAnisotropy();
         [PreserveSig] UInt32 GetMaxTextureHeight();
@@ -232,7 +230,7 @@ namespace QuadEngine
         void BeginRender();
         void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
         void Clear(UInt32 AColor);
-        void DrawCircle(ref Vec2f Center, float Radius, float InnerRadius, UInt32 Color = 0xFFFFFFFF); stdcall;
+        void DrawCircle(ref Vec2f Center, float Radius, float InnerRadius, UInt32 Color = 0xFFFFFFFF); 
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
         void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
@@ -307,15 +305,18 @@ namespace QuadEngine
         void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
         void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(ref Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
-        void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
         void DrawMap(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color = 0xFFFFFFFF);
         void DrawMapRotAxis(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, ref Vec2f Axis, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
+        void DrawPart(ref Vec2f Position, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void DrawPartRot(ref Vec2f Center, double angle, double Scale, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void DrawPartRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
         void DrawRot(ref Vec2f Center, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
         void DrawRotFrame(ref Vec2f Center, double angle, double Scale, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
         void DrawRotAxisFrame(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void LoadFromFile(byte ARegister, string AFilename, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
-        void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight, TRAWDataFormat ASourceFormat = rdfARGB8);
+        void LoadFromStream(byte ARegister, IntPtr AStream, int AStreamSize, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
+        void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight, TRAWDataFormat ASourceFormat = TRAWDataFormat.rdfARGB8);
         void SetIsLoaded(UInt16 AWidth, UInt16 AHeight);
     }
 
@@ -589,15 +590,15 @@ namespace QuadEngine
     public interface IQuadGBuffer
     {
         [PreserveSig]
-        IQuadTexture DiffuseMap;
+        IQuadTexture DiffuseMap();
         [PreserveSig]
-        IQuadTexture NormalMap;
+        IQuadTexture NormalMap();
         [PreserveSig]
-        IQuadTexture SpecularMap;
+        IQuadTexture SpecularMap();
         [PreserveSig]
-        IQuadTexture HeightMap;
+        IQuadTexture HeightMap();
         [PreserveSig]
-        IQuadTexture Buffer;
+        IQuadTexture Buffer();
     }
     
 
