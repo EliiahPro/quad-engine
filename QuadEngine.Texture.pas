@@ -52,7 +52,6 @@ type
     procedure AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f; Angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRot(const Center: TVec2f; angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -163,18 +162,6 @@ begin
 
   FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
                        TVec2f.Create(px / FWidth, py / FHeight), TVec2f.Create(px2 / FWidth, py2 / FHeight), Color);
-end;
-
-//=============================================================================
-// Draws sprite with specify all 4 vertexes in free positions
-//=============================================================================
-procedure TQuadTexture.DrawDistort(x1, y1, x2, y2, x3, y3, x4, y4: Double;
-  Color: Cardinal);
-begin
-  SetTextureStages;
-
-  FQuadRender.DrawDistort(x1 - 0.5, y1 - 0.5, x2 - 0.5, y2 - 0.5, x3 - 0.5, y3 - 0.5, x4 - 0.5, y4 - 0.5,
-                          0, 0, FFrameWidth / FWidth, FFrameHeight / FHeight, Color);
 end;
 
 //=============================================================================

@@ -305,9 +305,11 @@ namespace QuadEngine
         void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
         void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(ref Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
-        void DrawDistort(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, UInt32 Color = 0xFFFFFFFF);
         void DrawMap(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color = 0xFFFFFFFF);
         void DrawMapRotAxis(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, ref Vec2f Axis, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
+        void DrawPart(ref Vec2f Position, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void DrawPartRot(ref Vec2f Center, double angle, double Scale, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void DrawPartRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
         void DrawRot(ref Vec2f Center, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
         void DrawRotFrame(ref Vec2f Center, double angle, double Scale, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
