@@ -11,8 +11,15 @@ type
   private
     FJSONAtlases: TJSONArray;
     FJSONEffects: TJSONArray;
+    class function SaveParams(AParams: PQuadFXParams): TJSONObject;
+    class function SaveSingleDiagram(ASingleDiagram: PQuadFXSingleDiagram): TJSONArray;
+    class function SaveColorDiagram(AColorDiagram: PQuadFXColorDiagram): TJSONArray;
+    class function SaveShape(AEmitterShape: PQuadFXEmitterShape): TJSONObject;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; override;
+    class function SaveEmitterParams(AEmitterParams: PQuadFXEmitterParams): TJSONObject;
+    class function SaveSprite(ASprite: PQuadFXSprite): TJSONObject;
+
     procedure EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); override;
     procedure AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas); override;
 
@@ -351,6 +358,149 @@ begin
   finally
     S.Free;
   end;
+end;
+
+class function TQuadFXJSONFileFormat.SaveEmitterParams(AEmitterParams: PQuadFXEmitterParams): TJSONObject;
+var
+  i: Integer;
+  JSONArray: TJSONArray;
+begin
+  Result := TJSONObject.Create;
+
+  Result.AddPair('Name', TJSONString.Create(AEmitterParams.Name));
+  Result.AddPair('BlendMode', TJSONNumber.Create(Integer(AEmitterParams.BlendMode)));
+
+  Result.AddPair('BeginTime', TJSONNumber.Create(AEmitterParams.BeginTime));
+  Result.AddPair('EndTime', TJSONNumber.Create(AEmitterParams.EndTime));
+  if AEmitterParams.IsLoop then
+    Result.AddPair('Loop', TJSONTrue.Create)
+  else
+    Result.AddPair('Loop', TJSONFalse.Create);
+
+  Result.AddPair('PositionX', SaveParams(@AEmitterParams.Position.X));
+  Result.AddPair('PositionY', SaveParams(@AEmitterParams.Position.Y));
+  Result.AddPair('Direction', SaveParams(@AEmitterParams.Direction));
+  Result.AddPair('Spread', SaveParams(@AEmitterParams.Spread));
+
+  if AEmitterParams.TextureCount > 0 then
+  begin
+    JSONArray := TJSONArray.Create;
+    for i := 0 to AEmitterParams.TextureCount - 1 do
+        JSONArray.Add(AEmitterParams.Textures[i].ID);
+    Result.AddPair('Textures', JSONArray);
+  end;
+
+  Result.AddPair('Shape', SaveShape(@AEmitterParams.Shape));
+  if AEmitterParams.DirectionFromCenter then
+    Result.AddPair('FromCenter', TJSONTrue.Create)
+  else
+    Result.AddPair('FromCenter', TJSONFalse.Create);
+
+  Result.AddPair('Color', SaveColorDiagram(@AEmitterParams.Particle.Color));
+
+  Result.AddPair('Emission', SaveParams(@AEmitterParams.Emission));
+  Result.AddPair('ParticleLifeTime', SaveParams(@AEmitterParams.Particle.LifeTime));
+  Result.AddPair('ParticleStartVelocity', SaveParams(@AEmitterParams.Particle.StartVelocity));
+  Result.AddPair('ParticleVelocity', SaveParams(@AEmitterParams.Particle.Velocity));
+  Result.AddPair('ParticleOpacity', SaveParams(@AEmitterParams.Particle.Opacity));
+  Result.AddPair('ParticleScale', SaveParams(@AEmitterParams.Particle.Scale));
+  Result.AddPair('ParticleStartAngle', SaveParams(@AEmitterParams.Particle.StartAngle));
+  Result.AddPair('ParticleSpin', SaveParams(@AEmitterParams.Particle.Spin));
+end;
+
+class function TQuadFXJSONFileFormat.SaveParams(AParams: PQuadFXParams): TJSONObject;
+begin
+  Result := TJSONObject.Create;
+
+  Result.AddPair('Type', TJSONNumber.Create(Integer(AParams.ParamsType)));
+
+  case AParams.ParamsType of
+    qpptValue:
+      Result.AddPair('Value', TJSONNumber.Create(AParams.Value[0]));
+    qpptRandomValue:
+    begin
+      Result.AddPair('ValueMin', TJSONNumber.Create(AParams.Value[0]));
+      Result.AddPair('ValueMax', TJSONNumber.Create(AParams.Value[1]));
+    end;
+    qpptCurve:
+      begin
+        Result.AddPair('Curve', SaveSingleDiagram(@AParams.Diagram[0]));
+      end;
+    qpptRandomCurve:
+    begin
+      Result.AddPair('CurveMin', SaveSingleDiagram(@AParams.Diagram[0]));
+      Result.AddPair('CurveMax', SaveSingleDiagram(@AParams.Diagram[1]));
+    end;
+  end;
+end;
+
+class function TQuadFXJSONFileFormat.SaveSingleDiagram(ASingleDiagram: PQuadFXSingleDiagram): TJSONArray;
+var
+  i: Integer;
+  Item: TJSONObject;
+begin
+  Result := TJSONArray.Create;
+  for i := 0 to ASingleDiagram.Count - 1 do
+  begin
+    Item := TJSONObject.Create;
+    Item.AddPair('Life', TJSONNumber.Create(ASingleDiagram.List[i].Life));
+    Item.AddPair('Value', TJSONNumber.Create(ASingleDiagram.List[i].Value));
+    Result.Add(Item);
+  end;
+end;
+
+class function TQuadFXJSONFileFormat.SaveShape(AEmitterShape: PQuadFXEmitterShape): TJSONObject;
+var
+  i: Integer;
+begin
+  Result := TJSONObject.Create;
+
+  Result.AddPair('Shape', TJSONNumber.Create(Integer(AEmitterShape.ShapeType)));
+  Result.AddPair('Type', TJSONNumber.Create(Integer(AEmitterShape.ParamType)));
+
+  case AEmitterShape.ParamType of
+    qpptValue:
+      for i := 0 to 2 do
+        Result.AddPair('Value' + IntToStr(i), TJSONNumber.Create(AEmitterShape.Value[i]));
+
+    qpptRandomValue:;
+    qpptCurve:
+      for i := 0 to 2 do
+        Result.AddPair('Curve' + IntToStr(i), SaveSingleDiagram(@AEmitterShape.Diagram[i]));
+    qpptRandomCurve:;
+  end;
+end;
+
+class function TQuadFXJSONFileFormat.SaveColorDiagram(AColorDiagram: PQuadFXColorDiagram): TJSONArray;
+var
+  i: Integer;
+  Item: TJSONObject;
+begin
+  Result := TJSONArray.Create;
+
+  for i := 0 to AColorDiagram.Count - 1 do
+  begin
+    Item := TJSONObject.Create;
+    Item.AddPair('Life', TJSONNumber.Create(AColorDiagram.List[i].Life));
+    Item.AddPair('Color', '$' + IntToHex(AColorDiagram.List[i].Value, 6));
+    Result.Add(Item);
+  end;
+end;
+
+class function TQuadFXJSONFileFormat.SaveSprite(ASprite: PQuadFXSprite): TJSONObject;
+begin
+  Result := TJSONObject.Create;
+
+  Result.AddPair(TJSONPair.Create('ID', TJSONNumber.Create(ASprite.ID)));
+
+  Result.AddPair(TJSONPair.Create('Left', TJSONNumber.Create(ASprite.Position.X)));
+  Result.AddPair(TJSONPair.Create('Top', TJSONNumber.Create(ASprite.Position.Y)));
+
+  Result.AddPair(TJSONPair.Create('Width', TJSONNumber.Create(ASprite.Size.X)));
+  Result.AddPair(TJSONPair.Create('Height', TJSONNumber.Create(ASprite.Size.Y)));
+
+  Result.AddPair(TJSONPair.Create('AxisLeft', TJSONNumber.Create(ASprite.Axis.X)));
+  Result.AddPair(TJSONPair.Create('AxisTop', TJSONNumber.Create(ASprite.Axis.Y)));
 end;
 
 class function TQuadFXJSONFileFormat.CheckSignature(ASignature: TEffectSignature): Boolean;

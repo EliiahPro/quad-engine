@@ -20,6 +20,7 @@ type
   PQuadFXParams = ^TQuadFXParams;
   PQuadFXParticleValue = ^TQuadFXParticleValue;
   PQuadFXSprite = ^TQuadFXSprite;
+  PQuadFXEmitterShape = ^TQuadFXEmitterShape;
   IQuadFXEmitter = interface;
 
   TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object; stdcall;
