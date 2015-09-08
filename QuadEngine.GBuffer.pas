@@ -16,7 +16,8 @@ unit QuadEngine.GBuffer;
 interface
 
 uses
-  windows, direct3d9, QuadEngine.Render, QuadEngine.Utils, QuadEngine, System.SysUtils;
+  windows, direct3d9, QuadEngine.Render, QuadEngine.Utils, QuadEngine,
+  System.SysUtils, Vec2f;
 
 type
   TQuadGBuffer = class(TInterfacedObject, IQuadGBuffer)
@@ -39,12 +40,13 @@ type
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
+    procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
   end;
 
 implementation
 
 uses
-  QuadEngine.Device, QuadEngine.Texture;
+  QuadEngine.Device, QuadEngine.Texture, QuadEngine.Shader;
 
 { TQuadGBuffer }
 
@@ -85,6 +87,39 @@ end;
 function TQuadGBuffer.DiffuseMap: IQuadTexture;
 begin
   Result := FDiffuseMap;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadGBuffer.DrawLight(const APos: TVec3f; ARadius: Single;
+  AColor: Cardinal);
+var
+  LightPos: TVec3f;
+  LightUV: array[0..3] of Single;
+begin
+  TQuadShader.DeferredShading.BindVariableToVS(4, @lightPos, 1);
+  TQuadShader.DeferredShading.BindVariableToPS(5, @LightUV[0], 1);
+
+  Device.Render.SetBlendMode(qbmSrcAlphaAdd);
+
+  lightpos := TVec3f.Create(APos.X * Device.Render.Width,
+                             APos.Y * Device.Render.Height,
+                             Apos.Z);
+  lightUV[0] := APos.X;
+  lightUV[1] := APos.Y;
+  lightUV[2] := APos.Z;
+  lightUV[3] := Aradius;
+
+
+  TQuadShader.DeferredShading.SetShaderState(True);
+
+  FBuffer.DrawMap(TVec2f.Create((APos.X - Aradius) * Device.Render.Width, (APos.Y - Aradius) * Device.Render.Height),
+                  TVec2f.Create((APos.X + Aradius) * Device.Render.Width, (APos.Y + Aradius) * Device.Render.Height),
+                  TVec2f.Create(APos.X - Aradius, APos.Y - Aradius),
+                  TVec2f.Create(APos.X + Aradius, APos.Y + Aradius),
+                  AColor);
+  TQuadShader.DeferredShading.SetShaderState(False);
 end;
 
 //=============================================================================

@@ -49,6 +49,7 @@ type
     DistanceField: TQuadShader;
     CircleShader: TQuadShader;
     MRTShader: TQuadShader;
+    DeferredShading: TQuadShader;
   end;
 
 implementation

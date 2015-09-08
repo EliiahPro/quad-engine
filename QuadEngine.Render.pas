@@ -1562,7 +1562,12 @@ begin
       TQuadShader.mrtShader := TQuadShader.Create(Self);
       TQuadShader.mrtShader.LoadFromResource('mrtVS20', False);
       TQuadShader.mrtShader.LoadFromResource('mrtPS20');
-      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);          
+      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);
+
+      TQuadShader.DeferredShading := TQuadShader.Create(Self);
+      TQuadShader.DeferredShading.LoadFromResource('deferredVS20', False);
+      TQuadShader.DeferredShading.LoadFromResource('deferredPS20');
+      TQuadShader.DeferredShading.BindVariableToVS(0, @FViewMatrix, 4);
     end;
     qsm30: begin
       if Device.Log <> nil then
@@ -1581,7 +1586,12 @@ begin
       TQuadShader.mrtShader := TQuadShader.Create(Self);
       TQuadShader.mrtShader.LoadFromResource('mrtVS30', False);
       TQuadShader.mrtShader.LoadFromResource('mrtPS30');
-      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);      
+      TQuadShader.mrtShader.BindVariableToVS(0, @FViewMatrix, 4);
+
+      TQuadShader.DeferredShading := TQuadShader.Create(Self);
+      TQuadShader.DeferredShading.LoadFromResource('deferredVS30', False);
+      TQuadShader.DeferredShading.LoadFromResource('deferredPS30');
+      TQuadShader.DeferredShading.BindVariableToVS(0, @FViewMatrix, 4);
     end;
     qsmNone:
       if Device.Log <> nil then
