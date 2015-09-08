@@ -1013,8 +1013,7 @@ begin
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
-
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iTrue);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iFalse);   
 
   FD3DDevice.GetRenderTarget(0, FBackBuffer);
   Device.ReInitializeRenderTargets;
@@ -1377,6 +1376,7 @@ begin
   FViewport.Right  := X2;
   FViewport.Bottom := Y2;
 
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iTrue);
   Device.LastResultCode := FD3DDevice.SetScissorRect(@FViewport);
 end;
 
@@ -1701,6 +1701,7 @@ begin
   FViewport.Right  := FWidth;
   FViewport.Bottom := FHeight;
 
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iFalse);
   Device.LastResultCode := FD3DDevice.SetScissorRect(@FViewport);
 end;
 
