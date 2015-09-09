@@ -377,6 +377,8 @@ begin
   else
     Result.AddPair('Loop', TJSONFalse.Create);
 
+  Result.AddPair('MaxParticles', TJSONNumber.Create(AEmitterParams.MaxParticles));
+
   Result.AddPair('PositionX', SaveParams(@AEmitterParams.Position.X));
   Result.AddPair('PositionY', SaveParams(@AEmitterParams.Position.Y));
   Result.AddPair('Direction', SaveParams(@AEmitterParams.Direction));
