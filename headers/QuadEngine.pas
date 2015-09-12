@@ -546,6 +546,7 @@ type
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
+    procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
   end;  
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
