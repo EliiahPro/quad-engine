@@ -473,6 +473,7 @@
         <DCCReference Include="..\QuadEngine.Timer.pas"/>
         <DCCReference Include="..\QuadEngine.Utils.pas"/>
         <DCCReference Include="..\QuadEngine.Window.pas"/>
+        <DCCReference Include="..\QuadEngine.Input.pas"/>
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
         <DCCReference Include="..\headers\QuadEngine.Color.pas"/>
         <DCCReference Include="..\headers\Vec2f.pas"/>

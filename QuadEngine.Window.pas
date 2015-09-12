@@ -19,7 +19,8 @@ uses
   windows,
   messages,
   QuadEngine,
-  Vec2f;
+  Vec2f,
+  QuadEngine.Input;
 
 type
   TQuadWindow = class(TInterfacedObject, IQuadWindow)
@@ -40,12 +41,16 @@ type
     FOnMouseWheel: TOnMouseWheelEvent;
     FOnMove: TOnWindowMove;
 
+    FInput: TQuadInput;
+
     procedure OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
     procedure OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
   protected
     function WindowProc(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT;
   public
     constructor Create;
+    destructor Destroy; override;
+    function CreateInput(out pQuadInput: IQuadInput): HResult; stdcall;
     procedure Start; stdcall;
     procedure SetCaption(ACaption: PChar); stdcall;
     procedure SetSize(AWidth, AHeight: Integer); stdcall;
@@ -190,6 +195,28 @@ begin
   FOnMove := nil;
   FOnActivate := nil;
   FOnDeactivate := nil;
+  FInput := nil;
+end;
+
+destructor TQuadWindow.Destroy;
+begin
+  if Assigned(FInput) then
+    FInput.Free;
+
+  inherited;
+end;
+
+function TQuadWindow.CreateInput(out pQuadInput: IQuadInput): HResult; stdcall;
+begin
+  if not Assigned(FInput) then
+    FInput := TQuadInput.Create;
+
+  pQuadInput := FInput;
+
+  if Assigned(pQuadInput) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadWindow.GetHandle: THandle;
@@ -222,12 +249,22 @@ procedure TQuadWindow.OnKeyEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM);
 begin
   case msg of
   WM_KEYDOWN:
-    if Assigned(FOnKeyDown) {and (lparam and $FE = 0)} then
-      FOnKeyDown(wparam, GetPressedKeyButtons);
+    begin
+      if Assigned(FInput) then
+        FInput.SetKeyState(wparam, True);
+
+      if Assigned(FOnKeyDown) {and (lparam and $FE = 0)} then
+        FOnKeyDown(wparam, GetPressedKeyButtons);
+    end;
 
   WM_KEYUP:
-    if Assigned(FOnKeyUp) {and (lparam and $FE = 1)} then
-      FOnKeyUp(wparam, GetPressedKeyButtons);
+    begin
+      if Assigned(FInput) then
+        FInput.SetKeyState(wparam, False);
+
+      if Assigned(FOnKeyUp) {and (lparam and $FE = 1)} then
+        FOnKeyUp(wparam, GetPressedKeyButtons);
+    end;
 
   WM_CHAR:
     if Assigned(FOnKeyChar) then
@@ -253,39 +290,100 @@ procedure TQuadWindow.OnMouseEvent(msg: Integer; wparam: WPARAM; lparam: LPARAM)
 
 var
   XParam: TVec2i;
+  Button: TMouseButtons;
 begin
   case msg of
     WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, WM_XBUTTONDOWN:
-      if Assigned(FOnMouseDown) then
+      if Assigned(FOnMouseDown) or Assigned(FInput) then
       begin
         case msg of
-          WM_LBUTTONDOWN: FOnMouseDown(ParamToPosition(lparam), mbLeft, ParamToPressedMouseButtons(wparam));
-          WM_MBUTTONDOWN: FOnMouseDown(ParamToPosition(lparam), mbMiddle, ParamToPressedMouseButtons(wparam));
-          WM_RBUTTONDOWN: FOnMouseDown(ParamToPosition(lparam), mbRight, ParamToPressedMouseButtons(wparam));
+          WM_LBUTTONDOWN:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseButtonState(mbLeft, True);
+              if Assigned(FOnMouseDown) then
+                FOnMouseDown(ParamToPosition(lparam), mbLeft, ParamToPressedMouseButtons(wparam));
+            end;
+          WM_MBUTTONDOWN:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseButtonState(mbMiddle, True);
+              if Assigned(FOnMouseDown) then
+                FOnMouseDown(ParamToPosition(lparam), mbMiddle, ParamToPressedMouseButtons(wparam));
+            end;
+          WM_RBUTTONDOWN:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseButtonState(mbRight, True);
+              if Assigned(FOnMouseDown) then
+                FOnMouseDown(ParamToPosition(lparam), mbRight, ParamToPressedMouseButtons(wparam));
+            end;
           WM_XBUTTONDOWN:
             begin
               XParam := ParamToPosition(WPARAM);
               case XParam.Y of
-                1: FOnMouseDown(ParamToPosition(lparam), mbX1, ParamToPressedMouseButtons(XParam.X));
-                2: FOnMouseDown(ParamToPosition(lparam), mbX2, ParamToPressedMouseButtons(XParam.X));
+                1:
+                  begin
+                    if Assigned(FInput) then
+                      FInput.SetMouseButtonState(mbX1, True);
+                    if Assigned(FOnMouseDown) then
+                      FOnMouseDown(ParamToPosition(lparam), mbX1, ParamToPressedMouseButtons(XParam.X));
+                  end;
+                2:
+                  begin
+                    if Assigned(FInput) then
+                      FInput.SetMouseButtonState(mbX2, True);
+                    if Assigned(FOnMouseDown) then
+                      FOnMouseDown(ParamToPosition(lparam), mbX2, ParamToPressedMouseButtons(XParam.X));
+                  end;
               end;
             end;
         end;
       end;
 
     WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, WM_XBUTTONUP:
-      if Assigned(FOnMouseUp) then
+      if Assigned(FOnMouseUp) or Assigned(FInput) then
       begin
         case msg of
-          WM_LBUTTONUP: FOnMouseUp(ParamToPosition(lparam), mbLeft, ParamToPressedMouseButtons(wparam));
-          WM_MBUTTONUP: FOnMouseUp(ParamToPosition(lparam), mbMiddle, ParamToPressedMouseButtons(wparam));
-          WM_RBUTTONUP: FOnMouseUp(ParamToPosition(lparam), mbRight, ParamToPressedMouseButtons(wparam));
+          WM_LBUTTONUP:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseButtonState(mbLeft, False);
+              if Assigned(FOnMouseUp) then
+                FOnMouseUp(ParamToPosition(lparam), mbLeft, ParamToPressedMouseButtons(wparam));
+            end;
+          WM_MBUTTONUP:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseButtonState(mbMiddle, False);
+              if Assigned(FOnMouseUp) then
+                FOnMouseUp(ParamToPosition(lparam), mbMiddle, ParamToPressedMouseButtons(wparam));
+            end;
+          WM_RBUTTONUP:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseButtonState(mbRight, False);
+              if Assigned(FOnMouseUp) then
+                FOnMouseUp(ParamToPosition(lparam), mbRight, ParamToPressedMouseButtons(wparam));
+            end;
           WM_XBUTTONUP:
             begin
               XParam := ParamToPosition(WPARAM);
               case XParam.Y of
-                $0001: FOnMouseUp(ParamToPosition(lparam), mbX1, ParamToPressedMouseButtons(XParam.X));
-                $0002: FOnMouseUp(ParamToPosition(lparam), mbX2, ParamToPressedMouseButtons(XParam.X));
+                $0001:
+                  begin
+                    if Assigned(FInput) then
+                      FInput.SetMouseButtonState(mbX1, False);
+                    if Assigned(FOnMouseUp) then
+                      FOnMouseUp(ParamToPosition(lparam), mbX1, ParamToPressedMouseButtons(XParam.X));
+                  end;
+                $0002:
+                  begin
+                    if Assigned(FInput) then
+                      FInput.SetMouseButtonState(mbX2, False);
+                    if Assigned(FOnMouseUp) then
+                      FOnMouseUp(ParamToPosition(lparam), mbX2, ParamToPressedMouseButtons(XParam.X));
+                  end;
               end;
             end;
         end;
@@ -312,18 +410,34 @@ begin
     end;
 
     WM_MOUSEMOVE:
-      if Assigned(FOnMouseMove) then
+      if Assigned(FOnMouseMove) or Assigned(FInput) then
       begin
-        FOnMouseMove(ParamToPosition(lparam), ParamToPressedMouseButtons(wparam));
+        XParam := ParamToPosition(lparam);
+        if Assigned(FInput) then
+          FInput.SetMousePosition(XParam);
+        if Assigned(FOnMouseMove) then
+          FOnMouseMove(XParam, ParamToPressedMouseButtons(wparam));
       end;
 
     WM_MOUSEWHEEL, WM_MOUSEHWHEEL:
-      if Assigned(FOnMouseWheel) then
+      if Assigned(FOnMouseWheel) or Assigned(FInput) then
       begin
-        XParam := ParamToPosition(WPARAM);
+        XParam := ParamToPosition(wparam);
         case msg of
-          WM_MOUSEWHEEL: FOnMouseWheel(ParamToPosition(lparam), TVec2i.Create(0, XParam.Y), ParamToPressedMouseButtons(XParam.X));
-          WM_MOUSEHWHEEL: FOnMouseWheel(ParamToPosition(lparam), TVec2i.Create(XParam.Y, 0), ParamToPressedMouseButtons(XParam.X));
+          WM_MOUSEWHEEL:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseWheel(TVec2i.Create(0, XParam.Y));
+              if Assigned(FOnMouseWheel) then
+                FOnMouseWheel(ParamToPosition(lparam), TVec2i.Create(0, XParam.Y), ParamToPressedMouseButtons(XParam.X));
+            end;
+          WM_MOUSEHWHEEL:
+            begin
+              if Assigned(FInput) then
+                FInput.SetMouseWheel(TVec2i.Create(XParam.Y, 0));
+              if Assigned(FOnMouseWheel) then
+                FOnMouseWheel(ParamToPosition(lparam), TVec2i.Create(XParam.Y, 0), ParamToPressedMouseButtons(XParam.X));
+            end;
         end;
       end;
   end;

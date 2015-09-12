@@ -480,10 +480,25 @@ type
   TOnEvent = procedure; stdcall;
   TOnWindowMove = procedure(const Xpos, Ypos: Integer); stdcall;
 
+  {Quad Input}
+
+  IQuadInput = interface(IUnknown)
+  ['{AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98}']
+    function IsKeyDown(const AKey: Byte): Boolean; stdcall;
+    function IsKeyPress(const AKey: Byte): Boolean; stdcall;
+    function GetMousePosition: TVec2f; stdcall;
+    function GetMouseVector: TVec2f; stdcall;
+    function IsMouseDown(const AButton: TMouseButtons): Boolean; stdcall;
+    function IsMouseClick(const AButton: TMouseButtons): Boolean; stdcall;
+    function GetMouseWheel: TVec2f; stdcall;
+    procedure Update; stdcall;
+  end;
+
   {Quad Window}
 
   IQuadWindow = interface(IUnknown)
   ['{8EB98692-67B1-4E64-9090-B6A0F47054BA}']
+    function CreateInput(out pQuadInput: IQuadInput): HResult; stdcall;
     procedure Start; stdcall;
     procedure SetCaption(ACaption: PChar); stdcall;
     procedure SetSize(AWidth, AHeight: Integer); stdcall;
@@ -531,7 +546,6 @@ type
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
-    procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
   end;  
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

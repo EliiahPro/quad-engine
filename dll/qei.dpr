@@ -39,6 +39,7 @@ uses
   QuadEngine.Timer in '..\QuadEngine.Timer.pas',
   QuadEngine.Utils in '..\QuadEngine.Utils.pas',
   QuadEngine.Window in '..\QuadEngine.Window.pas',
+  QuadEngine.Input in '..\QuadEngine.Input.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
   QuadEngine.Color in '..\headers\QuadEngine.Color.pas',
   Vec2f in '..\headers\Vec2f.pas',

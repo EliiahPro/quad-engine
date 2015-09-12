@@ -12,93 +12,62 @@ var
   QuadWindow: IQuadWindow;
   QuadRender: IQuadRender;
   QuadTimer: IQuadTimer;
-
-  PressedButtons: TPressedMouseButtons;
-  PressedButtons2: TPressedMouseButtons;
-
-procedure OnMouseMove(const APosition: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y)));
- //
-  PressedButtons := APressedButtons;
-end;
+  QuadInput: IQuadInput;
 
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
-var
-  Button: TMouseButtons;
+
+  procedure DrawRect(APosition: TVec2f; AState: Boolean);
+  begin
+    if AState then
+      QuadRender.Rectangle(APosition * 15, APosition * 15 + TVec2f.Create(10, 10), $FFFF0000)
+    else
+      QuadRender.Rectangle(APosition * 15, APosition * 15 + TVec2f.Create(10, 10), $FFFFFFFF);
+  end;
+
 begin
+  QuadInput.Update;
+
   QuadRender.BeginRender;
   QuadRender.Clear(0);
 
-  for Button := mbLeft to mbX2 do
-  begin
-    if PressedButtons.a[Button] then
-      QuadRender.Rectangle(TVec2f.Create(15 * Integer(Button) + 10, 10), TVec2f.Create(15 * Integer(Button) + 20, 20), $FFFF0000)
-    else
-      QuadRender.Rectangle(TVec2f.Create(15 * Integer(Button) + 10, 10), TVec2f.Create(15 * Integer(Button) + 20, 20), $FFFFFFFF);
+  DrawRect(TVec2f.Create(2, 1), QuadInput.IsKeyDown(ord('W')));
+  DrawRect(TVec2f.Create(2, 2), QuadInput.IsKeyDown(ord('S')));
+  DrawRect(TVec2f.Create(1, 2), QuadInput.IsKeyDown(ord('A')));
+  DrawRect(TVec2f.Create(3, 2), QuadInput.IsKeyDown(ord('D')));
 
-    if PressedButtons2.a[Button] then
-      QuadRender.Rectangle(TVec2f.Create(15 * Integer(Button) + 10, 40), TVec2f.Create(15 * Integer(Button) + 20, 50), $FFFF0000)
-    else
-      QuadRender.Rectangle(TVec2f.Create(15 * Integer(Button) + 10, 40), TVec2f.Create(15 * Integer(Button) + 20, 50), $FFFFFFFF);
+  DrawRect(TVec2f.Create(2, 4), QuadInput.IsKeyPress(ord('W')));
+  DrawRect(TVec2f.Create(2, 5), QuadInput.IsKeyPress(ord('S')));
+  DrawRect(TVec2f.Create(1, 5), QuadInput.IsKeyPress(ord('A')));
+  DrawRect(TVec2f.Create(3, 5), QuadInput.IsKeyPress(ord('D')));
 
-  end;
+  DrawRect(TVec2f.Create(6, 1), QuadInput.IsMouseDown(mbLeft));
+  DrawRect(TVec2f.Create(7, 1), QuadInput.IsMouseDown(mbMiddle));
+  DrawRect(TVec2f.Create(8, 1), QuadInput.IsMouseDown(mbRight));
+  DrawRect(TVec2f.Create(9, 1), QuadInput.IsMouseDown(mbX1));
+  DrawRect(TVec2f.Create(10, 1), QuadInput.IsMouseDown(mbX2));
+
+  DrawRect(TVec2f.Create(6, 4), QuadInput.IsMouseClick(mbLeft));
+  DrawRect(TVec2f.Create(7, 4), QuadInput.IsMouseClick(mbMiddle));
+  DrawRect(TVec2f.Create(8, 4), QuadInput.IsMouseClick(mbRight));
+  DrawRect(TVec2f.Create(9, 4), QuadInput.IsMouseClick(mbX1));
+  DrawRect(TVec2f.Create(10, 4), QuadInput.IsMouseClick(mbX2));
+
+  QuadRender.DrawCircle(QuadInput.GetMousePosition, 20, 18 );
+
+  QuadRender.DrawQuadLine(TVec2f.Create(400, 300), TVec2f.Create(400, 300) + QuadInput.GetMouseVector, 3, 1, $FFFFFFFF, $FFFFFFFF);
+  QuadRender.DrawQuadLine(TVec2f.Create(100, 300), TVec2f.Create(100, 300) + QuadInput.GetMouseWheel, 7, 1, $FFFFFFFF, $FF00FF00);
 
   QuadRender.EndRender;
-end;
-
-procedure OnMouseDown(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  case AButtons of
-    mbLeft: PressedButtons2.Left := True;
-    mbRight: PressedButtons2.Right := True;
-    mbMiddle: PressedButtons2.Middle := True;
-    mbX1: PressedButtons2.X1 := True;
-    mbX2: PressedButtons2.X2 := True;
-  end;
-end;
-
-procedure OnMouseUp(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  case AButtons of
-    mbLeft: PressedButtons2.Left := False;
-    mbRight: PressedButtons2.Right := False;
-    mbMiddle: PressedButtons2.Middle := False;
-    mbX1: PressedButtons2.X1 := False;
-    mbX2: PressedButtons2.X2 := False;
-  end;
-end;
-
-procedure OnMouseDblClick(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  case AButtons of
-    mbLeft: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblLeft'));
-    mbRight: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblRight'));
-    mbMiddle: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblMiddle'));
-    mbX1: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblX1'));
-    mbX2: QuadWindow.SetCaption(PChar(IntToStr(APosition.X) + 'x' + IntToStr(APosition.Y) + ' DblX2'));
-  end;
-end;
-
-procedure OnMouseWheel(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  QuadWindow.SetCaption(PChar( 'Wheel: ' + IntToStr(AVector.X) + 'x' + IntToStr(AVector.Y)));
 end;
 
 begin
   QuadDevice := CreateQuadDevice;
 
   QuadDevice.CreateWindow(QuadWindow);
+  QuadWindow.CreateInput(QuadInput);
   QuadWindow.SetCaption('Quad-engine window demo');
   QuadWindow.SetSize(800, 600);
   QuadWindow.SetPosition(100, 100);
-
-  QuadWindow.SetOnMouseMove(OnMouseMove);
-  QuadWindow.SetOnMouseDown(OnMouseDown);
-  QuadWindow.SetOnMouseUp(OnMouseUp);
-  QuadWindow.SetOnMouseDblClick(OnMouseDblClick);
-
-  QuadWindow.SetOnMouseWheel(OnMouseWheel);
 
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, 800, 600, False);
