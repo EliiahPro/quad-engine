@@ -530,6 +530,29 @@ namespace QuadEngine
     public delegate void TOnEvent();
     public delegate void TOnWindowMove(int Xpos, int Ypos); 
 
+
+    [ComImport]
+    [Guid("AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IQuadInput
+    {
+      [PreserveSig]
+      Boolean IsKeyDown(ref byte AKey);
+      [PreserveSig]
+      Boolean IsKeyPress(ref byte AKey);      
+      [PreserveSig]
+      Vec2f GetMousePosition(); 
+      [PreserveSig]
+      Vec2f GetMouseVector();
+      [PreserveSig]
+      Boolean IsMouseDown(ref TMouseButtons AButton);
+      [PreserveSig]
+      Boolean IsMouseClick(ref TMouseButtons AButton);
+      [PreserveSig]
+      Vec2f GetMouseWheel();
+      void Update(); 
+    }
+
     [ComImport]
     [Guid("8EB98692-67B1-4E64-9090-B6A0F47054BA")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -599,6 +622,7 @@ namespace QuadEngine
         IQuadTexture HeightMap();
         [PreserveSig]
         IQuadTexture Buffer();
+        void DrawLight(ref Vec3f APos, float ARadius, UInt32 AColor);
     }
     
 
