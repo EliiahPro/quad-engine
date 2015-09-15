@@ -23,7 +23,7 @@ unit Vec2f;
 interface
 
 uses
-  Windows;
+  Windows, Math;
 
 type
   TVec2i = record
@@ -68,6 +68,7 @@ type
     class operator GreaterThan(const A, B: TVec2f): Boolean;
     class operator LessThan(const A, B: TVec2f): Boolean;
     constructor Create(X, Y: Single);
+    function Angle(A: TVec2f): Double;
     function Length: Single; inline;
     function Distance(const A: TVec2f): Single; inline;
     function Dot(const A: TVec2f) : Single; inline;
@@ -256,6 +257,18 @@ constructor TVec2f.Create(X, Y: Single);
 begin
   Self.X := X;
   Self.Y := Y;
+end;
+
+function TVec2f.Angle(A: TVec2f): Double;
+begin
+  Result := (X * A.X + Y * A.Y) / (sqrt(X * X + Y * Y) * sqrt(A.X * A.X + A.Y * A.Y));
+  if (Result < -1) then
+    Result := - 1
+  else
+    if (Result > 1) then
+      Result := 1;
+
+  Result := RadToDeg(ArcCos(Result));
 end;
 
 function TVec2f.Length: Single;
