@@ -495,14 +495,14 @@ begin
 
   Result.AddPair(TJSONPair.Create('ID', TJSONNumber.Create(ASprite.ID)));
 
-  Result.AddPair(TJSONPair.Create('Left', TJSONNumber.Create(ASprite.Position.X)));
-  Result.AddPair(TJSONPair.Create('Top', TJSONNumber.Create(ASprite.Position.Y)));
+  Result.AddPair(TJSONPair.Create('Left', TJSONNumber.Create(Round(ASprite.Position.X))));
+  Result.AddPair(TJSONPair.Create('Top', TJSONNumber.Create(Round(ASprite.Position.Y))));
 
-  Result.AddPair(TJSONPair.Create('Width', TJSONNumber.Create(ASprite.Size.X)));
-  Result.AddPair(TJSONPair.Create('Height', TJSONNumber.Create(ASprite.Size.Y)));
+  Result.AddPair(TJSONPair.Create('Width', TJSONNumber.Create(Round(ASprite.Size.X))));
+  Result.AddPair(TJSONPair.Create('Height', TJSONNumber.Create(Round(ASprite.Size.Y))));
 
-  Result.AddPair(TJSONPair.Create('AxisLeft', TJSONNumber.Create(ASprite.Axis.X)));
-  Result.AddPair(TJSONPair.Create('AxisTop', TJSONNumber.Create(ASprite.Axis.Y)));
+  Result.AddPair(TJSONPair.Create('AxisLeft', TJSONNumber.Create(Round(ASprite.Axis.X))));
+  Result.AddPair(TJSONPair.Create('AxisTop', TJSONNumber.Create(Round(ASprite.Axis.Y))));
 end;
 
 class function TQuadFXJSONFileFormat.CheckSignature(ASignature: TEffectSignature): Boolean;
