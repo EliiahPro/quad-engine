@@ -214,6 +214,9 @@ type
     function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
+    function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
+    function GetPosition: TVec2f; stdcall;
+    function GetLife: Single; stdcall;
 
     property Emitter[Index: Integer]: IQuadFXEmitter read GetEmitter; default;
     property EmitterCount: Integer read GetEmitterCount;
@@ -229,6 +232,7 @@ type
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
+    function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
     function GetParticleCount: Integer; stdcall;
   end;
 

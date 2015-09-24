@@ -4,7 +4,7 @@ interface
 
 uses
   QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter,
-  System.Generics.Collections;
+  System.Generics.Collections, Windows;
 
 type
   TQuadFXEffect = class(TInterfacedObject, IQuadFXEffect)
@@ -26,6 +26,9 @@ type
     function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
+    function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
+    function GetPosition: TVec2f; stdcall;
+    function GetLife: Single; stdcall;
     procedure ToLife(ALife: Single);
     property IsNeedToKill: Boolean read FIsNeedToKill;
     property Life: Single read FLife;
@@ -127,6 +130,25 @@ end;
 function TQuadFXEffect.GetParticleCount: integer; stdcall;
 begin
   Result := FCount;
+end;
+
+function TQuadFXEffect.GetPosition: TVec2f; stdcall;
+begin
+  Result := FPosition;
+end;
+
+function TQuadFXEffect.GetLife: Single; stdcall;
+begin
+  Result := FLife;
+end;
+
+function TQuadFXEffect.GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
+begin
+  AEffectParams := FParams;
+  if Assigned(AEffectParams) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXEffect.GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;

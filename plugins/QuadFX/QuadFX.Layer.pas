@@ -4,7 +4,7 @@ interface
 
 uses
   QuadFX, QuadFX.Emitter, QuadEngine, QuadEngine.Color, Vec2f,
-  System.Generics.Collections, QuadFX.Effect;
+  System.Generics.Collections, QuadFX.Effect, Windows;
 
 type
   TQuadFXLayer = class(TInterfacedObject, IQuadFXLayer)
@@ -25,6 +25,7 @@ type
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
     function GetParticleCount: Integer; stdcall;
+    function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
   end;
 
 implementation
@@ -72,6 +73,15 @@ end;
 function TQuadFXLayer.GetEffectCount: Integer; stdcall;
 begin
   Result := FEffects.Count;
+end;
+
+function TQuadFXLayer.GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
+begin
+  AEffect := FEffects[AIndex];
+  if Assigned(AEffect) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXLayer.GetParticleCount: Integer; stdcall;
