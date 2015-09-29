@@ -20,7 +20,8 @@ type
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
     procedure Clear; stdcall;
-    procedure CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect); stdcall;
+    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f): HResult; stdcall;
+    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
@@ -56,18 +57,30 @@ begin
   inherited;
 end;
 
-procedure TQuadFXLayer.CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect); stdcall;
+function TQuadFXLayer.CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f): HResult; stdcall;
 var
   NewEffect: IQuadFXEffect;
 begin
-  if not Assigned(AEffectParams) then
-    Exit;
+  Result := CreateEffectEx(AEffectParams, APosition, NewEffect);
+end;
 
-  NewEffect := TQuadFXEffect.Create(AEffectParams, APosition);
-  FEffects.Add(NewEffect);
+function TQuadFXLayer.CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect): HResult; stdcall;
+var
+  NewEffect: IQuadFXEffect;
+begin
+  AEffect := nil;
+  if Assigned(AEffectParams) then
+  begin
+    AEffect := TQuadFXEffect.Create(AEffectParams, APosition);
+    FEffects.Add(AEffect);
 
-  //NewEffect.Update(1.2);
-  AEffect := NewEffect;
+    //NewEffect.Update(1.2);
+  end;
+
+  if Assigned(AEffect) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXLayer.GetEffectCount: Integer; stdcall;

@@ -28,16 +28,15 @@ var
 
 procedure OnMouseDown(const APosition: TVec2i; const AButtons: TMouseButtons; const APressedButtons: TPressedMouseButtons); stdcall;
 var
-  Effect: IQuadFXEffect;
   Position: TVec2f;
 begin
   Position := APosition / TVec2f(WIN_SIZE) * RENDER_SIZE;
 
   if AButtons = mbLeft then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams, Position, Effect);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams, Position);
 
   if AButtons = mbRight then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position, Effect);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position);
 end;
 
 procedure DrawBackground;

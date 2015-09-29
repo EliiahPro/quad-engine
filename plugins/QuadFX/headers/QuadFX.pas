@@ -228,7 +228,8 @@ type
     procedure Clear; stdcall;
     procedure Draw; stdcall;
     procedure Update(const ADelta: Double); stdcall;
-    procedure CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect); stdcall;
+    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f): HResult; stdcall;
+    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
