@@ -16,8 +16,12 @@ type
     FCount: Integer;
     FLife: Single;
     FAction: Boolean;
+    FScale: Single;
+    FOldAngle: Single;
+    FAngle: Single;
+    FSinRad, FCosRad: Single;
   public
-    constructor Create(AParams: IQuadFXEffectParams; APosition: TVec2f);
+    constructor Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
     destructor Destroy; override;
 
     function CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
@@ -29,6 +33,9 @@ type
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
     function GetPosition: TVec2f; stdcall;
     function GetLife: Single; stdcall;
+    function GetAngle: Single; stdcall;
+    function GetScale: Single; stdcall;
+    procedure GetSinCos(out ACosRad, ASinRad: Single);
     procedure ToLife(ALife: Single);
     property IsNeedToKill: Boolean read FIsNeedToKill;
     property Life: Single read FLife;
@@ -38,13 +45,17 @@ type
 implementation
 
 uses
-  QuadFX.Layer, QuadFX.EffectParams;
+  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils;
 
-constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f);
+constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
 var
   i: Integer;
 begin
   FPosition := APosition;
+  FAngle := AAngle;
+  FOldAngle := FAngle;
+  FastSinCos(FAngle * (pi / 180), FCosRad, FSinRad);
+  FScale := AScale;
   FLife := 0;
   FCount := 0;
   FIsNeedToKill := False;
@@ -59,7 +70,7 @@ end;
 
 function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
 begin
-  Result := TQuadFXEmitter.Create(AParams, @FPosition);
+  Result := TQuadFXEmitter.Create(Self, AParams);
   FEmmiters.Add(Result);
 end;
 
@@ -132,6 +143,12 @@ begin
   Result := FCount;
 end;
 
+procedure TQuadFXEffect.GetSinCos(out ACosRad, ASinRad: Single);
+begin
+  ACosRad := FCosRad;
+  ASinRad := FSinRad;
+end;
+
 function TQuadFXEffect.GetPosition: TVec2f; stdcall;
 begin
   Result := FPosition;
@@ -140,6 +157,16 @@ end;
 function TQuadFXEffect.GetLife: Single; stdcall;
 begin
   Result := FLife;
+end;
+
+function TQuadFXEffect.GetAngle: Single; stdcall;
+begin
+  Result := FAngle;
+end;
+
+function TQuadFXEffect.GetScale: Single; stdcall;
+begin
+  Result := FScale;
 end;
 
 function TQuadFXEffect.GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;

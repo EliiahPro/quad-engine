@@ -9,7 +9,7 @@ uses
 
 const
   WIN_SIZE: TVec2i = (X: 160; Y: 90);
-  RENDER_SIZE: TVec2i = (X: 1024; Y: 768);
+  RENDER_SIZE: TVec2i = (X: 160; Y: 90);
 
 var
   QuadDevice: IQuadDevice;
@@ -33,10 +33,10 @@ begin
   Position := APosition / TVec2f(WIN_SIZE) * RENDER_SIZE;
 
   if AButtons = mbLeft then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams, Position);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams, Position, 0, 0.5);
 
   if AButtons = mbRight then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position, 45, 1);
 end;
 
 procedure DrawBackground;

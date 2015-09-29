@@ -8,7 +8,6 @@ uses
 type
   TQuadFXEmitter = class(TInterfacedObject, IQuadFXEmitter)
   private
-    FEffectPosition: PVec2f;
     FIsDebug: Boolean;
     FRect: record
       LeftTop, RightBottom: TVec2f;
@@ -45,6 +44,8 @@ type
 
     FParticleLastTime: TQuadFXParticleValue;
 
+    FOwner: IQuadFXEffect;
+
     function Add: PQuadFXParticle;
     procedure ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
     function GetEmitterParams: PQuadFXEmitterParams; stdcall;
@@ -60,7 +61,7 @@ type
     function GetStartAngle: Single;
   public
     FValuesIndex: array[0..2] of Integer;
-    constructor Create(AParams: PQuadFXEmitterParams; APosition: PVec2f);
+    constructor Create(AOwner: IQuadFXEffect; AParams: PQuadFXEmitterParams);
     destructor Destroy; override;
     procedure Restart;
     procedure RestartParams;
@@ -88,7 +89,7 @@ type
 implementation
 
 uses
-  Math, QuadEngine.Utils;
+  Math, QuadEngine.Utils, QuadFX.Effect;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 begin
@@ -182,11 +183,11 @@ begin
   Result := FValues[Index];
 end;
 
-constructor TQuadFXEmitter.Create(AParams: PQuadFXEmitterParams; APosition: PVec2f);
+constructor TQuadFXEmitter.Create(AOwner: IQuadFXEffect; AParams: PQuadFXEmitterParams);
 //var
 //  i: Integer;
 begin
-  FEffectPosition := APosition;
+  FOwner := AOwner;
   FActive := True;
   FIsDebug := False;
   FTime := 0;
@@ -370,99 +371,96 @@ var
   SinRad, CosRad: Single;
   p1, p2: TVec2f;
 begin
-  with AParticle^ do
+  AParticle.Time := AParticle.Time + ADelta;
+  AParticle.Life := AParticle.Time / AParticle.LifeTime;
+
+  // Velocity
+  AParticle.Velocity.Update(AParticle.Life);
+  AParticle.Position := AParticle.Position + AParticle.StartVelocity * AParticle.Velocity.Value * ADelta * FOwner.GetScale;
+
+  // Spin
+  AParticle.Spin.Update(AParticle.Life);
+  AParticle.Angle := RealMod(AParticle.StartAngle * AParticle.Spin.Value, 360);
+  // Scale
+  AParticle.Scale.Update(AParticle.Life);
+  // Color
+  if AParticle.Life > FParams.Particle.Color.List[0].Life then
   begin
-    Time := Time + ADelta;
-    Life := Time / LifeTime;
-
-    // Velocity
-    Velocity.Update(Life);
-
-    Position := Position + StartVelocity * Velocity.Value * ADelta;
-
-    // Spin
-    Spin.Update(Life);
-    Angle := RealMod(StartAngle * Spin.Value, 360);
-    // Scale
-    Scale.Update(Life);
-    // Color
-    if Life > FParams.Particle.Color.List[0].Life then
+    if (AParticle.Life < FParams.Particle.Color.List[FParams.Particle.Color.Count - 1].Life) and (AParticle.ColorIndex < FParams.Particle.Color.Count) then
     begin
-      if (Life < FParams.Particle.Color.List[FParams.Particle.Color.Count - 1].Life) and (ColorIndex < FParams.Particle.Color.Count) then
-      begin
-        while Life > FParams.Particle.Color.List[ColorIndex + 1].Life do
-          Inc(ColorIndex);
+      while AParticle.Life > FParams.Particle.Color.List[AParticle.ColorIndex + 1].Life do
+        Inc(AParticle.ColorIndex);
 
-        CPrev := @FParams.Particle.Color.List[ColorIndex];
-        CNext := @FParams.Particle.Color.List[ColorIndex + 1];
+      CPrev := @FParams.Particle.Color.List[AParticle.ColorIndex];
+      CNext := @FParams.Particle.Color.List[AParticle.ColorIndex + 1];
 
-        if Cardinal(CPrev.Value) = Cardinal(CNext.Value) then
-          Color := FParams.Particle.Color.List[ColorIndex].Value
-        else
-          Color := CPrev.Value.Lerp(CNext.Value, (Life - CPrev.Life) / (CNext.Life - CPrev.Life));
-      end
+      if Cardinal(CPrev.Value) = Cardinal(CNext.Value) then
+        AParticle.Color := FParams.Particle.Color.List[AParticle.ColorIndex].Value
       else
-        Color := FParams.Particle.Color.List[FParams.Particle.Color.Count - 1].Value;
+        AParticle.Color := CPrev.Value.Lerp(CNext.Value, (AParticle.Life - CPrev.Life) / (CNext.Life - CPrev.Life));
     end
     else
-      Color := FParams.Particle.Color.List[0].Value;
-    // Opacity
-    Opacity.Update(Life);
-    Color.A := Opacity.Value;
+      AParticle.Color := FParams.Particle.Color.List[FParams.Particle.Color.Count - 1].Value;
+  end
+  else
+    AParticle.Color := FParams.Particle.Color.List[0].Value;
+  // Opacity
+  AParticle.Opacity.Update(AParticle.Life);
+  AParticle.Color.A := AParticle.Opacity.Value;
 
-    if Angle <> 0 then
-    begin
-      FastSinCos(Angle * (pi / 180), CosRad, SinRad);
-      p1 := -FParams.Textures[TextureIndex].Size / 2 * Scale.Value;
-      p2 := -p1;
+  if AParticle.Angle <> 0 then
+  begin
+    FastSinCos(AParticle.Angle * (pi / 180), CosRad, SinRad);
+    p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FOwner.GetScale;
+    p2 := -p1;
 
-      Vertexes[0].x := p1.X * CosRad - p1.Y * SinRad + Position.X;
-      Vertexes[0].y := p1.X * SinRad + p1.Y * CosRad + Position.Y;
+    AParticle.Vertexes[0].x := p1.X * CosRad - p1.Y * SinRad + AParticle.Position.X;
+    AParticle.Vertexes[0].y := p1.X * SinRad + p1.Y * CosRad + AParticle.Position.Y;
 
-      Vertexes[1].x := p2.X * CosRad - p1.Y * SinRad + Position.X;
-      Vertexes[1].y := p2.X * SinRad + p1.Y * CosRad + Position.Y;
+    AParticle.Vertexes[1].x := p2.X * CosRad - p1.Y * SinRad + AParticle.Position.X;
+    AParticle.Vertexes[1].y := p2.X * SinRad + p1.Y * CosRad + AParticle.Position.Y;
 
-      Vertexes[2].x := p1.X * CosRad - p2.Y * SinRad + Position.X;
-      Vertexes[2].y := p1.X * SinRad + p2.Y * CosRad + Position.Y;
+    AParticle.Vertexes[2].x := p1.X * CosRad - p2.Y * SinRad + AParticle.Position.X;
+    AParticle.Vertexes[2].y := p1.X * SinRad + p2.Y * CosRad + AParticle.Position.Y;
 
-      Vertexes[5].x := p2.X * CosRad - p2.Y * SinRad + Position.X;
-      Vertexes[5].y := p2.X * SinRad + p2.Y * CosRad + Position.Y;
-    end
-    else
-    begin
-      p2 := FParams.Textures[TextureIndex].Size * Scale.Value;
-      p1 := Position - p2 / 2;
+    AParticle.Vertexes[5].x := p2.X * CosRad - p2.Y * SinRad + AParticle.Position.X;
+    AParticle.Vertexes[5].y := p2.X * SinRad + p2.Y * CosRad + AParticle.Position.Y;
+  end
+  else
+  begin
+    p2 := FParams.Textures[AParticle.TextureIndex].Size * AParticle.Scale.Value * FOwner.GetScale;
+    p1 := AParticle.Position - p2 / 2;
 
-      Vertexes[0].x := p1.X;
-      Vertexes[0].y := p1.Y;
+    AParticle.Vertexes[0].x := p1.X;
+    AParticle.Vertexes[0].y := p1.Y;
 
-      Vertexes[1].x := p1.X + p2.X;
-      Vertexes[1].y := p1.Y;
+    AParticle.Vertexes[1].x := p1.X + p2.X;
+    AParticle.Vertexes[1].y := p1.Y;
 
-      Vertexes[2].x := p1.X;
-      Vertexes[2].y := p1.Y + p2.Y;
+    AParticle.Vertexes[2].x := p1.X;
+    AParticle.Vertexes[2].y := p1.Y + p2.Y;
 
-      Vertexes[5].x := p1.X + p2.X;
-      Vertexes[5].y := p1.Y + p2.Y;
-    end;
-
-    Vertexes[0].Color := Color;
-    Vertexes[1].Color := Color;
-    Vertexes[2].Color := Color;
-    Vertexes[5].Color := Color;
-
-    Vertexes[3] := Vertexes[2];
-    Vertexes[4] := Vertexes[1];
-
-       {
-    if FIsDebug then
-    begin
-      FRect.LeftTop.X := Min(FRect.LeftTop.X, Position.X - FParams.Texture.GetPatternWidth / 2 * Scale);
-      FRect.LeftTop.Y := Min(FRect.LeftTop.Y, Position.Y - FParams.Texture.GetPatternHeight / 2 * Scale);
-      FRect.RightBottom.X := Max(FRect.RightBottom.X, Position.X + FParams.Texture.GetPatternWidth / 2 * Scale);
-      FRect.RightBottom.Y := Max(FRect.RightBottom.Y, Position.Y + FParams.Texture.GetPatternHeight / 2 * Scale);
-    end;    }
+    AParticle.Vertexes[5].x := p1.X + p2.X;
+    AParticle.Vertexes[5].y := p1.Y + p2.Y;
   end;
+
+  AParticle.Vertexes[0].Color := AParticle.Color;
+  AParticle.Vertexes[1].Color := AParticle.Color;
+  AParticle.Vertexes[2].Color := AParticle.Color;
+  AParticle.Vertexes[5].Color := AParticle.Color;
+
+  AParticle.Vertexes[3] := AParticle.Vertexes[2];
+  AParticle.Vertexes[4] := AParticle.Vertexes[1];
+
+  {
+  if FIsDebug then
+  begin
+    FRect.LeftTop.X := Min(FRect.LeftTop.X, Position.X - FParams.Texture.GetPatternWidth / 2 * Scale);
+    FRect.LeftTop.Y := Min(FRect.LeftTop.Y, Position.Y - FParams.Texture.GetPatternHeight / 2 * Scale);
+    FRect.RightBottom.X := Max(FRect.RightBottom.X, Position.X + FParams.Texture.GetPatternWidth / 2 * Scale);
+    FRect.RightBottom.Y := Max(FRect.RightBottom.Y, Position.Y + FParams.Texture.GetPatternHeight / 2 * Scale);
+  end;
+  }
 end;
 
 function TQuadFXEmitter.Add: PQuadFXParticle;
@@ -480,89 +478,86 @@ begin
   Inc(FVertexesLastRecord);
   Inc(FParticlesCount);
 
-  with Result^ do
-  begin
-    TextureIndex := Random(FParams.TextureCount);
-    RandAnglePosition := 0;
-    case FParams.Shape.ShapeType of
-      qeftLine:
-        begin
-          RandAnglePosition := RadToDeg(FValues[1]);
-          FastSinCos(RandAnglePosition, CosRad, SinRad);
-          Position := TVec2f.Create(CosRad, SinRad) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
-        end;
-      qeftCircle:
-        begin
-          Radius := FValues[0] + Random(MaxInt) / MaxInt * (FValues[1] - FValues[0]);
-          RandAnglePosition := Random(MaxInt) / MaxInt * 2 * Pi;
-          FastSinCos(RandAnglePosition, CosRad, SinRad);
-          Position := TVec2f.Create(CosRad, SinRad) * Radius;
-        end;
-      qeftRect:
-        begin
-          FastSinCos(FValues[2], CosRad, SinRad);
+  Result.TextureIndex := Random(FParams.TextureCount);
+  RandAnglePosition := 0;
+  case FParams.Shape.ShapeType of
+    qeftLine:
+      begin
+        RandAnglePosition := RadToDeg(FValues[1]);
+        FastSinCos(RandAnglePosition, CosRad, SinRad);
+        Result.Position := TVec2f.Create(CosRad, SinRad) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
+      end;
+    qeftCircle:
+      begin
+        Radius := FValues[0] + Random(MaxInt) / MaxInt * (FValues[1] - FValues[0]);
+        RandAnglePosition := Random(MaxInt) / MaxInt * 2 * Pi;
+        FastSinCos(RandAnglePosition, CosRad, SinRad);
+        Result.Position := TVec2f.Create(CosRad, SinRad) * Radius;
+      end;
+    qeftRect:
+      begin
+        FastSinCos(FValues[2], CosRad, SinRad);
 
-          P := Tvec2f.Create(
-            (Random(MaxInt) / MaxInt) * FValues[0] - FValues[0] / 2,
-            (Random(MaxInt) / MaxInt) * FValues[1] - FValues[1] / 2
-          );
+        P := Tvec2f.Create(
+          (Random(MaxInt) / MaxInt) * FValues[0] - FValues[0] / 2,
+          (Random(MaxInt) / MaxInt) * FValues[1] - FValues[1] / 2
+        );
 
-          Position.X := (P.X * CosRad - P.Y * SinRad);
-          Position.Y := (P.X * SinRad + P.Y * CosRad);
-        end;
-      else
-        Position := TVec2f.Zero;
-    end;
-
-    Position := Position + Self.Position + FEffectPosition^;
-
-    Life := 0;
-    Time := 0;
-
-    LifeTime := FParticleLastTime.Value;
-
-    RandomAngle := (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
-    if FParams.DirectionFromCenter then
-      RandomAngle := RandomAngle + RandAnglePosition;
-
-    Rand := FStartVelocity.RandomValue;
-    FastSinCos(RandomAngle, CosRad, SinRad);
-    StartVelocity := TVec2f.Create(CosRad * Rand, SinRad * Rand);
-    Velocity := TQuadFXParticleValue.Create(@FParams.Particle.Velocity);
-
-    ColorIndex := 0;
-    Color := FParams.Particle.Color.List[0].Value;
-
-    // Opacity
-    Opacity := TQuadFXParticleValue.Create(@FParams.Particle.Opacity);
-    Color.A := Opacity.Value;
-
-    // Scale
-    Scale := TQuadFXParticleValue.Create(@FParams.Particle.Scale);
-   // StartScale := FParams.StartScale.Value;
-
-    // Spin
-    Spin := TQuadFXParticleValue.Create(@FParams.Particle.Spin);
-    Angle := RadToDeg(RandomAngle) + FStartAngle.RandomValue;
-    StartAngle := Angle;
-
-    Vertexes[0].z := 0;
-    Vertexes[1].z := 0;
-    Vertexes[2].z := 0;
-    Vertexes[5].z := 0;
-
-    with FParams.Textures[TextureIndex]^ do
-    begin
-      Result.Vertexes[0].u := UVA.X;
-      Result.Vertexes[0].v := UVA.Y;
-      Result.Vertexes[1].u := UVB.X;
-      Result.Vertexes[1].v := UVA.Y;
-      Result.Vertexes[2].u := UVA.X;
-      Result.Vertexes[2].v := UVB.Y;
-      Result.Vertexes[5].u := UVB.X;
-      Result.Vertexes[5].v := UVB.Y;
-    end;
+        Result.Position := TVec2f.Create(P.X * CosRad - P.Y * SinRad, P.X * SinRad + P.Y * CosRad);
+      end;
+    else
+      Result.Position := TVec2f.Zero;
   end;
+
+  Result.Position := FOwner.GetPosition + (Self.Position + Result.Position) * FOwner.GetScale;
+
+  Result.Life := 0;
+  Result.Time := 0;
+
+  Result.LifeTime := FParticleLastTime.Value;
+
+  RandomAngle := DegToRad(FOwner.GetAngle) + (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
+  if FParams.DirectionFromCenter then
+    RandomAngle := RandomAngle + RandAnglePosition;
+
+  Rand := FStartVelocity.RandomValue;
+  FastSinCos(RandomAngle, CosRad, SinRad);
+  Result.StartVelocity := TVec2f.Create(CosRad, SinRad) * Rand;
+  Result.Velocity := TQuadFXParticleValue.Create(@FParams.Particle.Velocity);
+
+  Result.ColorIndex := 0;
+  Result.Color := FParams.Particle.Color.List[0].Value;
+
+  // Opacity
+  Result.Opacity := TQuadFXParticleValue.Create(@FParams.Particle.Opacity);
+  Result.Color.A := Result.Opacity.Value;
+
+  // Scale
+  Result.Scale := TQuadFXParticleValue.Create(@FParams.Particle.Scale);
+  // StartScale := FParams.StartScale.Value;
+
+  // Spin
+  Result.Spin := TQuadFXParticleValue.Create(@FParams.Particle.Spin);
+  Result.Angle := RadToDeg(RandomAngle) + FStartAngle.RandomValue;
+  Result.StartAngle := Result.Angle;
+
+  Vertexes[0].z := 0;
+  Vertexes[1].z := 0;
+  Vertexes[2].z := 0;
+  Vertexes[5].z := 0;
+
+  with FParams.Textures[Result.TextureIndex]^ do
+  begin
+    Result.Vertexes[0].u := UVA.X;
+    Result.Vertexes[0].v := UVA.Y;
+    Result.Vertexes[1].u := UVB.X;
+    Result.Vertexes[1].v := UVA.Y;
+    Result.Vertexes[2].u := UVA.X;
+    Result.Vertexes[2].v := UVB.Y;
+    Result.Vertexes[5].u := UVB.X;
+    Result.Vertexes[5].v := UVB.Y;
+  end;
+
 end;
 
 end.

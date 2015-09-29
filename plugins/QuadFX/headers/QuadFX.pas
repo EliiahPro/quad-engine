@@ -217,6 +217,8 @@ type
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
     function GetPosition: TVec2f; stdcall;
     function GetLife: Single; stdcall;
+    function GetAngle: Single; stdcall;
+    function GetScale: Single; stdcall;
 
     property Emitter[Index: Integer]: IQuadFXEmitter read GetEmitter; default;
     property EmitterCount: Integer read GetEmitterCount;
@@ -228,8 +230,8 @@ type
     procedure Clear; stdcall;
     procedure Draw; stdcall;
     procedure Update(const ADelta: Double); stdcall;
-    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f): HResult; stdcall;
-    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect): HResult; stdcall;
+    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;

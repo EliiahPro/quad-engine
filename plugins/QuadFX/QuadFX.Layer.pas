@@ -20,8 +20,8 @@ type
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
     procedure Clear; stdcall;
-    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f): HResult; stdcall;
-    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect): HResult; stdcall;
+    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     function GetEffectCount: Integer; stdcall;
@@ -57,21 +57,21 @@ begin
   inherited;
 end;
 
-function TQuadFXLayer.CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f): HResult; stdcall;
+function TQuadFXLayer.CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
 var
   NewEffect: IQuadFXEffect;
 begin
-  Result := CreateEffectEx(AEffectParams, APosition, NewEffect);
+  Result := CreateEffectEx(AEffectParams, APosition, NewEffect, AAngle, AScale);
 end;
 
-function TQuadFXLayer.CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect): HResult; stdcall;
+function TQuadFXLayer.CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
 var
   NewEffect: IQuadFXEffect;
 begin
   AEffect := nil;
   if Assigned(AEffectParams) then
   begin
-    AEffect := TQuadFXEffect.Create(AEffectParams, APosition);
+    AEffect := TQuadFXEffect.Create(AEffectParams, APosition, AAngle, AScale);
     FEffects.Add(AEffect);
 
     //NewEffect.Update(1.2);
