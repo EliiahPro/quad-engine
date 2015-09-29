@@ -5,7 +5,7 @@ program demo08;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, QuadFX, Vec2f, QuadFX.Manager, System.SysUtils;
+  QuadEngine, QuadFX, Vec2f, QuadFX.Manager, System.SysUtils, Math;
 
 const
   WIN_SIZE: TVec2i = (X: 160; Y: 90);
@@ -36,7 +36,7 @@ begin
     QuadFXLayer.CreateEffect(QuadFXEffectParams, Position, 0, 0.5);
 
   if AButtons = mbRight then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position, 45, 1);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position, DegToRad(45), 1);
 end;
 
 procedure DrawBackground;

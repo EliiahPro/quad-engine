@@ -35,7 +35,7 @@ type
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
-    procedure GetSinCos(out ACosRad, ASinRad: Single);
+    procedure GetSinCos(out ASinRad, ACosRad: Single);
     procedure ToLife(ALife: Single);
     property IsNeedToKill: Boolean read FIsNeedToKill;
     property Life: Single read FLife;
@@ -54,7 +54,7 @@ begin
   FPosition := APosition;
   FAngle := AAngle;
   FOldAngle := FAngle;
-  FastSinCos(FAngle * (pi / 180), FCosRad, FSinRad);
+  FastSinCos(FAngle, FSinRad, FCosRad);
   FScale := AScale;
   FLife := 0;
   FCount := 0;
@@ -143,7 +143,7 @@ begin
   Result := FCount;
 end;
 
-procedure TQuadFXEffect.GetSinCos(out ACosRad, ASinRad: Single);
+procedure TQuadFXEffect.GetSinCos(out ASinRad, ACosRad: Single);
 begin
   ACosRad := FCosRad;
   ASinRad := FSinRad;

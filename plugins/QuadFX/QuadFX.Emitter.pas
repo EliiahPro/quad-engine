@@ -92,8 +92,14 @@ uses
   Math, QuadEngine.Utils, QuadFX.Effect;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
+var
+  SinRad, CosRad: Single;
 begin
-  Result := TVec2f.Create(FPosition.X.Value, FPosition.Y.Value);
+  TQuadFXEffect(FOwner).GetSinCos(SinRad, CosRad);
+  Result := TVec2f.Create(
+    FPosition.X.Value * CosRad - FPosition.Y.Value * SinRad,
+    FPosition.X.Value * SinRad + FPosition.Y.Value * CosRad
+  );
 end;
 
 function TQuadFXEmitter.GetDirection: Single;
@@ -410,7 +416,7 @@ begin
 
   if AParticle.Angle <> 0 then
   begin
-    FastSinCos(AParticle.Angle * (pi / 180), CosRad, SinRad);
+    FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
     p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FOwner.GetScale;
     p2 := -p1;
 
@@ -483,20 +489,20 @@ begin
   case FParams.Shape.ShapeType of
     qeftLine:
       begin
-        RandAnglePosition := RadToDeg(FValues[1]);
-        FastSinCos(RandAnglePosition, CosRad, SinRad);
+        RandAnglePosition := FValues[1] + FOwner.GetAngle;
+        FastSinCos(RandAnglePosition, SinRad, CosRad);
         Result.Position := TVec2f.Create(CosRad, SinRad) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
       end;
     qeftCircle:
       begin
         Radius := FValues[0] + Random(MaxInt) / MaxInt * (FValues[1] - FValues[0]);
         RandAnglePosition := Random(MaxInt) / MaxInt * 2 * Pi;
-        FastSinCos(RandAnglePosition, CosRad, SinRad);
+        FastSinCos(RandAnglePosition, SinRad, CosRad);
         Result.Position := TVec2f.Create(CosRad, SinRad) * Radius;
       end;
     qeftRect:
       begin
-        FastSinCos(FValues[2], CosRad, SinRad);
+        FastSinCos(FValues[2] + FOwner.GetAngle, CosRad, SinRad);
 
         P := Tvec2f.Create(
           (Random(MaxInt) / MaxInt) * FValues[0] - FValues[0] / 2,
@@ -516,12 +522,12 @@ begin
 
   Result.LifeTime := FParticleLastTime.Value;
 
-  RandomAngle := DegToRad(FOwner.GetAngle) + (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
+  RandomAngle := FOwner.GetAngle + (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
   if FParams.DirectionFromCenter then
     RandomAngle := RandomAngle + RandAnglePosition;
 
   Rand := FStartVelocity.RandomValue;
-  FastSinCos(RandomAngle, CosRad, SinRad);
+  FastSinCos(RandomAngle, SinRad, CosRad);
   Result.StartVelocity := TVec2f.Create(CosRad, SinRad) * Rand;
   Result.Velocity := TQuadFXParticleValue.Create(@FParams.Particle.Velocity);
 
