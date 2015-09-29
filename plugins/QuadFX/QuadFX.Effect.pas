@@ -17,7 +17,6 @@ type
     FLife: Single;
     FAction: Boolean;
     FScale: Single;
-    FOldAngle: Single;
     FAngle: Single;
     FSinRad, FCosRad: Single;
   public
@@ -35,6 +34,9 @@ type
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
+    procedure SetPosition(APosition: TVec2f); stdcall;
+    procedure SetAngle(AAngle: Single); stdcall;
+    procedure SetScal(AScale: Single); stdcall;
     procedure GetSinCos(out ASinRad, ACosRad: Single);
     procedure ToLife(ALife: Single);
     property IsNeedToKill: Boolean read FIsNeedToKill;
@@ -53,7 +55,6 @@ var
 begin
   FPosition := APosition;
   FAngle := AAngle;
-  FOldAngle := FAngle;
   FastSinCos(FAngle, FSinRad, FCosRad);
   FScale := AScale;
   FLife := 0;
@@ -167,6 +168,23 @@ end;
 function TQuadFXEffect.GetScale: Single; stdcall;
 begin
   Result := FScale;
+end;
+
+procedure TQuadFXEffect.SetPosition(APosition: TVec2f); stdcall;
+begin
+  FPosition := APosition;
+end;
+
+procedure TQuadFXEffect.SetAngle(AAngle: Single); stdcall;
+begin
+  if FAngle <> AAngle then
+    FastSinCos(AAngle, FSinRad, FCosRad);
+  FAngle := AAngle;
+end;
+
+procedure TQuadFXEffect.SetScal(AScale: Single); stdcall;
+begin
+  FScale := AScale;
 end;
 
 function TQuadFXEffect.GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;

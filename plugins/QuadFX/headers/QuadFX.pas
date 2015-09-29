@@ -220,6 +220,10 @@ type
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
 
+    procedure SetPosition(APosition: TVec2f); stdcall;
+    procedure SetAngle(AAngle: Single); stdcall;
+    procedure SetScal(AScale: Single); stdcall;
+
     property Emitter[Index: Integer]: IQuadFXEmitter read GetEmitter; default;
     property EmitterCount: Integer read GetEmitterCount;
     property ParticleCount: Integer read GetParticleCount;
