@@ -43,8 +43,9 @@ type
     FValues: array[0..2] of Single;
 
     FParticleLastTime: TQuadFXParticleValue;
-
     FOwner: IQuadFXEffect;
+
+
 
     function Add: PQuadFXParticle;
     procedure ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
@@ -198,6 +199,7 @@ begin
   FIsDebug := False;
   FTime := 0;
   FLife := 0;
+  FLastTime := 0;
   FParticlesCount := 0;
   FParticleSize := SizeOf(TQuadFXParticle);
   FParticlesSize := FParticleSize * AParams.MaxParticles;
@@ -349,7 +351,7 @@ begin
   if FEmission.Value > 0 then
   begin
     LifePos := FLife + FLastTime;
-    EmissionTime := 1 / FEmission.Value;{ FParams.Emission.List[0].Value};
+    EmissionTime := 1 / FEmission.Value;
     FLastTime := FLastTime + ADelta;
     while (FLastTime >= EmissionTime) and (FParticlesCount < FParams.MaxParticles) do
     begin

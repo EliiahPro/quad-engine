@@ -9,6 +9,7 @@ uses
 type
   TQuadFXEffect = class(TInterfacedObject, IQuadFXEffect)
   private
+    FOldPosition: TVec2f;
     FPosition: TVec2f;
     FIsNeedToKill: Boolean;
     FParams: IQuadFXEffectParams;
@@ -16,9 +17,13 @@ type
     FCount: Integer;
     FLife: Single;
     FAction: Boolean;
+    FOldScale: Single;
     FScale: Single;
+    FOldAngle: Single;
     FAngle: Single;
     FSinRad, FCosRad: Single;
+
+    FSpawnWithLerp: Boolean;
   public
     constructor Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
     destructor Destroy; override;
@@ -31,9 +36,14 @@ type
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
     function GetPosition: TVec2f; stdcall;
+    procedure GetSpawnWithLerp: Boolean; stdcall;
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
+
+    procedure GetLerp(ADist: Single; out APosition: TVec2f; out AAngle, AScale: Single);
+
+    procedure SetSpawnWithLerp(ASpawnWithLerp: Boolean); stdcall;
     procedure SetPosition(APosition: TVec2f); stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetScal(AScale: Single); stdcall;
@@ -128,6 +138,9 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
+  FOldPosition := FPosition;
+  FOldScale := FScale;
+  FOldAngle := FAngle;
 end;
                  {
 procedure TQuadFXEffect.Draw; stdcall;
@@ -185,6 +198,16 @@ end;
 procedure TQuadFXEffect.SetScal(AScale: Single); stdcall;
 begin
   FScale := AScale;
+end;
+
+procedure TQuadFXEffect.SetSpawnWithLerp(ASpawnWithLerp: Boolean); stdcall;
+begin
+  FSpawnWithLerp := ASpawnWithLerp;
+end;
+
+procedure TQuadFXEffect.GetSpawnWithLerp: Boolean; stdcall;
+begin
+  Result := FSpawnWithLerp;
 end;
 
 function TQuadFXEffect.GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;

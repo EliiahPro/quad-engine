@@ -219,10 +219,12 @@ type
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
+    function GetSpawnWithLerp: Boolean; stdcall;
 
     procedure SetPosition(APosition: TVec2f); stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetScal(AScale: Single); stdcall;
+    procedure SetSpawnWithLerp(ASpawnWithLerp: Boolean); stdcall;
 
     property Emitter[Index: Integer]: IQuadFXEmitter read GetEmitter; default;
     property EmitterCount: Integer read GetEmitterCount;
