@@ -394,6 +394,11 @@ namespace QuadEngine
         /// <remarks>This will be very helpfull for multithread applications.</remarks>
         [PreserveSig] bool GetIsLoaded();
         [PreserveSig] float GetKerning();
+        /// <summary>Set kerning for this font.</summary>
+        /// <param name="AValue">Value to be set. 0.0f is default</param>
+        void SetKerning(float AValue);
+        [PreserveSig] float GetSpacing();
+        void SetSpacing(float AValue);
         /// <summary>Load font data from file.</summary>
         /// <param name="ATextureFilename">Filename of texture file.</param>
         /// <param name="AUVFilename">Filename of additional font data file.</param>
@@ -401,9 +406,6 @@ namespace QuadEngine
         void SetSmartColor(string AColorChar, UInt32 AColor);
         void SetDistanceFieldParams(ref TDistanceFieldParams ADistanceFieldParam);
         void SetIsSmartColoring(bool Value);
-        /// <summary>Set kerning for this font.</summary>
-        /// <param name="AValue">Value to be set. 0.0f is default</param>
-        void SetKerning(float AValue);
         /// <summary>Get current font height.</summary>
         /// <param name="AText">Text to be measured.</param>
         /// <param name="AScale">Scale of the measured text.</param>

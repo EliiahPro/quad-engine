@@ -60,6 +60,7 @@ type
     FHeight: Word;
     FIsSmartColoring: Boolean;
     FKerning: Single;
+    FSpacing: Single;
     FLetters: array [Word] of TLetterUV;
     FLog: TQuadLog;
     FQuadRender: TQuadRender;
@@ -80,13 +81,15 @@ type
     function GetIsLoaded: Boolean; stdcall;
     function GetKerning: Single; stdcall;
     procedure SetKerning(AValue: Single); stdcall;
+    function GetSpacing: Single; stdcall;
+    procedure SetSpacing(AValue: Single); stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename: PWideChar); stdcall;
-    procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
+    procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
-    procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
     function TextHeight(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
     function TextWidth(AText: PWideChar; AScale: Single = 1.0): Single; stdcall;
+    procedure TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar; AColor: Cardinal = $FFFFFFFF; AAlign : TqfAlign = qfaLeft); stdcall;
   end;
 
 implementation
@@ -165,6 +168,14 @@ end;
 function TQuadFont.GetKerning: Single; stdcall;
 begin
   Result := FKerning;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadFont.GetSpacing: Single;
+begin
+
 end;
 
 //=============================================================================
@@ -257,6 +268,14 @@ end;
 //=============================================================================
 //
 //=============================================================================
+procedure TQuadFont.SetSpacing(AValue: Single);
+begin
+
+end;
+
+//=============================================================================
+//
+//=============================================================================
 procedure TQuadFont.SetDistanceFieldParams(
   const ADistanceFieldParams: TDistanceFieldParams);
 begin
@@ -341,9 +360,9 @@ begin
     if l = Ord(#13) then
     begin
       if not FIsDistanceField then
-        ypos := ypos + FLetters[CHAR_SPACE].H * AScale
+        ypos := ypos + FLetters[CHAR_SPACE].H * AScale + FSpacing
       else
-        ypos := ypos + (FQuadChars[Ord('M')].IncY / FQuadFontHeader.ScaleFactor) * AScale;
+        ypos := ypos + (FQuadChars[Ord('M')].IncY / FQuadFontHeader.ScaleFactor) * AScale + FSpacing;
 
       sx := startX;
     end
@@ -373,7 +392,7 @@ begin
                    FQuadChars[l].YPos / FTexture.TextureHeight + FQuadChars[l].SizeY / FTexture.TextureHeight),
                    CurrentColor);
 
-        sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
+        sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
 
         TQuadShader.DistanceField.SetShaderState(False);
       end

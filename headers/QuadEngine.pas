@@ -387,6 +387,11 @@ type
     /// <remarks>This will be very helpfull for multithread applications.</remarks>
     function GetIsLoaded: Boolean; stdcall;
     function GetKerning: Single; stdcall;
+    /// <summary>Set kerning for this font.</summary>
+    /// <param name="AValue">Value to be set. 0.0f is default</param>
+    procedure SetKerning(AValue: Single); stdcall;
+    function GetSpacing: Single; stdcall;
+    procedure SetSpacing(AValue: Single); stdcall;
     /// <summary>Load font data from file.</summary>
     /// <param name="ATextureFilename">Filename of texture file.</param>
     /// <param name="AUVFilename">Filename of additional font data file.</param>
@@ -394,9 +399,6 @@ type
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
-    /// <summary>Set kerning for this font.</summary>
-    /// <param name="AValue">Value to be set. 0.0f is default</param>
-    procedure SetKerning(AValue: Single); stdcall;
     /// <summary>Get current font height.</summary>
     /// <param name="AText">Text to be measured.</param>
     /// <param name="AScale">Scale of the measured text.</param>
