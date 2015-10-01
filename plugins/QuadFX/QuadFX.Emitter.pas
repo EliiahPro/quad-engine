@@ -419,7 +419,11 @@ begin
   if AParticle.Angle <> 0 then
   begin
     FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
-    p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FOwner.GetScale;
+    if FParams.TextureCount > 0 then
+      p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FOwner.GetScale
+    else
+      p1 := -TVec2f.Create(0.5, 0.5) * AParticle.Scale.Value * FOwner.GetScale;
+
     p2 := -p1;
 
     AParticle.Vertexes[0].x := p1.X * CosRad - p1.Y * SinRad + AParticle.Position.X;
@@ -436,7 +440,11 @@ begin
   end
   else
   begin
-    p2 := FParams.Textures[AParticle.TextureIndex].Size * AParticle.Scale.Value * FOwner.GetScale;
+    if FParams.TextureCount > 0 then
+      p2 := FParams.Textures[AParticle.TextureIndex].Size * AParticle.Scale.Value * FOwner.GetScale
+    else
+      p2 := TVec2f.Create(1, 1) * AParticle.Scale.Value * FOwner.GetScale;
+
     p1 := AParticle.Position - p2 / 2;
 
     AParticle.Vertexes[0].x := p1.X;
@@ -456,6 +464,32 @@ begin
   AParticle.Vertexes[1].Color := AParticle.Color;
   AParticle.Vertexes[2].Color := AParticle.Color;
   AParticle.Vertexes[5].Color := AParticle.Color;
+
+  if FParams.TextureCount > 0 then
+  begin
+    with FParams.Textures[AParticle.TextureIndex]^ do
+    begin
+      AParticle.Vertexes[0].u := UVA.X;
+      AParticle.Vertexes[0].v := UVA.Y;
+      AParticle.Vertexes[1].u := UVB.X;
+      AParticle.Vertexes[1].v := UVA.Y;
+      AParticle.Vertexes[2].u := UVA.X;
+      AParticle.Vertexes[2].v := UVB.Y;
+      AParticle.Vertexes[5].u := UVB.X;
+      AParticle.Vertexes[5].v := UVB.Y;
+    end;
+  end
+  else
+  begin
+    AParticle.Vertexes[0].u := 0;
+    AParticle.Vertexes[0].v := 0;
+    AParticle.Vertexes[1].u := 1;
+    AParticle.Vertexes[1].v := 0;
+    AParticle.Vertexes[2].u := 0;
+    AParticle.Vertexes[2].v := 1;
+    AParticle.Vertexes[5].u := 1;
+    AParticle.Vertexes[5].v := 1;
+  end;
 
   AParticle.Vertexes[3] := AParticle.Vertexes[2];
   AParticle.Vertexes[4] := AParticle.Vertexes[1];
@@ -553,19 +587,6 @@ begin
   Vertexes[1].z := 0;
   Vertexes[2].z := 0;
   Vertexes[5].z := 0;
-
-  with FParams.Textures[Result.TextureIndex]^ do
-  begin
-    Result.Vertexes[0].u := UVA.X;
-    Result.Vertexes[0].v := UVA.Y;
-    Result.Vertexes[1].u := UVB.X;
-    Result.Vertexes[1].v := UVA.Y;
-    Result.Vertexes[2].u := UVA.X;
-    Result.Vertexes[2].v := UVB.Y;
-    Result.Vertexes[5].u := UVB.X;
-    Result.Vertexes[5].v := UVB.Y;
-  end;
-
 end;
 
 end.

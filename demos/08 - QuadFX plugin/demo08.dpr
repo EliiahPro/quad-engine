@@ -8,8 +8,8 @@ uses
   QuadEngine, QuadFX, Vec2f, QuadFX.Manager, System.SysUtils, Math;
 
 const
-  WIN_SIZE: TVec2i = (X: 160; Y: 90);
-  RENDER_SIZE: TVec2i = (X: 160; Y: 90);
+  WIN_SIZE: TVec2i = (X: 1024; Y: 768);
+  RENDER_SIZE: TVec2i = (X: 1024; Y: 768);
 
 var
   QuadDevice: IQuadDevice;
@@ -33,7 +33,7 @@ begin
   Position := APosition / TVec2f(WIN_SIZE) * RENDER_SIZE;
 
   if AButtons = mbLeft then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams, Position, 0, 0.5);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams, Position, 0, 1.5);
 
   if AButtons = mbRight then
     QuadFXLayer.CreateEffect(QuadFXEffectParams2, Position, DegToRad(45), 1);

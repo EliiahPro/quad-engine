@@ -36,7 +36,7 @@ type
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
     function GetPosition: TVec2f; stdcall;
-    procedure GetSpawnWithLerp: Boolean; stdcall;
+    function GetSpawnWithLerp: Boolean; stdcall;
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
@@ -205,7 +205,12 @@ begin
   FSpawnWithLerp := ASpawnWithLerp;
 end;
 
-procedure TQuadFXEffect.GetSpawnWithLerp: Boolean; stdcall;
+procedure TQuadFXEffect.GetLerp(ADist: Single; out APosition: TVec2f; out AAngle, AScale: Single);
+begin
+
+end;
+
+function TQuadFXEffect.GetSpawnWithLerp: Boolean; stdcall;
 begin
   Result := FSpawnWithLerp;
 end;

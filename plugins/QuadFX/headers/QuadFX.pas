@@ -166,9 +166,9 @@ type
 
   IQuadFXAtlas = interface(IUnknown)
   ['{5277308B-9D5E-4B5A-B554-97D19552B899}']
-    function GetSprite(Index: Integer): PQuadFXSprite; stdcall;
+    function GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     function GetSpriteCount: Integer; stdcall;
-    function GetSize: TVec2f;
+    function GetSize: TVec2f; stdcall;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
     procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
@@ -176,9 +176,6 @@ type
     procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
     procedure SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
     procedure SetTexture(ATesture: IQuadTexture); stdcall;
-    property Sprites[Index: Integer]: PQuadFXSprite read GetSprite; default;
-    property SpriteCount: Integer read GetSpriteCount;
-    property Size: TVec2f read GetSize;
   end;
 
   IQuadFXEmitter = interface(IUnknown)

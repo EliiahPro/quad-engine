@@ -193,8 +193,8 @@ begin
   if Assigned(AAtlas) then
   begin
     Texture := TQuadFXAtlas(AAtlas).Texture;
-    UVA := Position / AAtlas.Size;
-    UVB := (Position + Size) / AAtlas.Size;
+    UVA := Position / AAtlas.GetSize;
+    UVB := (Position + Size) / AAtlas.GetSize;
   end
   else
   begin

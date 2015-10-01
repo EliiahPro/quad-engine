@@ -4,7 +4,7 @@ interface
 
 uses
   QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, System.SysUtils,
-  System.Generics.Collections, System.Classes, System.Json;
+  System.Generics.Collections, System.Classes, System.Json, Windows;
 
 type
   TQuadFXAtlas = class(TInterfacedObject, IQuadFXAtlas)
@@ -14,14 +14,14 @@ type
     FSprites: TList<PQuadFXSprite>;
     FTexture: IQuadTexture;
     FLoadFromFile: Boolean;
-    function GetSize: TVec2f;
   public
     constructor Create;
     destructor Destroy; override;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
-    function GetSprite(Index: Integer): PQuadFXSprite; stdcall;
+    function GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     function GetSpriteCount: Integer; stdcall;
+    function GetSize: TVec2f; stdcall;
     procedure LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     procedure SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
@@ -67,9 +67,13 @@ begin
     Result := TVec2f.Zero;
 end;
 
-function TQuadFXAtlas.GetSprite(Index: Integer): PQuadFXSprite; stdcall;
+function TQuadFXAtlas.GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
 begin
-  Result := FSprites[Index];
+  ASprite := FSprites[Index];
+  if Assigned(ASprite) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXAtlas.GetSpriteCount: Integer; stdcall;

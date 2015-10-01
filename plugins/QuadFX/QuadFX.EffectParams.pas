@@ -96,6 +96,8 @@ begin
   Result.Shape.ShapeType := qeftPoint;
   Result.Shape.ParamType := qpptValue;
 
+  Result.MaxParticles := 128;
+
   for i := 0 to 2 do
   begin
     Result.Shape.Value[i] := 0;
