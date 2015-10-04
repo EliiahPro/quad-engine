@@ -4,13 +4,13 @@ interface
 
 uses
   QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter,
-  System.Generics.Collections, Windows;
+  System.Generics.Collections, Windows, QuadFX.Helpers, QuadFX.EffectEmitterProxy;
 
 type
   TQuadFXEffect = class(TInterfacedObject, IQuadFXEffect)
   private
     FOldPosition: TVec2f;
-    FPosition: TVec2f;
+   // FPosition: TVec2f;
     FIsNeedToKill: Boolean;
     FParams: IQuadFXEffectParams;
     FEmmiters: TList<IQuadFXEmitter>;
@@ -18,10 +18,12 @@ type
     FLife: Single;
     FAction: Boolean;
     FOldScale: Single;
-    FScale: Single;
+   //FScale: Single;
     FOldAngle: Single;
-    FAngle: Single;
-    FSinRad, FCosRad: Single;
+   // FAngle: Single;
+   // FSinRad, FCosRad: Single;
+
+    FEffectEmitterProxy: TEffectEmitterProxy;
 
     FSpawnWithLerp: Boolean;
   public
@@ -47,7 +49,6 @@ type
     procedure SetPosition(APosition: TVec2f); stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetScal(AScale: Single); stdcall;
-    procedure GetSinCos(out ASinRad, ACosRad: Single);
     procedure ToLife(ALife: Single);
     property IsNeedToKill: Boolean read FIsNeedToKill;
     property Life: Single read FLife;
@@ -63,10 +64,7 @@ constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f
 var
   i: Integer;
 begin
-  FPosition := APosition;
-  FAngle := AAngle;
-  FastSinCos(FAngle, FSinRad, FCosRad);
-  FScale := AScale;
+  FEffectEmitterProxy := TEffectEmitterProxy.Create(APosition, AAngle, AScale);
   FLife := 0;
   FCount := 0;
   FIsNeedToKill := False;
@@ -81,7 +79,7 @@ end;
 
 function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
 begin
-  Result := TQuadFXEmitter.Create(Self, AParams);
+  Result := TQuadFXEmitter.Create(FEffectEmitterProxy, AParams);
   FEmmiters.Add(Result);
 end;
 
@@ -90,11 +88,13 @@ var
   i: Integer;
 begin
   FParams := nil;
-  for i := 0 to FEmmiters.Count - 1 do
-    if Assigned(FEmmiters[i]) then
-      FEmmiters[i] := nil;
+  for i := FEmmiters.Count - 1 downto 0 do
+    FEmmiters.Delete(i);
+   // if Assigned(FEmmiters[i]) then
+    //  FEmmiters[i] := nil;
 
   FEmmiters.Free;
+  FEffectEmitterProxy.free;
   inherited;
 end;
 
@@ -138,9 +138,9 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
-  FOldPosition := FPosition;
+ { FOldPosition := FPosition;
   FOldScale := FScale;
-  FOldAngle := FAngle;
+  FOldAngle := FAngle;  }
 end;
                  {
 procedure TQuadFXEffect.Draw; stdcall;
@@ -157,15 +157,9 @@ begin
   Result := FCount;
 end;
 
-procedure TQuadFXEffect.GetSinCos(out ASinRad, ACosRad: Single);
-begin
-  ACosRad := FCosRad;
-  ASinRad := FSinRad;
-end;
-
 function TQuadFXEffect.GetPosition: TVec2f; stdcall;
 begin
-  Result := FPosition;
+  Result := FEffectEmitterProxy.Position;
 end;
 
 function TQuadFXEffect.GetLife: Single; stdcall;
@@ -175,29 +169,27 @@ end;
 
 function TQuadFXEffect.GetAngle: Single; stdcall;
 begin
-  Result := FAngle;
+  Result := FEffectEmitterProxy.Angle;
 end;
 
 function TQuadFXEffect.GetScale: Single; stdcall;
 begin
-  Result := FScale;
+  Result := FEffectEmitterProxy.Scale;
 end;
 
 procedure TQuadFXEffect.SetPosition(APosition: TVec2f); stdcall;
 begin
-  FPosition := APosition;
+  FEffectEmitterProxy.Position := APosition;
 end;
 
 procedure TQuadFXEffect.SetAngle(AAngle: Single); stdcall;
 begin
-  if FAngle <> AAngle then
-    FastSinCos(AAngle, FSinRad, FCosRad);
-  FAngle := AAngle;
+  FEffectEmitterProxy.Angle := AAngle;
 end;
 
 procedure TQuadFXEffect.SetScal(AScale: Single); stdcall;
 begin
-  FScale := AScale;
+  FEffectEmitterProxy.Scale := AScale;
 end;
 
 procedure TQuadFXEffect.SetSpawnWithLerp(ASpawnWithLerp: Boolean); stdcall;

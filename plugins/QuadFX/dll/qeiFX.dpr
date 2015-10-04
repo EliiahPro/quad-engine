@@ -17,7 +17,8 @@ uses
   QuadFX.Atlas in '..\QuadFX.Atlas.pas',
   QuadFX.FileLoader in '..\QuadFX.FileLoader.pas',
   QuadFX.FileLoader.CustomFormat in '..\QuadFX.FileLoader.CustomFormat.pas',
-  QuadFX.FileLoader.JSON in '..\QuadFX.FileLoader.JSON.pas';
+  QuadFX.FileLoader.JSON in '..\QuadFX.FileLoader.JSON.pas',
+  QuadFX.EffectEmitterProxy in '..\QuadFX.EffectEmitterProxy.pas';
 
 {$R *.res}
 

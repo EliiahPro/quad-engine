@@ -3,7 +3,7 @@ unit QuadFX.Emitter;
 interface
 
 uses
-  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f;
+  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.EffectEmitterProxy;
 
 type
   TQuadFXEmitter = class(TInterfacedObject, IQuadFXEmitter)
@@ -43,7 +43,8 @@ type
     FValues: array[0..2] of Single;
 
     FParticleLastTime: TQuadFXParticleValue;
-    FOwner: IQuadFXEffect;
+
+    FEffectEmitterProxy: IEffectEmitterProxy;
 
 
 
@@ -62,7 +63,7 @@ type
     function GetStartAngle: Single;
   public
     FValuesIndex: array[0..2] of Integer;
-    constructor Create(AOwner: IQuadFXEffect; AParams: PQuadFXEmitterParams);
+    constructor Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
     destructor Destroy; override;
     procedure Restart;
     procedure RestartParams;
@@ -96,7 +97,8 @@ function TQuadFXEmitter.GetPosition: TVec2f;
 var
   SinRad, CosRad: Single;
 begin
-  TQuadFXEffect(FOwner).GetSinCos(SinRad, CosRad);
+  FEffectEmitterProxy.GetSinCos(SinRad, CosRad);
+
   Result := TVec2f.Create(
     FPosition.X.Value * CosRad - FPosition.Y.Value * SinRad,
     FPosition.X.Value * SinRad + FPosition.Y.Value * CosRad
@@ -190,11 +192,11 @@ begin
   Result := FValues[Index];
 end;
 
-constructor TQuadFXEmitter.Create(AOwner: IQuadFXEffect; AParams: PQuadFXEmitterParams);
+constructor TQuadFXEmitter.Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
 //var
 //  i: Integer;
 begin
-  FOwner := AOwner;
+  FEffectEmitterProxy := AEffectEmitterProxy;
   FActive := True;
   FIsDebug := False;
   FTime := 0;
@@ -289,7 +291,7 @@ destructor TQuadFXEmitter.Destroy;
 begin
   FreeMem(FParticles);
   FreeMem(FVertexes);
-
+  FEffectEmitterProxy := nil;
   inherited;
 end;
 
@@ -384,7 +386,7 @@ begin
 
   // Velocity
   AParticle.Velocity.Update(AParticle.Life);
-  AParticle.Position := AParticle.Position + AParticle.StartVelocity * AParticle.Velocity.Value * ADelta * FOwner.GetScale;
+  AParticle.Position := AParticle.Position + AParticle.StartVelocity * AParticle.Velocity.Value * ADelta * FEffectEmitterProxy.GetScale;
 
   // Spin
   AParticle.Spin.Update(AParticle.Life);
@@ -420,9 +422,9 @@ begin
   begin
     FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
     if FParams.TextureCount > 0 then
-      p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FOwner.GetScale
+      p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FEffectEmitterProxy.GetScale
     else
-      p1 := -TVec2f.Create(0.5, 0.5) * AParticle.Scale.Value * FOwner.GetScale;
+      p1 := -TVec2f.Create(0.5, 0.5) * AParticle.Scale.Value * FEffectEmitterProxy.GetScale;
 
     p2 := -p1;
 
@@ -441,9 +443,9 @@ begin
   else
   begin
     if FParams.TextureCount > 0 then
-      p2 := FParams.Textures[AParticle.TextureIndex].Size * AParticle.Scale.Value * FOwner.GetScale
+      p2 := FParams.Textures[AParticle.TextureIndex].Size * AParticle.Scale.Value * FEffectEmitterProxy.GetScale
     else
-      p2 := TVec2f.Create(1, 1) * AParticle.Scale.Value * FOwner.GetScale;
+      p2 := TVec2f.Create(1, 1) * AParticle.Scale.Value * FEffectEmitterProxy.GetScale;
 
     p1 := AParticle.Position - p2 / 2;
 
@@ -525,7 +527,7 @@ begin
   case FParams.Shape.ShapeType of
     qeftLine:
       begin
-        RandAnglePosition := FValues[1] + FOwner.GetAngle;
+        RandAnglePosition := FValues[1] + FEffectEmitterProxy.GetAngle;
         FastSinCos(RandAnglePosition, SinRad, CosRad);
         Result.Position := TVec2f.Create(CosRad, SinRad) * FValues[0] * (Random(MaxInt) / (MaxInt / 2) - 1);
       end;
@@ -538,7 +540,7 @@ begin
       end;
     qeftRect:
       begin
-        FastSinCos(FValues[2] + FOwner.GetAngle, CosRad, SinRad);
+        FastSinCos(FValues[2] + FEffectEmitterProxy.GetAngle, CosRad, SinRad);
 
         P := Tvec2f.Create(
           (Random(MaxInt) / MaxInt) * FValues[0] - FValues[0] / 2,
@@ -551,14 +553,14 @@ begin
       Result.Position := TVec2f.Zero;
   end;
 
-  Result.Position := FOwner.GetPosition + (Self.Position + Result.Position) * FOwner.GetScale;
+  Result.Position := FEffectEmitterProxy.GetPosition + (Self.Position + Result.Position) * FEffectEmitterProxy.GetScale;
 
   Result.Life := 0;
   Result.Time := 0;
 
   Result.LifeTime := FParticleLastTime.Value;
 
-  RandomAngle := FOwner.GetAngle + (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
+  RandomAngle := FEffectEmitterProxy.GetAngle + (Random(MaxInt) / MaxInt - 0.5) * FSpread.Value + FDirection.Value;
   if FParams.DirectionFromCenter then
     RandomAngle := RandomAngle + RandAnglePosition;
 

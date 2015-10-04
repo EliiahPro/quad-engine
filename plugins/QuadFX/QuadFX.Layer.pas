@@ -52,7 +52,6 @@ end;
 
 destructor TQuadFXLayer.Destroy;
 begin
-  Clear;
   FEffects.Free;
   inherited;
 end;
@@ -103,12 +102,8 @@ begin
 end;
 
 procedure TQuadFXLayer.Clear; stdcall;
-var
-  i: Integer;
 begin
-  for i := FEffects.Count - 1 downto 0 do
-    if Assigned(FEffects[i]) then
-      FEffects[i] := nil;
+  FEffects.Clear;
 end;
 
 procedure TQuadFXLayer.Update(const ADelta: Double); stdcall;

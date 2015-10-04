@@ -7,9 +7,6 @@ uses
   System.Generics.Collections, QuadFX.Layer, QuadFX.EffectParams, Classes,
   QuadFX.Atlas;
 
-const
-  QuadFXVersion: PWideChar = 'QuadFX v0.5.0';
-
 type
   TQuadFXManager = class(TInterfacedObject, IQuadFXManager)
   private
@@ -102,5 +99,9 @@ begin
     Log.Write(AString);
   end;
 end;
+
+initialization
+  if Assigned(Manager) then
+    Manager.Free;
 
 end.
