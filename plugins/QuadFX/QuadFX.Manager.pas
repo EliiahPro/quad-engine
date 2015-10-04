@@ -5,9 +5,11 @@ interface
 uses
   QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter,
   System.Generics.Collections, QuadFX.Layer, QuadFX.EffectParams, Classes,
-  QuadFX.Atlas;
+  QuadFX.Atlas, Windows, QuadFX.Effect;
 
 type
+  TEffectsList = TList<IQuadFXEffect>;
+
   TQuadFXManager = class(TInterfacedObject, IQuadFXManager)
   private
     FQuadDevice: IQuadDevice;
@@ -16,17 +18,21 @@ type
     FEffectParams: TList<IQuadFXEffectParams>;
     FAtlases: TList<IQuadFXAtlas>;
 
+    FEffectsPool: TObjectList<TQueue<IQuadFXEffect>>;
   public
     constructor Create(AQuadDevice: IQuadDevice);
     destructor Destroy; override;
-    procedure CreateEffectParams(out AEffectParams: IQuadFXEffectParams); stdcall;
-    procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
-    procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
+    function CreateEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
+    function CreateLayer(out ALayer: IQuadFXLayer): HResult; stdcall;
+    function CreateAtlas(out AAtlas: IQuadFXAtlas): HResult; stdcall;
 
     function AtlasByName(const APackName, AAtlasName: WideString): IQuadFXAtlas;
     procedure AddLog(AString: PWideChar);
     property QuadDevice: IQuadDevice read FQuadDevice;
     property QuadRender: IQuadRender read FQuadRender;
+
+    function AddEffectToPool(AEffect: IQuadFXEffect): Boolean;
+    function GetEffectFromPool(AEffectParams: IQuadFXEffectParams): IQuadFXEffect;
   end;
 
 var
@@ -38,10 +44,11 @@ constructor TQuadFXManager.Create(AQuadDevice: IQuadDevice);
 begin
   FQuadDevice := AQuadDevice;
   FQuadDevice.CreateRender(FQuadRender);
-  AddLog(QuadFXVersion);
+  AddLog('QuadFX');
   FLayers := TList<IQuadFXLayer>.Create;
   FEffectParams := TList<IQuadFXEffectParams>.Create;
   FAtlases := TList<IQuadFXAtlas>.Create;
+  FEffectsPool := TObjectList<TQueue<IQuadFXEffect>>.Create;
 end;
 
 destructor TQuadFXManager.Destroy;
@@ -49,34 +56,75 @@ begin
   FEffectParams.Free;
   FLayers.Free;
   FAtlases.Free;
+  FEffectsPool.Free;
   inherited;
 end;
 
-procedure TQuadFXManager.CreateEffectParams(out AEffectParams: IQuadFXEffectParams); stdcall;
+function TQuadFXManager.AddEffectToPool(AEffect: IQuadFXEffect): Boolean;
 var
-  NewEffectParams: TQuadFXEffectParams;
+  EffectParams: IQuadFXEffectParams;
+  PoolIndex: Integer;
 begin
-  NewEffectParams := TQuadFXEffectParams.Create;
-  FEffectParams.Add(NewEffectParams);
-  AEffectParams := NewEffectParams;
+  if Assigned(AEffect) then
+  begin
+    AEffect.GetEffectParams(EffectParams);
+    if Assigned(EffectParams) then
+    begin
+      PoolIndex := TQuadFXEffectParams(EffectParams).PoolIndex;
+      if PoolIndex >= 0 then
+        FEffectsPool[PoolIndex].Enqueue(AEffect);
+    end;
+  end;
 end;
 
-procedure TQuadFXManager.CreateLayer(out ALayer: IQuadFXLayer); stdcall;
+function TQuadFXManager.GetEffectFromPool(AEffectParams: IQuadFXEffectParams): IQuadFXEffect;
 var
-  NewLayer: TQuadFXLayer;
+  PoolIndex: Integer;
 begin
-  NewLayer := TQuadFXLayer.Create;
-  FLayers.Add(NewLayer);
-  ALayer := NewLayer;
+  Result := nil;
+  if Assigned(AEffectParams) then
+  begin
+    PoolIndex := TQuadFXEffectParams(AEffectParams).PoolIndex;
+    if (PoolIndex >= 0) and (FEffectsPool[PoolIndex].Count > 0) then
+      Result := FEffectsPool[PoolIndex].Dequeue;
+  end;
 end;
 
-procedure TQuadFXManager.CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
-var
-  NewAtlas: TQuadFXAtlas;
+function TQuadFXManager.CreateEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
 begin
-  NewAtlas := TQuadFXAtlas.Create;
-  FAtlases.Add(NewAtlas);
-  AAtlas := NewAtlas;
+  AEffectParams := TQuadFXEffectParams.Create;
+  if Assigned(AEffectParams) then
+  begin
+    FEffectParams.Add(AEffectParams);
+    TQuadFXEffectParams(AEffectParams).PoolIndex := FEffectsPool.Add(TQueue<IQuadFXEffect>.Create);
+    Result := S_OK;
+  end
+  else
+    Result := E_FAIL;
+end;
+
+function TQuadFXManager.CreateLayer(out ALayer: IQuadFXLayer): HResult; stdcall;
+begin
+  ALayer := TQuadFXLayer.Create;
+  if Assigned(ALayer) then
+  begin
+    FLayers.Add(ALayer);
+    Result := S_OK;
+  end
+  else
+    Result := E_FAIL;
+end;
+
+function TQuadFXManager.CreateAtlas(out AAtlas: IQuadFXAtlas): HResult; stdcall;
+begin
+  AAtlas := TQuadFXAtlas.Create;
+  if Assigned(AAtlas) then
+  begin
+    FAtlases.Add(AAtlas);
+    Result := S_OK;
+  end
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXManager.AtlasByName(const APackName, AAtlasName: WideString): IQuadFXAtlas;

@@ -50,6 +50,7 @@ type
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetScal(AScale: Single); stdcall;
     procedure ToLife(ALife: Single);
+    procedure Restart(APosition: TVec2f; AAngle, AScale: Single);
     property IsNeedToKill: Boolean read FIsNeedToKill;
     property Life: Single read FLife;
     property Action: Boolean read FAction;
@@ -65,6 +66,7 @@ var
   i: Integer;
 begin
   FEffectEmitterProxy := TEffectEmitterProxy.Create(APosition, AAngle, AScale);
+
   FLife := 0;
   FCount := 0;
   FIsNeedToKill := False;
@@ -72,9 +74,22 @@ begin
   FParams := AParams;
 
   FEmmiters := TList<IQuadFXEmitter>.Create;
-
   for i := 0 to AParams.EmitterParamsCount - 1 do
     CreateEmitter(AParams.EmitterParams[i]);
+end;
+
+procedure TQuadFXEffect.Restart(APosition: TVec2f; AAngle, AScale: Single);
+var
+  i: Integer;
+begin
+  FLife := 0;
+  FCount := 0;
+  FIsNeedToKill := False;
+  FAction := True;
+
+  FEffectEmitterProxy.Create(APosition, AAngle, AScale);
+  for i := 0 to FEmmiters.Count - 1 do
+    TQuadFXEmitter(FEmmiters[i]).Restart;
 end;
 
 function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;

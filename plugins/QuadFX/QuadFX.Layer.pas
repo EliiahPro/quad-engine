@@ -70,8 +70,14 @@ begin
   AEffect := nil;
   if Assigned(AEffectParams) then
   begin
-    AEffect := TQuadFXEffect.Create(AEffectParams, APosition, AAngle, AScale);
-    FEffects.Add(AEffect);
+    AEffect := Manager.GetEffectFromPool(AEffectParams);
+    if not Assigned(AEffect) then
+      AEffect := TQuadFXEffect.Create(AEffectParams, APosition, AAngle, AScale)
+    else
+      TQuadFXEffect(AEffect).Restart(APosition, AAngle, AScale);
+
+    if Assigned(AEffect) then
+      FEffects.Add(AEffect);
 
     //NewEffect.Update(1.2);
   end;
@@ -114,7 +120,7 @@ begin
   for i := FEffects.Count - 1 downto 0 do
     if TQuadFXEffect(FEffects[i]).IsNeedToKill then
     begin
-      //FEffects[i] := nil;
+      Manager.AddEffectToPool(FEffects[i]);
       FEffects.Delete(i);
     end
     else

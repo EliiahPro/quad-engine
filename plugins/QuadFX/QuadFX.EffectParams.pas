@@ -13,6 +13,7 @@ type
     FName: WideString;
     FLifeTime: Single;
     FLoadFromFile: Boolean;
+    FPoolIndex: Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -28,6 +29,7 @@ type
     procedure Clear;
 
     property Name: WideString read FName write FName;
+    property PoolIndex: Integer read FPoolIndex write FPoolIndex;
   end;
 
 implementation
@@ -37,6 +39,7 @@ uses
 
 constructor TQuadFXEffectParams.Create;
 begin
+  FPoolIndex := -1;
   FLoadFromFile := False;
   FEmitters := TList<PQuadFXEmitterParams>.Create;
   FName := 'Effect 1';

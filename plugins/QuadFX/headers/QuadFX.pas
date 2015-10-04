@@ -244,9 +244,9 @@ type
 
   IQuadFXManager = interface(IUnknown)
     ['{E8E26D13-A480-4763-87B0-B381A8221C4E}']
-    procedure CreateEffectParams(out AEffect: IQuadFXEffectParams); stdcall;
-    procedure CreateLayer(out ALayer: IQuadFXLayer); stdcall;
-    procedure CreateAtlas(out AAtlas: IQuadFXAtlas); stdcall;
+    function CreateEffectParams(out AEffect: IQuadFXEffectParams): HResult; stdcall;
+    function CreateLayer(out ALayer: IQuadFXLayer): HResult; stdcall;
+    function CreateAtlas(out AAtlas: IQuadFXAtlas): HResult; stdcall;
   end;
 
   TCreateQuadFXManager    = function(AQuadDevice: IQuadDevice; out AQuadFXManager: IQuadFXManager): HResult; stdcall;

@@ -46,8 +46,6 @@ type
 
     FEffectEmitterProxy: IEffectEmitterProxy;
 
-
-
     function Add: PQuadFXParticle;
     procedure ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
     function GetEmitterParams: PQuadFXEmitterParams; stdcall;
@@ -217,28 +215,6 @@ begin
   FParams := AParams;
   RestartParams;
   FTime := 0;
-  {
-
-  //FParams.Texture := AParams.Texture;
-  FParams.TextureCount := AParams.TextureCount;
-  FParams.Textures := AParams.Textures;
-
-  FParams.BlendMode := AParams.BlendMode;
-  FParams.LifeTime := AParams.LifeTime;
-  for i := 0 to 2 do
-    FValuesIndex[i] := 0;
-  FParams.Shape := AParams.Shape;
-  FParams.Position := AParams.Position;
-
-  FParams.Particle := AParams.Particle;
-
-  // Emission
-  FParams.Emission := AParams.Emission;
-
-  // Direction
-  FParams.Direction := AParams.Direction;
-  FParams.Spread := AParams.Spread;
-          }
 end;
 
 procedure TQuadFXEmitter.UpdateParams;
