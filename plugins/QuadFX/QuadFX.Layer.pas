@@ -155,7 +155,11 @@ begin
       begin
         Manager.QuadRender.SetBlendMode(Emitter.EmitterParams.BlendMode);
         Manager.QuadRender.FlushBuffer;
-        Manager.QuadRender.SetTexture(0, Emitter.EmitterParams.Textures[0].Texture.GetTexture(0));
+        if Emitter.EmitterParams.TextureCount > 0 then
+          Manager.QuadRender.SetTexture(0, Emitter.EmitterParams.Textures[0].Texture.GetTexture(0))
+        else
+          Manager.QuadRender.SetTexture(0, Manager.DefaultTexture.GetTexture(0));
+
         Manager.QuadRender.AddTrianglesToBuffer(Emitter.Vertexes^, 6 * Emitter.ParticleCount);
         Manager.QuadRender.FlushBuffer;
        { P := Emitter.Particle;

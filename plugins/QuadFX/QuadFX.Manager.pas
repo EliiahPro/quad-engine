@@ -7,6 +7,8 @@ uses
   System.Generics.Collections, QuadFX.Layer, QuadFX.EffectParams, Classes,
   QuadFX.Atlas, Windows, QuadFX.Effect;
 
+{$R 'resources\data.res' 'resources\data.rc'}
+
 type
   TEffectsList = TList<IQuadFXEffect>;
 
@@ -17,6 +19,7 @@ type
     FLayers: TList<IQuadFXLayer>;
     FEffectParams: TList<IQuadFXEffectParams>;
     FAtlases: TList<IQuadFXAtlas>;
+    FDefaultTexture: IQuadTexture;
 
     FEffectsPool: TObjectList<TQueue<IQuadFXEffect>>;
   public
@@ -33,6 +36,7 @@ type
 
     function AddEffectToPool(AEffect: IQuadFXEffect): Boolean;
     function GetEffectFromPool(AEffectParams: IQuadFXEffectParams): IQuadFXEffect;
+    property DefaultTexture: IQuadTexture read FDefaultTexture;
   end;
 
 var
@@ -41,6 +45,8 @@ var
 implementation
 
 constructor TQuadFXManager.Create(AQuadDevice: IQuadDevice);
+var
+  ResStream: TResourceStream;
 begin
   FQuadDevice := AQuadDevice;
   FQuadDevice.CreateRender(FQuadRender);
@@ -49,6 +55,14 @@ begin
   FEffectParams := TList<IQuadFXEffectParams>.Create;
   FAtlases := TList<IQuadFXAtlas>.Create;
   FEffectsPool := TObjectList<TQueue<IQuadFXEffect>>.Create;
+
+  ResStream := TResourceStream.Create(hInstance, 'DefaultTexture', RT_RCDATA);
+  try
+    FQuadDevice.CreateTexture(FDefaultTexture);
+    FDefaultTexture.LoadFromStream(0, ResStream.Memory, ResStream.Size);
+  finally
+    ResStream.Free;
+  end;
 end;
 
 destructor TQuadFXManager.Destroy;

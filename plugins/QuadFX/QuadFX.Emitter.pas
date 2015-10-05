@@ -400,7 +400,7 @@ begin
     if FParams.TextureCount > 0 then
       p1 := -FParams.Textures[AParticle.TextureIndex].Size / 2 * AParticle.Scale.Value * FEffectEmitterProxy.GetScale
     else
-      p1 := -TVec2f.Create(0.5, 0.5) * AParticle.Scale.Value * FEffectEmitterProxy.GetScale;
+      p1 := -TVec2f.Create(8, 8) * AParticle.Scale.Value * FEffectEmitterProxy.GetScale;
 
     p2 := -p1;
 
@@ -421,7 +421,7 @@ begin
     if FParams.TextureCount > 0 then
       p2 := FParams.Textures[AParticle.TextureIndex].Size * AParticle.Scale.Value * FEffectEmitterProxy.GetScale
     else
-      p2 := TVec2f.Create(1, 1) * AParticle.Scale.Value * FEffectEmitterProxy.GetScale;
+      p2 := TVec2f.Create(16, 16) * AParticle.Scale.Value * FEffectEmitterProxy.GetScale;
 
     p1 := AParticle.Position - p2 / 2;
 
