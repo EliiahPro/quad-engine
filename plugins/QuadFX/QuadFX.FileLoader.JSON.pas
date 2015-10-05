@@ -205,7 +205,7 @@ var
   i: Integer;
   JSONArray: TJSONArray;
 begin
-  Result := EffectParams.CreateEmitterParams;
+  EffectParams.CreateEmitterParams(Result);
   Result.Name := (AJsonObject.GetValue('Name') as TJSONString).Value;
   Result.BlendMode := TQuadBlendMode((AJsonObject.GetValue('BlendMode') as TJSONNumber).AsInt);
 
@@ -285,7 +285,6 @@ begin
           for j := 0 to Sprites.Count - 1 do
           begin
             SpriteObject := (Sprites.Items[j] as TJSONObject);
-            Manager.AddLog(PWideChar('QuadFX: Load sprite "' + AAtlasName + '"'));
             LoadSprite((SpriteObject.Get('ID').JsonValue as TJSONNumber).AsInt);
           end;
         end;

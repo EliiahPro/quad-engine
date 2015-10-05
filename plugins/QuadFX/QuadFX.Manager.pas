@@ -5,7 +5,7 @@ interface
 uses
   QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter,
   System.Generics.Collections, QuadFX.Layer, QuadFX.EffectParams, Classes,
-  QuadFX.Atlas, Windows, QuadFX.Effect;
+  QuadFX.Atlas, Winapi.Windows, QuadFX.Effect, System.SysUtils;
 
 {$R 'resources\data.res' 'resources\data.rc'}
 
@@ -50,7 +50,7 @@ var
 begin
   FQuadDevice := AQuadDevice;
   FQuadDevice.CreateRender(FQuadRender);
-  AddLog('QuadFX');
+  AddLog(PWideChar(Format('QuadFX v%d.%d.%d', [QuadFXReleaseVersion, QuadFXMajorVersion, QuadFXMinorVersion])));
   FLayers := TList<IQuadFXLayer>.Create;
   FEffectParams := TList<IQuadFXEffectParams>.Create;
   FAtlases := TList<IQuadFXAtlas>.Create;

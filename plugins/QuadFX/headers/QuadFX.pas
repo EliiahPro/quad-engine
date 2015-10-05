@@ -3,7 +3,7 @@ unit QuadFX;
 interface
 
 uses
-  Windows, QuadEngine, Vec2f, QuadEngine.Color;
+  Winapi.Windows, QuadEngine, Vec2f, QuadEngine.Color;
 
 const
   QuadFXLibraryName: PChar = 'qeiFX.dll';
@@ -182,25 +182,19 @@ type
     ['{2F2841E6-88FF-4F1E-8261-3C9197EA89AE}']
     procedure Update(ADelta: Double); stdcall;
     procedure Draw; stdcall;
-    function GetEmitterParams: PQuadFXEmitterParams; stdcall;
+    function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetActive: Boolean; stdcall;
-    property EmitterParams: PQuadFXEmitterParams read GetEmitterParams;
-    property ParticleCount: integer read GetParticleCount;
-    property Active: Boolean read GetActive;
   end;
 
   IQuadFXEffectParams = interface(IUnknown)
     ['{8036DBA9-BFDA-4D57-8E8E-E2709930D706}']
-    function CreateEmitterParams: PQuadFXEmitterParams; stdcall;
+    function CreateEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
-    function GetEmitterParams(Index: Integer): PQuadFXEmitterParams; stdcall;
+    function GetEmitterParams(Index: Integer; out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetEmitterParamsCount: integer; stdcall;
     function GetLifeTime: Single; stdcall;
-    property EmitterParams[Index: Integer]: PQuadFXEmitterParams read GetEmitterParams;
-    property EmitterParamsCount: Integer read GetEmitterParamsCount;
-    property LifeTime: Single read GetLifeTime;
   end;
 
   IQuadFXEffect = interface(IUnknown)
@@ -208,7 +202,7 @@ type
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
 
-    function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
+    function GetEmitter(Index: Integer; out AEmitter: IQuadFXEmitter): HResult; stdcall;
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
@@ -222,10 +216,6 @@ type
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetScal(AScale: Single); stdcall;
     procedure SetSpawnWithLerp(ASpawnWithLerp: Boolean); stdcall;
-
-    property Emitter[Index: Integer]: IQuadFXEmitter read GetEmitter; default;
-    property EmitterCount: Integer read GetEmitterCount;
-    property ParticleCount: Integer read GetParticleCount;
   end;
 
   IQuadFXLayer = interface(IUnknown)

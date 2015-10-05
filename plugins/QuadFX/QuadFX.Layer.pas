@@ -4,7 +4,7 @@ interface
 
 uses
   QuadFX, QuadFX.Emitter, QuadEngine, QuadEngine.Color, Vec2f,
-  System.Generics.Collections, QuadFX.Effect, Windows, QuadFX.LayerEffectProxy;
+  System.Generics.Collections, QuadFX.Effect, Winapi.Windows, QuadFX.LayerEffectProxy;
 
 type
   TQuadFXLayer = class(TInterfacedObject, IQuadFXLayer)
@@ -133,7 +133,7 @@ begin
     else
     begin
       FEffects[i].Update(ADelta);
-      FParticleCount := FParticleCount + FEffects[i].ParticleCount;
+      FParticleCount := FParticleCount + FEffects[i].GetParticleCount;
     end;
 end;
 
@@ -141,7 +141,7 @@ procedure TQuadFXLayer.Draw; stdcall;
 var
   i: Integer;
   Effect: IQuadFXEffect;
-  Emitter: TQuadFXEmitter;
+  Emitter: IQuadFXEmitter;
 begin
   for Effect in FEffects do
   begin
@@ -149,8 +149,8 @@ begin
     begin
       for i := 0 to Effect.GetEmitterCount - 1 do
       begin
-        Emitter := TQuadFXEmitter(Effect.GetEmitter(i));
-        FOnDraw(Emitter, Emitter.Particle, Emitter.ParticleCount);
+        Effect.GetEmitter(i, Emitter);
+        FOnDraw(Emitter, TQuadFXEmitter(Emitter).Particle, Emitter.GetParticleCount);
       end;
     end
     else

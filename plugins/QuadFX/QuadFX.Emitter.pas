@@ -3,7 +3,7 @@ unit QuadFX.Emitter;
 interface
 
 uses
-  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.EffectEmitterProxy;
+  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.EffectEmitterProxy, Winapi.Windows;
 
 type
   TQuadFXEmitter = class(TInterfacedObject, IQuadFXEmitter)
@@ -48,7 +48,7 @@ type
 
     function Add: PQuadFXParticle;
     procedure ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
-    function GetEmitterParams: PQuadFXEmitterParams; stdcall;
+    function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetValue(Index: Integer): Single;
     function GetEmission: Single;
@@ -72,7 +72,6 @@ type
     property Position: TVec2f read GetPosition;
     property IsDebug: Boolean read FIsDebug write FIsDebug;
 
-    property EmitterParams: PQuadFXEmitterParams read GetEmitterParams;
     property Vertexes: PVertexes read FVertexes;
     property Particle: PQuadFXParticle read FParticles;
     property ParticleCount: Cardinal read FParticlesCount;
@@ -182,9 +181,13 @@ begin
   Result := FParticlesCount;
 end;
 
-function TQuadFXEmitter.GetEmitterParams: PQuadFXEmitterParams; stdcall;
+function TQuadFXEmitter.GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
 begin
-  Result := FParams;
+  AEmitterParams := FParams;
+  if Assigned(AEmitterParams) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXEmitter.GetValue(Index: Integer): Single;

@@ -4,7 +4,7 @@ interface
 
 uses
   QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter, QuadFX.LayerEffectProxy,
-  System.Generics.Collections, Windows, QuadFX.Helpers, QuadFX.EffectEmitterProxy;
+  System.Generics.Collections, Winapi.Windows, QuadFX.Helpers, QuadFX.EffectEmitterProxy;
 
 type
   TQuadFXEffect = class(TInterfacedObject, IQuadFXEffect)
@@ -34,7 +34,7 @@ type
     function CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
-    function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
+    function GetEmitter(Index: Integer; out AEmitter: IQuadFXEmitter): HResult; stdcall;
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
@@ -65,6 +65,7 @@ uses
 constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
 var
   i: Integer;
+  EmitterParams: PQuadFXEmitterParams;
 begin
   FEffectEmitterProxy := TEffectEmitterProxy.Create(APosition, AAngle, AScale);
 
@@ -75,8 +76,11 @@ begin
   FParams := AParams;
 
   FEmmiters := TList<IQuadFXEmitter>.Create;
-  for i := 0 to AParams.EmitterParamsCount - 1 do
-    CreateEmitter(AParams.EmitterParams[i]);
+  for i := 0 to AParams.GetEmitterParamsCount - 1 do
+  begin
+    AParams.GetEmitterParams(i, EmitterParams);
+    CreateEmitter(EmitterParams);
+  end;
 end;
 
 procedure TQuadFXEffect.SetLayerEffectProxy(ALayerEffectProxy: ILayerEffectProxy);
@@ -144,8 +148,8 @@ begin
     if Assigned(Emmiter) then
     begin
       Emmiter.Update(ADelta);
-      FCount := FCount + Emmiter.ParticleCount;
-      if Emmiter.Active then
+      FCount := FCount + Emmiter.GetParticleCount;
+      if Emmiter.GetActive then
         Ac := True;
     end;
 
@@ -228,12 +232,13 @@ begin
     Result := E_FAIL;
 end;
 
-function TQuadFXEffect.GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
-var
-  Em: IQuadFXEmitter;
+function TQuadFXEffect.GetEmitter(Index: Integer; out AEmitter: IQuadFXEmitter): HResult; stdcall;
 begin
-  Em := FEmmiters[Index];
-  Result := Em;
+  AEmitter := FEmmiters[Index];
+  if Assigned(AEmitter) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXEffect.GetEmitterCount: integer; stdcall;

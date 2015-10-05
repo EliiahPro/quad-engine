@@ -17,8 +17,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function CreateEmitterParams: PQuadFXEmitterParams; stdcall;
-    function GetEmitterParams(Index: Integer): PQuadFXEmitterParams; stdcall;
+    function CreateEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
+    function GetEmitterParams(Index: Integer; out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetEmitterParamsCount: integer; stdcall;
 
     function GetLifeTime: Single; stdcall;
@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  QuadFX.Manager, QuadFX.FileLoader;
+  QuadFX.Manager, QuadFX.FileLoader, Winapi.Windows;
 
 constructor TQuadFXEffectParams.Create;
 begin
@@ -71,9 +71,13 @@ begin
   FEmitters.Clear;
 end;
 
-function TQuadFXEffectParams.GetEmitterParams(Index: Integer): PQuadFXEmitterParams; stdcall;
+function TQuadFXEffectParams.GetEmitterParams(Index: Integer; out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
 begin
-  Result := FEmitters[Index];
+  AEmitterParams := FEmitters[Index];
+  if Assigned(AEmitterParams) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXEffectParams.GetEmitterParamsCount: integer; stdcall;
@@ -81,54 +85,59 @@ begin
   Result := FEmitters.Count;
 end;
 
-function TQuadFXEffectParams.CreateEmitterParams: PQuadFXEmitterParams; stdcall;
+function TQuadFXEffectParams.CreateEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
 var
   i: Integer;
 begin
-  new(Result);
-  FEmitters.Add(Result);
-  Result.Name := 'Emitter ' + IntToStr(FEmitters.Count);
+  new(AEmitterParams);
+  FEmitters.Add(AEmitterParams);
+  AEmitterParams.Name := 'Emitter ' + IntToStr(FEmitters.Count);
 
-  Result.EndTime := 2;
-  Result.BeginTime := 0.5;
-  Result.BlendMode := qbmSrcAlphaAdd;
-  Result.IsLoop := False;
+  AEmitterParams.EndTime := 2;
+  AEmitterParams.BeginTime := 0.5;
+  AEmitterParams.BlendMode := qbmSrcAlphaAdd;
+  AEmitterParams.IsLoop := False;
 
-  Result.Position.X := TQuadFXParams.Create(0);
-  Result.Position.Y := TQuadFXParams.Create(0);
-  Result.Shape.ShapeType := qeftPoint;
-  Result.Shape.ParamType := qpptValue;
+  AEmitterParams.Position.X := TQuadFXParams.Create(0);
+  AEmitterParams.Position.Y := TQuadFXParams.Create(0);
+  AEmitterParams.Shape.ShapeType := qeftPoint;
+  AEmitterParams.Shape.ParamType := qpptValue;
 
-  Result.MaxParticles := 128;
+  AEmitterParams.MaxParticles := 128;
 
   for i := 0 to 2 do
   begin
-    Result.Shape.Value[i] := 0;
-    Result.Shape.Diagram[i].Count := 0;
-    SetLength(Result.Shape.Diagram[i].List, Result.Shape.Diagram[i].Count);
+    AEmitterParams.Shape.Value[i] := 0;
+    AEmitterParams.Shape.Diagram[i].Count := 0;
+    SetLength(AEmitterParams.Shape.Diagram[i].List, AEmitterParams.Shape.Diagram[i].Count);
   end;
 
-  Result.Direction := TQuadFXParams.Create(Pi + Pi /2);
-  Result.Spread := TQuadFXParams.Create(0.5);
+  AEmitterParams.Direction := TQuadFXParams.Create(Pi + Pi /2);
+  AEmitterParams.Spread := TQuadFXParams.Create(0.5);
 
-  Result.Emission := TQuadFXParams.Create(10);
-  Result.Particle.LifeTime := TQuadFXParams.Create(1.5);
-  Result.Particle.Opacity := TQuadFXParams.Create(1);
-  Result.Particle.StartAngle := TQuadFXParams.Create(-360, 360);
-  Result.Particle.Spin := TQuadFXParams.Create(1);
-  Result.Particle.Scale := TQuadFXParams.Create(1);
-  Result.Particle.StartVelocity := TQuadFXParams.Create(64);
-  Result.Particle.Velocity := TQuadFXParams.Create(1);
+  AEmitterParams.Emission := TQuadFXParams.Create(10);
+  AEmitterParams.Particle.LifeTime := TQuadFXParams.Create(1.5);
+  AEmitterParams.Particle.Opacity := TQuadFXParams.Create(1);
+  AEmitterParams.Particle.StartAngle := TQuadFXParams.Create(-360, 360);
+  AEmitterParams.Particle.Spin := TQuadFXParams.Create(1);
+  AEmitterParams.Particle.Scale := TQuadFXParams.Create(1);
+  AEmitterParams.Particle.StartVelocity := TQuadFXParams.Create(64);
+  AEmitterParams.Particle.Velocity := TQuadFXParams.Create(1);
 
-  Result.Particle.Color.Count := 2;
-  SetLength(Result.Particle.Color.List, Result.Particle.Color.Count);
-  Result.Particle.Color.List[0].Life := 0;
-  Result.Particle.Color.List[0].Value := $FFFF0000;
-  Result.Particle.Color.List[1].Life := 1;
-  Result.Particle.Color.List[1].Value := $FF00FF00;
+  AEmitterParams.Particle.Color.Count := 2;
+  SetLength(AEmitterParams.Particle.Color.List, AEmitterParams.Particle.Color.Count);
+  AEmitterParams.Particle.Color.List[0].Life := 0;
+  AEmitterParams.Particle.Color.List[0].Value := $FFFF0000;
+  AEmitterParams.Particle.Color.List[1].Life := 1;
+  AEmitterParams.Particle.Color.List[1].Value := $FF00FF00;
 
-  Result.TextureCount := 0;
-  SetLength(Result.Textures, Result.TextureCount);
+  AEmitterParams.TextureCount := 0;
+  SetLength(AEmitterParams.Textures, AEmitterParams.TextureCount);
+
+  if Assigned(AEmitterParams) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 procedure TQuadFXEffectParams.LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
