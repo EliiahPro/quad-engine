@@ -88,6 +88,7 @@
         <DCCReference Include="..\QuadFX.FileLoader.CustomFormat.pas"/>
         <DCCReference Include="..\QuadFX.FileLoader.JSON.pas"/>
         <DCCReference Include="..\QuadFX.EffectEmitterProxy.pas"/>
+        <DCCReference Include="..\QuadFX.LayerEffectProxy.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

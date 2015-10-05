@@ -3,7 +3,7 @@ unit QuadFX.Effect;
 interface
 
 uses
-  QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter,
+  QuadFX, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.Emitter, QuadFX.LayerEffectProxy,
   System.Generics.Collections, Windows, QuadFX.Helpers, QuadFX.EffectEmitterProxy;
 
 type
@@ -28,6 +28,7 @@ type
     FSpawnWithLerp: Boolean;
   public
     constructor Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
+    procedure SetLayerEffectProxy(ALayerEffectProxy: ILayerEffectProxy);
     destructor Destroy; override;
 
     function CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
@@ -76,6 +77,11 @@ begin
   FEmmiters := TList<IQuadFXEmitter>.Create;
   for i := 0 to AParams.EmitterParamsCount - 1 do
     CreateEmitter(AParams.EmitterParams[i]);
+end;
+
+procedure TQuadFXEffect.SetLayerEffectProxy(ALayerEffectProxy: ILayerEffectProxy);
+begin
+  FEffectEmitterProxy.SetLayerEffectProxy(ALayerEffectProxy);
 end;
 
 procedure TQuadFXEffect.Restart(APosition: TVec2f; AAngle, AScale: Single);

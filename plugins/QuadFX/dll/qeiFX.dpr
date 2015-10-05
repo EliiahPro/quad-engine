@@ -18,7 +18,8 @@ uses
   QuadFX.FileLoader in '..\QuadFX.FileLoader.pas',
   QuadFX.FileLoader.CustomFormat in '..\QuadFX.FileLoader.CustomFormat.pas',
   QuadFX.FileLoader.JSON in '..\QuadFX.FileLoader.JSON.pas',
-  QuadFX.EffectEmitterProxy in '..\QuadFX.EffectEmitterProxy.pas';
+  QuadFX.EffectEmitterProxy in '..\QuadFX.EffectEmitterProxy.pas',
+  QuadFX.LayerEffectProxy in '..\QuadFX.LayerEffectProxy.pas';
 
 {$R *.res}
 

@@ -3,7 +3,7 @@ unit QuadFX.EffectEmitterProxy;
 interface
 
 uses
-  Vec2f;
+  Vec2f, QuadFX.LayerEffectProxy;
 
 type
   IEffectEmitterProxy = interface
@@ -11,6 +11,7 @@ type
     function GetPosition: TVec2f;
     function GetScale: Single;
     function GetAngle: Single;
+    function GetGravitation: TVec2f;
     procedure GetSinCos(out ASinRad, ACosRad: Single);
   end;
 
@@ -20,13 +21,16 @@ type
     FScale: Single;
     FAngle: Single;
     FSinRad, FCosRad: Single;
-    function GetPosition: TVec2f;
-    function GetScale: Single;
-    function GetAngle: Single;
+    FLayerEffectProxy: ILayerEffectProxy;
+    function GetPosition: TVec2f; inline;
+    function GetScale: Single; inline;
+    function GetAngle: Single; inline;
     procedure SetAngle(Value: Single);
+    function GetGravitation: TVec2f; inline;
   public
     constructor Create(APosition: TVec2f; AAngle, AScale: Single);
     procedure GetSinCos(out ASinRad, ACosRad: Single);
+    procedure SetLayerEffectProxy(ALayerEffectProxy: ILayerEffectProxy);
 
     property Position: TVec2f read GetPosition write FPosition;
     property Angle: Single read GetAngle write SetAngle;
@@ -64,6 +68,19 @@ procedure TEffectEmitterProxy.GetSinCos(out ASinRad, ACosRad: Single);
 begin
   ASinRad := FSinRad;
   ACosRad := FCosRad;
+end;
+
+function TEffectEmitterProxy.GetGravitation: TVec2f;
+begin
+  if Assigned(FLayerEffectProxy) then
+    Result := FLayerEffectProxy.GetGravitation
+  else
+    Result := TVec2f.Zero;
+end;
+
+procedure TEffectEmitterProxy.SetLayerEffectProxy(ALayerEffectProxy: ILayerEffectProxy);
+begin
+  FLayerEffectProxy := ALayerEffectProxy;
 end;
 
 procedure TEffectEmitterProxy.SetAngle(Value: Single);

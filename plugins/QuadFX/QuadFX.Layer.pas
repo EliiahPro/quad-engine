@@ -4,7 +4,7 @@ interface
 
 uses
   QuadFX, QuadFX.Emitter, QuadEngine, QuadEngine.Color, Vec2f,
-  System.Generics.Collections, QuadFX.Effect, Windows;
+  System.Generics.Collections, QuadFX.Effect, Windows, QuadFX.LayerEffectProxy;
 
 type
   TQuadFXLayer = class(TInterfacedObject, IQuadFXLayer)
@@ -13,6 +13,7 @@ type
     FOnDebugDraw: TQuadFXEmitterDrawEvent;
     FEffects: TList<IQuadFXEffect>;
     FParticleCount: Integer;
+    FLayerEffectProxy: TLayerEffectProxy;
   public
     constructor Create;
     destructor Destroy; override;
@@ -24,9 +25,11 @@ type
     function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
+    procedure SetGravitation(Avector: TVec2f); stdcall;
     function GetEffectCount: Integer; stdcall;
     function GetParticleCount: Integer; stdcall;
     function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
+    function GetGravitation: TVec2f; stdcall;
   end;
 
 implementation
@@ -48,10 +51,12 @@ constructor TQuadFXLayer.Create;
 begin
   FParticleCount := 0;
   FEffects := TList<IQuadFXEffect>.Create;
+  FLayerEffectProxy := TLayerEffectProxy.Create;
 end;
 
 destructor TQuadFXLayer.Destroy;
 begin
+  FLayerEffectProxy.Free;
   FEffects.Free;
   inherited;
 end;
@@ -75,6 +80,8 @@ begin
       AEffect := TQuadFXEffect.Create(AEffectParams, APosition, AAngle, AScale)
     else
       TQuadFXEffect(AEffect).Restart(APosition, AAngle, AScale);
+
+    TQuadFXEffect(AEffect).SetLayerEffectProxy(FLayerEffectProxy);
 
     if Assigned(AEffect) then
       FEffects.Add(AEffect);
@@ -186,6 +193,16 @@ end;
 procedure TQuadFXLayer.EffectAdd(AEffect: TQuadFXEffect);
 begin
   FEffects.Add(AEffect);
+end;
+
+procedure TQuadFXLayer.SetGravitation(AVector: TVec2f); stdcall;
+begin
+  FLayerEffectProxy.Gravitation := AVector;
+end;
+
+function TQuadFXLayer.GetGravitation: TVec2f; stdcall;
+begin
+  Result := FLayerEffectProxy.Gravitation;
 end;
 
 end.

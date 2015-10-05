@@ -108,6 +108,7 @@ begin
   //QuadFXManager := CreateQuadFXManager(QuadDevice);
 
   QuadFXManager.CreateLayer(QuadFXLayer);
+  QuadFXLayer.SetGravitation(TVec2f.Create(10, 10));
 
   QuadFXManager.CreateAtlas(QuadFXAtlas);
   QuadFXAtlas.LoadFromFile('Atlas', 'data\QuadFX_Effect.json');

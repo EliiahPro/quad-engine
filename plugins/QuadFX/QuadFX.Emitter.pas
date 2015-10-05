@@ -362,7 +362,7 @@ begin
 
   // Velocity
   AParticle.Velocity.Update(AParticle.Life);
-  AParticle.Position := AParticle.Position + AParticle.StartVelocity * AParticle.Velocity.Value * ADelta * FEffectEmitterProxy.GetScale;
+  AParticle.Position := AParticle.Position + (AParticle.StartVelocity * AParticle.Velocity.Value * FEffectEmitterProxy.GetScale + FEffectEmitterProxy.GetGravitation)  * ADelta;
 
   // Spin
   AParticle.Spin.Update(AParticle.Life);

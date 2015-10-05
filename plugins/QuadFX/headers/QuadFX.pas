@@ -237,9 +237,11 @@ type
     function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
+    procedure SetGravitation(Avector: TVec2f); stdcall;
     function GetEffectCount: Integer; stdcall;
     function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
     function GetParticleCount: Integer; stdcall;
+    function GetGravitation: TVec2f; stdcall;
   end;
 
   IQuadFXManager = interface(IUnknown)
