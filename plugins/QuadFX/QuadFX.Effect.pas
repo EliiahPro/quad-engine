@@ -33,7 +33,7 @@ type
 
     function CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
     procedure Update(const ADelta: Double); stdcall;
-   // procedure Draw; stdcall;
+    procedure Draw; stdcall;
     function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
@@ -87,6 +87,7 @@ end;
 procedure TQuadFXEffect.Restart(APosition: TVec2f; AAngle, AScale: Single);
 var
   i: Integer;
+  Emmiter: IQuadFXEmitter;
 begin
   FLife := 0;
   FCount := 0;
@@ -94,8 +95,8 @@ begin
   FAction := True;
 
   FEffectEmitterProxy.Create(APosition, AAngle, AScale);
-  for i := 0 to FEmmiters.Count - 1 do
-    TQuadFXEmitter(FEmmiters[i]).Restart;
+  for Emmiter in FEmmiters do
+    TQuadFXEmitter(Emmiter).Restart;
 end;
 
 function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
@@ -105,15 +106,8 @@ begin
 end;
 
 destructor TQuadFXEffect.Destroy;
-var
-  i: Integer;
 begin
   FParams := nil;
-  for i := FEmmiters.Count - 1 downto 0 do
-    FEmmiters.Delete(i);
-   // if Assigned(FEmmiters[i]) then
-    //  FEmmiters[i] := nil;
-
   FEmmiters.Free;
   FEffectEmitterProxy.free;
   inherited;
@@ -136,6 +130,7 @@ end;
 procedure TQuadFXEffect.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
+  Emmiter: IQuadFXEmitter;
   Ac: Boolean;
 begin
   if FIsNeedToKill then
@@ -145,12 +140,12 @@ begin
 
   Ac := False;
   FCount := 0;
-  for i := 0 to FEmmiters.Count - 1 do
-    if Assigned(FEmmiters[i]) then
+  for Emmiter in FEmmiters do
+    if Assigned(Emmiter) then
     begin
-      FEmmiters[i].Update(ADelta);
-      FCount := FCount + FEmmiters[i].ParticleCount;
-      if FEmmiters[i].Active then
+      Emmiter.Update(ADelta);
+      FCount := FCount + Emmiter.ParticleCount;
+      if Emmiter.Active then
         Ac := True;
     end;
 
@@ -159,20 +154,16 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
- { FOldPosition := FPosition;
-  FOldScale := FScale;
-  FOldAngle := FAngle;  }
 end;
-                 {
+
 procedure TQuadFXEffect.Draw; stdcall;
 var
-  i: Integer;
+  Emmiter: IQuadFXEmitter;
 begin
-  for i := 0 to FEmmiters.Count - 1 do
-    if Assigned(FEmmiters[i]) then
-      FEmmiters[i].Draw;
+  for Emmiter in FEmmiters do
+    Emmiter.Draw;
 end;
-               }
+
 function TQuadFXEffect.GetParticleCount: integer; stdcall;
 begin
   Result := FCount;

@@ -181,7 +181,7 @@ type
   IQuadFXEmitter = interface(IUnknown)
     ['{2F2841E6-88FF-4F1E-8261-3C9197EA89AE}']
     procedure Update(ADelta: Double); stdcall;
-   // procedure Draw; stdcall;
+    procedure Draw; stdcall;
     function GetEmitterParams: PQuadFXEmitterParams; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetActive: Boolean; stdcall;
@@ -206,7 +206,7 @@ type
   IQuadFXEffect = interface(IUnknown)
     ['{2A368A2E-ECAD-46F4-8F38-25CFFAE27A18}']
     procedure Update(const ADelta: Double); stdcall;
-   // procedure Draw; stdcall;
+    procedure Draw; stdcall;
 
     function GetEmitter(Index: Integer): IQuadFXEmitter; stdcall;
     function GetEmitterCount: integer; stdcall;

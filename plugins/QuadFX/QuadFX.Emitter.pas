@@ -67,6 +67,8 @@ type
     procedure RestartParams;
 
     procedure Update(ADelta: Double); stdcall;
+    procedure Draw; stdcall;
+
     property Position: TVec2f read GetPosition;
     property IsDebug: Boolean read FIsDebug write FIsDebug;
 
@@ -89,7 +91,7 @@ type
 implementation
 
 uses
-  Math, QuadEngine.Utils, QuadFX.Effect;
+  Math, QuadEngine.Utils, QuadFX.Effect, QuadFX.Manager;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 var
@@ -565,6 +567,19 @@ begin
   Vertexes[1].z := 0;
   Vertexes[2].z := 0;
   Vertexes[5].z := 0;
+end;
+
+procedure TQuadFXEmitter.Draw; stdcall;
+begin
+  Manager.QuadRender.SetBlendMode(FParams.BlendMode);
+  Manager.QuadRender.FlushBuffer;
+  if FParams.TextureCount > 0 then
+    Manager.QuadRender.SetTexture(0, FParams.Textures[0].Texture.GetTexture(0))
+  else
+    Manager.QuadRender.SetTexture(0, Manager.DefaultTexture.GetTexture(0));
+
+  Manager.QuadRender.AddTrianglesToBuffer(FVertexes^, 6 * FParticlesCount);
+  Manager.QuadRender.FlushBuffer;
 end;
 
 end.
