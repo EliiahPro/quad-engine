@@ -31,6 +31,7 @@ type
       Y: TQuadFXParticleValue;
     end;
 
+    FGravitation: TQuadFXParticleValue;
     FStartVelocity: TQuadFXParticleValue;
     FStartAngle: TQuadFXParticleValue;
     FDirection: TQuadFXParticleValue;
@@ -133,6 +134,7 @@ begin
   FSpread := TQuadFXParticleValue.Create(@FParams.Spread);
   FStartVelocity := TQuadFXParticleValue.Create(@FParams.Particle.StartVelocity);
   FStartAngle := TQuadFXParticleValue.Create(@FParams.Particle.StartAngle);
+  FGravitation := TQuadFXParticleValue.Create(@FParams.Particle.Gravitation);
 end;
 
 procedure TQuadFXEmitter.Restart;
@@ -266,6 +268,7 @@ begin
   FDirection.Update(FLife);
   FSpread.Update(FLife);
   FParticleLastTime.Update(FLife);
+  FGravitation.Update(FLife);
 end;
 
 destructor TQuadFXEmitter.Destroy;
@@ -367,7 +370,7 @@ begin
 
   // Velocity
   AParticle.Velocity.Update(AParticle.Life);
-  AParticle.Position := AParticle.Position + (AParticle.StartVelocity * AParticle.Velocity.Value * FEffectEmitterProxy.GetScale + FEffectEmitterProxy.GetGravitation)  * ADelta;
+  AParticle.Position := AParticle.Position + (AParticle.StartVelocity * AParticle.Velocity.Value * FEffectEmitterProxy.GetScale + FEffectEmitterProxy.GetGravitation * AParticle.Gravitation.Value)  * ADelta;
 
   // Spin
   AParticle.Spin.Update(AParticle.Life);
@@ -552,6 +555,8 @@ begin
 
   Result.ColorIndex := 0;
   Result.Color := FParams.Particle.Color.List[0].Value;
+
+  Result.Gravitation := TQuadFXParticleValue.Create(@FParams.Particle.Gravitation);
 
   // Opacity
   Result.Opacity := TQuadFXParticleValue.Create(@FParams.Particle.Opacity);

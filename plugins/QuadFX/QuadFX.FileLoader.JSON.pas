@@ -27,7 +27,7 @@ type
     function JSONInit(AStream: TMemoryStream): TJSONObject;
     procedure LoadEffectParams(AJsonObject: TJSONObject);
     function LoadSingleDiagram(AJSONArray: TJSONArray): TQuadFXSingleDiagram;
-    function LoadParams(AJsonObject: TJSONObject): TQuadFXParams;
+    function LoadParams(AJsonObject: TJSONObject; ADefaulValue: Single = 0): TQuadFXParams;
     function LoadColorDiagram(AJSONArray: TJSONArray): TQuadFXColorDiagram;
     function LoadEmitterShape(AJsonObject: TJSONObject): TQuadFXEmitterShape;
     function LoadEmitterParams(AJsonObject: TJSONObject): PQuadFXEmitterParams;
@@ -58,9 +58,9 @@ begin
   end;
 end;
 
-function TQuadFXJSONFileFormat.LoadParams(AJsonObject: TJSONObject): TQuadFXParams;
+function TQuadFXJSONFileFormat.LoadParams(AJsonObject: TJSONObject; ADefaulValue: Single = 0): TQuadFXParams;
 begin
-  Result := TQuadFXParams.Create(0);
+  Result := TQuadFXParams.Create(ADefaulValue);
 
   if not Assigned(AJsonObject) then
     Exit;
@@ -236,14 +236,15 @@ begin
 
   Result.Particle.Color := LoadColorDiagram(AJsonObject.GetValue('Color') as TJSONArray);
 
-  Result.Emission := LoadParams(AJsonObject.GetValue('Emission') as TJSONObject);
+  Result.Emission := LoadParams(AJsonObject.GetValue('Emission') as TJSONObject, 10);
   Result.Particle.LifeTime := LoadParams(AJsonObject.GetValue('ParticleLifeTime') as TJSONObject);
-  Result.Particle.StartVelocity := LoadParams(AJsonObject.GetValue('ParticleStartVelocity') as TJSONObject);
-  Result.Particle.Velocity := LoadParams(AJsonObject.GetValue('ParticleVelocity') as TJSONObject);
-  Result.Particle.Opacity := LoadParams(AJsonObject.GetValue('ParticleOpacity') as TJSONObject);
-  Result.Particle.Scale := LoadParams(AJsonObject.GetValue('ParticleScale') as TJSONObject);
+  Result.Particle.StartVelocity := LoadParams(AJsonObject.GetValue('ParticleStartVelocity') as TJSONObject, 1);
+  Result.Particle.Velocity := LoadParams(AJsonObject.GetValue('ParticleVelocity') as TJSONObject, 1);
+  Result.Particle.Opacity := LoadParams(AJsonObject.GetValue('ParticleOpacity') as TJSONObject, 1);
+  Result.Particle.Scale := LoadParams(AJsonObject.GetValue('ParticleScale') as TJSONObject, 1);
   Result.Particle.StartAngle := LoadParams(AJsonObject.GetValue('ParticleStartAngle') as TJSONObject);
   Result.Particle.Spin := LoadParams(AJsonObject.GetValue('ParticleSpin') as TJSONObject);
+  Result.Particle.Gravitation := LoadParams(AJsonObject.GetValue('ParticleGravitation') as TJSONObject, 1);
 end;
 
 procedure TQuadFXJSONFileFormat.LoadEffectParams(AJsonObject: TJSONObject);
@@ -407,6 +408,7 @@ begin
   Result.AddPair('ParticleScale', SaveParams(@AEmitterParams.Particle.Scale));
   Result.AddPair('ParticleStartAngle', SaveParams(@AEmitterParams.Particle.StartAngle));
   Result.AddPair('ParticleSpin', SaveParams(@AEmitterParams.Particle.Spin));
+  Result.AddPair('ParticleGravitation', SaveParams(@AEmitterParams.Particle.Gravitation));
 end;
 
 class function TQuadFXJSONFileFormat.SaveParams(AParams: PQuadFXParams): TJSONObject;

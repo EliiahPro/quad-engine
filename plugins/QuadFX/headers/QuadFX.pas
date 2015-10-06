@@ -46,6 +46,8 @@ type
     StartVelocity: TVec2f;
     Velocity: TQuadFXParticleValue;
 
+    Gravitation: TQuadFXParticleValue;
+
     Color: TQuadColor;
     ColorIndex: integer;
 
@@ -152,6 +154,7 @@ type
       LifeTime: TQuadFXParams;
       StartVelocity: TQuadFXParams;
       Velocity: TQuadFXParams;
+      Gravitation: TQuadFXParams;
 
       Color: TQuadFXColorDiagram;
 
