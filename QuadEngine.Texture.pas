@@ -197,7 +197,7 @@ begin
   SetTextureStages;
 
   FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + RightBottom - LeftTop,
-                       TVec2f(LeftTop) / FWidth, TVec2f(RightBottom) / FHeight,
+                       TVec2f.Create(LeftTop.X / FWidth, LeftTop.Y / FHeight) , TVec2f.Create(RightBottom.X / FWidth, RightBottom.Y / FHeight),
                        Color);
 end;
 
@@ -209,7 +209,7 @@ begin
   SetTextureStages;
 
   FQuadRender.DrawRectRot(Center - 0.5, Center - 0.5 + RightBottom - LeftTop, angle, Scale,
-                          TVec2f(LeftTop) / FWidth, TVec2f(RightBottom) / FHeight,
+                          TVec2f.Create(LeftTop.X / FWidth, LeftTop.Y / FHeight) , TVec2f.Create(RightBottom.X / FWidth, RightBottom.Y / FHeight),
                           Color);
 end;
 
@@ -221,7 +221,7 @@ begin
   SetTextureStages;
 
   FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + RightBottom - LeftTop, angle, Scale, Axis,
-                              TVec2f(LeftTop) / FWidth, TVec2f(RightBottom) / FHeight,
+                              TVec2f.Create(LeftTop.X / FWidth, LeftTop.Y / FHeight) , TVec2f.Create(RightBottom.X / FWidth, RightBottom.Y / FHeight),
                               Color);
 end;
 
