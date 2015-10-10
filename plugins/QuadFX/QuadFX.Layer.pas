@@ -13,7 +13,7 @@ type
     FOnDebugDraw: TQuadFXEmitterDrawEvent;
     FEffects: TList<IQuadFXEffect>;
     FParticleCount: Integer;
-    FLayerEffectProxy: TLayerEffectProxy;
+    FLayerEffectProxy: ILayerEffectProxy;
   public
     constructor Create;
     destructor Destroy; override;
@@ -57,7 +57,7 @@ end;
 destructor TQuadFXLayer.Destroy;
 begin
   FEffects.Free;
-  //FLayerEffectProxy.Free;
+  FLayerEffectProxy := nil;
   inherited;
 end;
 
@@ -165,12 +165,12 @@ end;
 
 procedure TQuadFXLayer.SetGravitation(AVector: TVec2f); stdcall;
 begin
-  FLayerEffectProxy.Gravitation := AVector;
+  TLayerEffectProxy(FLayerEffectProxy).Gravitation := AVector;
 end;
 
 function TQuadFXLayer.GetGravitation: TVec2f; stdcall;
 begin
-  Result := FLayerEffectProxy.Gravitation;
+  Result := FLayerEffectProxy.GetGravitation;
 end;
 
 end.
