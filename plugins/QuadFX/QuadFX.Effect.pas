@@ -113,7 +113,7 @@ destructor TQuadFXEffect.Destroy;
 begin
   FParams := nil;
   FEmmiters.Free;
-  FEffectEmitterProxy.free;
+  //FEffectEmitterProxy.free;
   inherited;
 end;
 

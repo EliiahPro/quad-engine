@@ -56,8 +56,8 @@ end;
 
 destructor TQuadFXLayer.Destroy;
 begin
-  FLayerEffectProxy.Free;
   FEffects.Free;
+  //FLayerEffectProxy.Free;
   inherited;
 end;
 

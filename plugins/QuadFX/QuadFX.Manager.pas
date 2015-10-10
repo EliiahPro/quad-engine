@@ -162,8 +162,4 @@ begin
   end;
 end;
 
-initialization
-  if Assigned(Manager) then
-    Manager.Free;
-
 end.
