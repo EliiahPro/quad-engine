@@ -578,13 +578,22 @@ begin
 end;
 
 procedure TQuadFXEmitter.Draw; stdcall;
+var
+  i: Integer;
 begin
   Manager.QuadRender.SetBlendMode(FParams.BlendMode);
   Manager.QuadRender.FlushBuffer;
   if FParams.TextureCount > 0 then
-    Manager.QuadRender.SetTexture(0, FParams.Textures[0].Texture.GetTexture(0))
+  begin
+    for i := 0 to 7 do
+      Manager.QuadRender.SetTexture(i, FParams.Textures[0].Texture.GetTexture(i));
+  end
   else
+  begin
     Manager.QuadRender.SetTexture(0, Manager.DefaultTexture.GetTexture(0));
+    for i := 1 to 7 do
+      Manager.QuadRender.SetTexture(i, nil);
+  end;
 
   Manager.QuadRender.AddTrianglesToBuffer(FVertexes^, 6 * FParticlesCount);
   Manager.QuadRender.FlushBuffer;
