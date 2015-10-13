@@ -96,6 +96,7 @@ type
     function GetVertexShaderVersionString: PWideChar; stdcall;
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
+    function GetRenderDeviceName: PWideChar; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
@@ -899,6 +900,14 @@ end;
 //=============================================================================
 //
 //=============================================================================
+function TQuadRender.GetRenderDeviceName: PWideChar;
+begin
+  Result := PWideChar(string(FD3DAI.DeviceName));
+end;
+
+//=============================================================================
+//
+//=============================================================================
 function TQuadRender.GetVertexShaderVersionString: PWideChar;
 begin
   Result := PWideChar(IntToStr(VSVersionMajor) + '.' + IntToStr(VSVersionMinor));
@@ -1606,7 +1615,7 @@ end;
 //=============================================================================
 procedure TQuadRender.SetTexture(aRegister : Byte; aTexture: IDirect3DTexture9);
 begin
-  if aTexture = FActiveTexture[aRegister] then
+  if (ARegister >= MaxTextureStages) or (aTexture = FActiveTexture[aRegister]) then
     Exit;
 
   FlushBuffer;
