@@ -1606,7 +1606,7 @@ end;
 //=============================================================================
 procedure TQuadRender.SetTexture(aRegister : Byte; aTexture: IDirect3DTexture9);
 begin
-  if aTexture = FActiveTexture[aRegister] then
+  if (ARegister >= MaxTextureStages) or (aTexture = FActiveTexture[aRegister]) then
     Exit;
 
   FlushBuffer;
