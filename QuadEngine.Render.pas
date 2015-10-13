@@ -96,6 +96,7 @@ type
     function GetVertexShaderVersionString: PWideChar; stdcall;
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
+    function GetRenderDeviceName: PWideChar; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
@@ -894,6 +895,14 @@ end;
 function TQuadRender.GetPSVersionMinor: Byte;
 begin
   Result := (FD3DCaps.PixelShaderVersion and $FF);
+end;
+
+//=============================================================================
+//
+//=============================================================================
+function TQuadRender.GetRenderDeviceName: PWideChar;
+begin
+  Result := PWideChar(string(FD3DAI.DeviceName));
 end;
 
 //=============================================================================

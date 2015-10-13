@@ -225,6 +225,7 @@ namespace QuadEngine
         [PreserveSig] string GetVertexShaderVersionString();
         [PreserveSig] Byte GetVSVersionMajor();
         [PreserveSig] Byte GetVSVersionMinor();
+        [PreserveSig] string GetRenderDeviceName();
         void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
         /// <summary>Begin of render. Call this routine before frame render begins.</summary>
         void BeginRender();
