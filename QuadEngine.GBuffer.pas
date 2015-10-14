@@ -97,15 +97,18 @@ procedure TQuadGBuffer.DrawLight(const APos: TVec3f; ARadius: Single;
 var
   LightPos: TVec3f;
   LightUV: array[0..3] of Single;
+  ScreenRatio: Single;
 begin
+  ScreenRatio := FBuffer.GetTextureWidth / FBuffer.GetTextureHeight;
+
   TQuadShader.DeferredShading.BindVariableToVS(4, @lightPos, 1);
   TQuadShader.DeferredShading.BindVariableToPS(5, @LightUV[0], 1);
 
   Device.Render.SetBlendMode(qbmSrcAlphaAdd);
 
   lightpos := TVec3f.Create(APos.X * Device.Render.Width,
-                             APos.Y * Device.Render.Height,
-                             Apos.Z);
+                            APos.Y * Device.Render.Height,
+                            Apos.Z);
   lightUV[0] := APos.X;
   lightUV[1] := APos.Y;
   lightUV[2] := APos.Z;
@@ -114,11 +117,12 @@ begin
 
   TQuadShader.DeferredShading.SetShaderState(True);
 
-  FBuffer.DrawMap(TVec2f.Create((APos.X - Aradius) * Device.Render.Width, (APos.Y - Aradius) * Device.Render.Height),
-                  TVec2f.Create((APos.X + Aradius) * Device.Render.Width, (APos.Y + Aradius) * Device.Render.Height),
-                  TVec2f.Create(APos.X - Aradius, APos.Y - Aradius),
-                  TVec2f.Create(APos.X + Aradius, APos.Y + Aradius),
+  FBuffer.DrawMap(TVec2f.Create((APos.X - Aradius) * Device.Render.Width, (APos.Y - Aradius * ScreenRatio) * Device.Render.Height),
+                  TVec2f.Create((APos.X + Aradius) * Device.Render.Width, (APos.Y + Aradius * ScreenRatio) * Device.Render.Height),
+                  TVec2f.Create(APos.X - Aradius, APos.Y - Aradius * ScreenRatio),
+                  TVec2f.Create(APos.X + Aradius, APos.Y + Aradius * ScreenRatio),
                   AColor);
+
   TQuadShader.DeferredShading.SetShaderState(False);
 end;
 
