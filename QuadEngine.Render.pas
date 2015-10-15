@@ -300,7 +300,7 @@ begin
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
   while FIsDeviceLost do
   begin
-  //  Sleep(1000);
+    Sleep(1000);
     if not FIsDeviceLost then
       Device.LastResultCode := FD3DDevice.BeginScene;
   end;
@@ -316,7 +316,6 @@ end;
 //=============================================================================
 procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True);
 begin
-  FlushBuffer;
   FWidth := aWidth;
   FHeight := aHeight;
 
@@ -327,7 +326,9 @@ begin
     GetD3DDevice.Reset(FD3DPP);
 
     ResetDevice;
-  end;
+  end
+  else
+    FlushBuffer;
 
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
@@ -411,6 +412,9 @@ var
   SinA, CosA: Single;
   realUVA, realUVB: TVec2f;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -483,6 +487,9 @@ var
   SinA, CosA: Single;
   realUVA, realUVB: TVec2f;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -549,6 +556,9 @@ end;
 procedure TQuadRender.DrawCircle(const Center: TVec2f; Radius,
   InnerRadius: Single; Color: Cardinal);
 begin
+  if FIsDeviceLost then
+    Exit;
+
   TQuadShader.CircleShader.BindVariableToPS(0, @FCircleRadius, 1);
   FCircleRadius := InnerRadius / Radius;
   TQuadShader.CircleShader.SetShaderState(True);
@@ -563,6 +573,9 @@ procedure TQuadRender.DrawLine(const PointA, PointB: TVec2f; Color: Cardinal);
 var
   ver: array [0..1] of TVertex;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -593,6 +606,9 @@ procedure TQuadRender.DrawPoint(const Point: TVec2f; Color: Cardinal);
 var
   ver: array [0..0] of TVertex;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -623,6 +639,9 @@ var
   ver : array [0..5] of TVertex;
   i: Integer;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -661,6 +680,9 @@ var
   ver: array [0..5] of TVertex;
   realUVA, realUVB: TVec2f;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -747,6 +769,9 @@ var
   pver : Pointer;
   PrimitiveCount : Cardinal;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atFlushBuffer);
   {$ENDIF}
@@ -1036,6 +1061,8 @@ var
   ver : array [0..5] of TVertex;
   i : Integer;
 begin
+  if FIsDeviceLost then
+    Exit;
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -1071,6 +1098,9 @@ var
   ver: array [0..5] of TVertex;
   i: Integer;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -1106,6 +1136,9 @@ var
   ver : array [0..5] of TVertex;
   i : Integer;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atDraw);
   {$ENDIF}
@@ -1148,6 +1181,9 @@ end;
 //=============================================================================
 procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
 begin
+  if FIsDeviceLost then
+    Exit;
+
   if AIsRenderToGBuffer then
   begin
     RenderToTexture(True, AQuadGBuffer.Buffer, 0, 0, AIsCropScreen);
@@ -1175,6 +1211,9 @@ var
   ARenderSurface: IDirect3DSurface9;
   i: Integer;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   FlushBuffer;
 
   {$IFDEF DEBUG}
@@ -1218,6 +1257,7 @@ end;
 procedure TQuadRender.ResetDevice;
 var
   R: HRESULT;
+  s: _D3DSURFACE_DESC;
 begin
   R := FD3DDevice.TestCooperativeLevel;
 
@@ -1241,6 +1281,7 @@ begin
     until Succeeded(R);
 
     InitializeVolatileResources;
+
     FIsDeviceLost := False;
   end;
 end;
@@ -1258,7 +1299,7 @@ end;
 //=============================================================================
 procedure TQuadRender.SetBlendMode(qbm: TQuadBlendMode);
 begin
-  if qbm = Fqbm then
+  if (qbm = Fqbm) or FIsDeviceLost then
     Exit;
 
   FlushBuffer;
