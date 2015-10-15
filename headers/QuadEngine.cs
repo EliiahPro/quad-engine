@@ -167,12 +167,9 @@ namespace QuadEngine
         /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
         void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister);
         uint CreateWindow(out IQuadWindow IQuadWindow);
-        [PreserveSig]
-        bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);
-        [PreserveSig] 
-        string GetLastError();
-        [PreserveSig]
-        byte GetMonitorsCount();
+        [PreserveSig] bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);
+        [PreserveSig] string GetLastError();
+        [PreserveSig] byte GetMonitorsCount();
         void GetSupportedScreenResolution(int index, out TCoord Resolution); 
         void SetActiveMonitor(byte AMonitorIndex);
         void SetOnErrorCallBack(IntPtr TOnErrorFunction);   // todo: Delegate
@@ -287,26 +284,16 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadTexture
     {
-        [PreserveSig] 
-        bool GetIsLoaded();
-        [PreserveSig] 
-        int GetPatternCount();
-        [PreserveSig] 
-        UInt16 GetPatternHeight();
-        [PreserveSig] 
-        UInt16 GetPatternWidth();
-        [PreserveSig]
-        UInt32 GetPixelColor(int x, int y, byte ARegister = 0);
-        [PreserveSig]
-        UInt16 GetSpriteHeight();
-        [PreserveSig] 
-        UInt16 GetSpriteWidth();
-        [PreserveSig]
-        IntPtr GetTexture(byte i);
-        [PreserveSig]
-        UInt16 GetTextureHeight();
-        [PreserveSig]
-        UInt16 GetTextureWidth();
+        [PreserveSig] bool GetIsLoaded();
+        [PreserveSig] int GetPatternCount();
+        [PreserveSig] UInt16 GetPatternHeight();
+        [PreserveSig] UInt16 GetPatternWidth();
+        [PreserveSig] UInt32 GetPixelColor(int x, int y, byte ARegister = 0);
+        [PreserveSig] UInt16 GetSpriteHeight();
+        [PreserveSig] UInt16 GetSpriteWidth();
+        [PreserveSig] IntPtr GetTexture(byte i);
+        [PreserveSig] UInt16 GetTextureHeight();
+        [PreserveSig] UInt16 GetTextureWidth();
         void AddTexture(byte ARegister, IntPtr ATexture);  // ATexture: IDirect3DTexture9
         void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
         void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
@@ -337,10 +324,8 @@ namespace QuadEngine
     {
         void BindVariableToVS(byte ARegister, UIntPtr AVariable, byte ASize);
         void BindVariableToPS(byte ARegister, UIntPtr AVariable, byte ASize);
-        [PreserveSig]
-        IntPtr GetVertexShader(out IntPtr Shader); // Shader: IDirect3DVertexShader9
-        [PreserveSig]
-        IntPtr GetPixelShader(out IntPtr Shader); // Shader: IDirect3DPixelShader9
+        [PreserveSig] IntPtr GetVertexShader(out IntPtr Shader); // Shader: IDirect3DVertexShader9
+        [PreserveSig] IntPtr GetPixelShader(out IntPtr Shader); // Shader: IDirect3DPixelShader9
         void LoadVertexShader(string AVertexShaderFilename);
         void LoadPixelShader(string APixelShaderFilename);
         void LoadComplexShader(string AVertexShaderFilename, string APixelShaderFilename);
@@ -544,20 +529,13 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadInput
     {
-      [PreserveSig]
-      Boolean IsKeyDown(ref byte AKey);
-      [PreserveSig]
-      Boolean IsKeyPress(ref byte AKey);      
-      [PreserveSig]
-      Vec2f GetMousePosition(); 
-      [PreserveSig]
-      Vec2f GetMouseVector();
-      [PreserveSig]
-      Boolean IsMouseDown(ref TMouseButtons AButton);
-      [PreserveSig]
-      Boolean IsMouseClick(ref TMouseButtons AButton);
-      [PreserveSig]
-      Vec2f GetMouseWheel();
+      [PreserveSig] bool IsKeyDown(ref byte AKey);
+      [PreserveSig] bool IsKeyPress(ref byte AKey);      
+      [PreserveSig] Vec2f GetMousePosition(); 
+      [PreserveSig] Vec2f GetMouseVector();
+      [PreserveSig] bool IsMouseDown(ref TMouseButtons AButton);
+      [PreserveSig] bool IsMouseClick(ref TMouseButtons AButton);
+      [PreserveSig] Vec2f GetMouseWheel();
       void Update(); 
     }
 
@@ -570,8 +548,7 @@ namespace QuadEngine
         void SetCaption(string ACaption);
         void SetSize(int AWidth, int AHeight); 
         void SetPosition(int AXpos, int AYPos);
-        [PreserveSig]
-        UIntPtr GetHandle();
+        [PreserveSig] UIntPtr GetHandle();
 
         void SetOnKeyDown(TOnKeyPress OnKeyDown); 
         void SetOnKeyUp(TOnKeyPress OnKeyUp); 
@@ -601,14 +578,10 @@ namespace QuadEngine
         void Reset();
         void Enable();
         void Disable();
-        [PreserveSig]
-        Vec2f GetPosition();
-        [PreserveSig]
-        Vec2f GetAngle();
-        [PreserveSig]
-        TMatrix4x4 GetMatrix();
-        [PreserveSig]
-        Vec2f GetScale();
+        [PreserveSig] Vec2f GetPosition();
+        [PreserveSig] Vec2f GetAngle();
+        [PreserveSig] TMatrix4x4 GetMatrix();
+        [PreserveSig] Vec2f GetScale();
         void SetAngle(float AAngle);
         void SetPosition(Vec2f APosition);
     }
@@ -620,16 +593,11 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadGBuffer
     {
-        [PreserveSig]
-        IQuadTexture DiffuseMap();
-        [PreserveSig]
-        IQuadTexture NormalMap();
-        [PreserveSig]
-        IQuadTexture SpecularMap();
-        [PreserveSig]
-        IQuadTexture HeightMap();
-        [PreserveSig]
-        IQuadTexture Buffer();
+        [PreserveSig] IQuadTexture DiffuseMap();
+        [PreserveSig] IQuadTexture NormalMap();
+        [PreserveSig] IQuadTexture SpecularMap();
+        [PreserveSig] IQuadTexture HeightMap();
+        [PreserveSig] IQuadTexture Buffer();
         void DrawLight(ref Vec3f APos, float ARadius, UInt32 AColor);
     }
     
