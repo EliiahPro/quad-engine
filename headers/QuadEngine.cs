@@ -229,7 +229,12 @@ namespace QuadEngine
         void AddTrianglesToBuffer(IntPtr AVertexes, UInt32 ACount); // todo: Vertices
         /// <summary>Begin of render. Call this routine before frame render begins.</summary>
         void BeginRender();
-        void ChangeResolution(UInt16 AWidth, UInt16 AHeight);
+        /// <summary>Change virtual or real resolution of the render.</summary>
+        /// <param name="AWidth">New render width</param>
+        /// <param name="AHeight">New render height</param>
+        /// <param name="isVirtual">Virtual or real physical resolution</param>
+        /// <remarks>Method must be called only from main thread if isVirtual param it set to False.</remarks>        
+        void ChangeResolution(UInt16 AWidth, UInt16 AHeight, bool isVirtual = true);
         void Clear(UInt32 AColor);
         void DrawCircle(ref Vec2f Center, float Radius, float InnerRadius, UInt32 Color = 0xFFFFFFFF); 
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);

@@ -245,6 +245,11 @@ type
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     /// <summary>Begin of render. Call this routine before frame render begins.</summary>
     procedure BeginRender; stdcall;
+    /// <summary>Change virtual or real resolution of the render.</summary>
+    /// <param name="AWidth">New render width</param>
+    /// <param name="AHeight">New render height</param>
+    /// <param name="isVirtual">Virtual or real physical resolution</param>
+    /// <remarks>Method must be called only from main thread if isVirtual param it set to False.</remarks>
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
     procedure DrawCircle(const Center: TVec2f; Radius, InnerRadius: Single; Color: Cardinal = $FFFFFFFF); stdcall;
