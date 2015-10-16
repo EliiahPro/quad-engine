@@ -22,10 +22,11 @@ type
     function GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     function GetSpriteCount: Integer; stdcall;
     function GetSize: TVec2f; stdcall;
+    function SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     procedure LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
-    procedure SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
-    procedure CreateSprite(out ASprite: PQuadFXSprite); stdcall;
+    function CreateSprite(out ASprite: PQuadFXSprite): HResult; stdcall;
+    function DeleteSprite(ASprite: PQuadFXSprite): HResult; stdcall;
     procedure SetTexture(ATesture: IQuadTexture); stdcall;
 
     property Texture: IQuadTexture read FTexture write SetTexture;
@@ -81,17 +82,18 @@ begin
   Result := FSprites.Count;
 end;
 
-procedure TQuadFXAtlas.SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite); stdcall;
+function TQuadFXAtlas.SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
 var
-  i: Integer;
+  Sprite: PQuadFXSprite;
 begin
-  ASprite := nil;
-  for i := 0 to FSprites.Count - 1 do
-    if Assigned(FSprites[i]) and (FSprites[i].ID = AID) then
+  for Sprite in FSprites do
+    if Assigned(Sprite) and (Sprite.ID = AID) then
     begin
-      ASprite := FSprites[i];
-      Exit;
+      ASprite := Sprite;
+      Exit(S_OK);
     end;
+  ASprite := nil;
+  Result := E_FAIL;
 end;
 
 function TQuadFXAtlas.GetName: PWideChar; stdcall;
@@ -104,7 +106,7 @@ begin
   Result := PWideChar(FPackName);
 end;
 
-procedure TQuadFXAtlas.CreateSprite(out ASprite: PQuadFXSprite); stdcall;
+function TQuadFXAtlas.CreateSprite(out ASprite: PQuadFXSprite): HResult; stdcall;
 begin
   new(ASprite);
   FSprites.Add(ASprite);
@@ -113,6 +115,19 @@ begin
   ASprite.Size := GetSize;
   ASprite.Axis := GetSize / 2;
   ASprite.Recalculate(nil);
+  Result := S_OK
+end;
+
+function TQuadFXAtlas.DeleteSprite(ASprite: PQuadFXSprite): HResult; stdcall;
+begin
+  if Assigned(ASprite) then
+  begin
+    FSprites.Remove(ASprite);
+    Dispose(ASprite);
+    Result := S_OK;
+  end
+  else
+    Result := E_FAIL;
 end;
 
 procedure TQuadFXAtlas.LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
