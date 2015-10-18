@@ -11,14 +11,14 @@ type
   private
     FJSONAtlases: TJSONArray;
     FJSONEffects: TJSONArray;
-    class function SaveParams(AParams: PQuadFXParams): TJSONObject;
-    class function SaveSingleDiagram(ASingleDiagram: PQuadFXSingleDiagram): TJSONArray;
-    class function SaveColorDiagram(AColorDiagram: PQuadFXColorDiagram): TJSONArray;
-    class function SaveShape(AEmitterShape: PQuadFXEmitterShape): TJSONObject;
+    function SaveParams(AParams: PQuadFXParams): TJSONObject;
+    function SaveSingleDiagram(ASingleDiagram: PQuadFXSingleDiagram): TJSONArray;
+    function SaveColorDiagram(AColorDiagram: PQuadFXColorDiagram): TJSONArray;
+    function SaveShape(AEmitterShape: PQuadFXEmitterShape): TJSONObject;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; override;
-    class function SaveEmitterParams(AEmitterParams: PQuadFXEmitterParams): TJSONObject;
-    class function SaveSprite(ASprite: PQuadFXSprite): TJSONObject;
+    function SaveEmitterParams(AEmitterParams: PQuadFXEmitterParams): TJSONObject;
+    function SaveSprite(ASprite: PQuadFXSprite): TJSONObject;
 
     procedure EffectLoadFromStream(const AEffectName: PWideChar; AStream: TMemoryStream; AEffectParams: IQuadFXEffectParams); override;
     procedure AtlasLoadFromStream(const AAtlasName: PWideChar; AStream: TMemoryStream; AAtlas: IQuadFXAtlas); override;
@@ -360,7 +360,7 @@ begin
   end;
 end;
 
-class function TQuadFXJSONFileFormat.SaveEmitterParams(AEmitterParams: PQuadFXEmitterParams): TJSONObject;
+function TQuadFXJSONFileFormat.SaveEmitterParams(AEmitterParams: PQuadFXEmitterParams): TJSONObject;
 var
   i: Integer;
   JSONArray: TJSONArray;
@@ -411,7 +411,7 @@ begin
   Result.AddPair('ParticleGravitation', SaveParams(@AEmitterParams.Particle.Gravitation));
 end;
 
-class function TQuadFXJSONFileFormat.SaveParams(AParams: PQuadFXParams): TJSONObject;
+function TQuadFXJSONFileFormat.SaveParams(AParams: PQuadFXParams): TJSONObject;
 begin
   Result := TJSONObject.Create;
 
@@ -437,7 +437,7 @@ begin
   end;
 end;
 
-class function TQuadFXJSONFileFormat.SaveSingleDiagram(ASingleDiagram: PQuadFXSingleDiagram): TJSONArray;
+function TQuadFXJSONFileFormat.SaveSingleDiagram(ASingleDiagram: PQuadFXSingleDiagram): TJSONArray;
 var
   i: Integer;
   Item: TJSONObject;
@@ -452,7 +452,7 @@ begin
   end;
 end;
 
-class function TQuadFXJSONFileFormat.SaveShape(AEmitterShape: PQuadFXEmitterShape): TJSONObject;
+function TQuadFXJSONFileFormat.SaveShape(AEmitterShape: PQuadFXEmitterShape): TJSONObject;
 var
   i: Integer;
 begin
@@ -474,7 +474,7 @@ begin
   end;
 end;
 
-class function TQuadFXJSONFileFormat.SaveColorDiagram(AColorDiagram: PQuadFXColorDiagram): TJSONArray;
+function TQuadFXJSONFileFormat.SaveColorDiagram(AColorDiagram: PQuadFXColorDiagram): TJSONArray;
 var
   i: Integer;
   Item: TJSONObject;
@@ -490,7 +490,7 @@ begin
   end;
 end;
 
-class function TQuadFXJSONFileFormat.SaveSprite(ASprite: PQuadFXSprite): TJSONObject;
+function TQuadFXJSONFileFormat.SaveSprite(ASprite: PQuadFXSprite): TJSONObject;
 begin
   Result := TJSONObject.Create;
 
