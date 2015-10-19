@@ -111,7 +111,8 @@ var
   MonitorsCount: Byte;
   i: Byte;
 begin
-  SetProcessDPIAware;
+  if Win32MajorVersion >= 6 then
+    SetProcessDPIAware;
 
   FD3D := Direct3DCreate9(D3D_SDK_VERSION);
 
