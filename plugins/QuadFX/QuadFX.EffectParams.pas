@@ -89,7 +89,10 @@ end;
 function TQuadFXEffectParams.DeleteEmitterParams(AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
 begin
   if FEmitters.Remove(AEmitterParams) >= 0 then
-    Result := S_OK
+  begin
+    Dispose(AEmitterParams);
+    Result := S_OK;
+  end
   else
     Result := E_FAIL;
 end;
