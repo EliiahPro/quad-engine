@@ -18,6 +18,7 @@ type
     constructor Create;
     destructor Destroy; override;
     function CreateEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
+    function DeleteEmitterParams(AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetEmitterParams(Index: Integer; out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetEmitterParamsCount: integer; stdcall;
 
@@ -83,6 +84,14 @@ end;
 function TQuadFXEffectParams.GetEmitterParamsCount: integer; stdcall;
 begin
   Result := FEmitters.Count;
+end;
+
+function TQuadFXEffectParams.DeleteEmitterParams(AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
+begin
+  if FEmitters.Remove(AEmitterParams) >= 0 then
+    Result := S_OK
+  else
+    Result := E_FAIL;
 end;
 
 function TQuadFXEffectParams.CreateEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;

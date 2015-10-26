@@ -194,6 +194,7 @@ type
   IQuadFXEffectParams = interface(IUnknown)
     ['{8036DBA9-BFDA-4D57-8E8E-E2709930D706}']
     function CreateEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
+    function DeleteEmitterParams(AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     function GetEmitterParams(Index: Integer; out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;

@@ -32,6 +32,7 @@ type
     destructor Destroy; override;
 
     function CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
+    function DeleteEmitter(AParams: PQuadFXEmitterParams): Boolean;
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
     function GetEmitter(Index: Integer; out AEmitter: IQuadFXEmitter): HResult; stdcall;
@@ -107,6 +108,20 @@ function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmit
 begin
   Result := TQuadFXEmitter.Create(FEffectEmitterProxy, AParams);
   FEmmiters.Add(Result);
+end;
+
+function TQuadFXEffect.DeleteEmitter(AParams: PQuadFXEmitterParams): Boolean;
+var
+  i: Integer;
+  Params: PQuadFXEmitterParams;
+begin
+  for i := 0 to FEmmiters.Count - 1 do
+    if (FEmmiters[i].GetEmitterParams(Params) = S_OK) and (Params = AParams) then
+    begin
+      FEmmiters.Delete(i);
+      Exit(True);
+    end;
+  Result := False;
 end;
 
 destructor TQuadFXEffect.Destroy;
