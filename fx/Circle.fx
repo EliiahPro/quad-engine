@@ -1,20 +1,20 @@
 float4x4 VPM    : register(c0);
 
-struct appdata {
-       float4 Position : POSITION;
-       float2 UV       : TEXCOORD0;
-       float3 Normal   : NORMAL;
-       float3 Tangent  : TANGENT;
-       float3 Binormal : BINORMAL; 
+struct appdata {                
        float4 Color    : COLOR0;
+       float4 Position : POSITION0;
+       float2 UV       : TEXCOORD0;
+       float3 Normal   : NORMAL0;
+       float3 Tangent  : TANGENT0;
+       float3 Binormal : BINORMAL0;
 };
 
-struct vertexOutput {            
-       float4 Position : POSITION;
-       float2 TexCoord : TEXCOORD0;
-       float3 LightVec : TEXCOORD1;
-       float3 ViewVec  : TEXCOORD2;
+struct vertexOutput {           
        float4 Color    : COLOR0;
+       float4 Position : POSITION0;
+       float2 TexCoord : TEXCOORD0;
+       float3 LightVec : TEXCOORD1;   
+       float3 ViewVec  : TEXCOORD2;
 };
 
 vertexOutput std_VS(appdata Input) {
@@ -26,6 +26,7 @@ vertexOutput std_VS(appdata Input) {
         
         return Output;
 }                                   
+               
 
 float Radius: register(c0); 
 
@@ -54,7 +55,7 @@ technique main
 {
     pass Pass0 
  {
-        VertexShader = compile vs_2_0 std_VS();
-        PixelShader = compile ps_2_0 std_PS();
+        VertexShader = compile vs_3_0 std_VS();
+        PixelShader = compile ps_3_0 std_PS();
  }
 }
