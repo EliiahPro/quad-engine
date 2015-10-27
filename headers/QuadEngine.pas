@@ -285,6 +285,8 @@ type
     procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
+    /// <summary>Take and save to disk .png screenshot</summary>
+    /// <param name="AFileName">Name and path of saved screenshot</param>
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
     procedure ResetDevice; stdcall;
     function GetD3DDevice: {$IFDEF USED3D}IDirect3DDevice9{$ELSE}Pointer{$ENDIF} stdcall;

@@ -101,10 +101,7 @@ type
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
     procedure Clear(AColor: Cardinal); stdcall;
-    procedure DrawCircle(const Center: TVec2f; Radius, InnerRadius: Single; Color: Cardinal); stdcall;
-    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal); stdcall;
-    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal); stdcall;
+    procedure DrawCircle(const Center: TVec2f; Radius, InnerRadius: Single; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawLine(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure DrawPoint(const Point: TVec2f; Color: Cardinal); stdcall;
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
@@ -133,6 +130,10 @@ type
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
     procedure ResetDevice; stdcall;
     function GetD3DDevice: IDirect3DDevice9; stdcall;
+
+    procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
+    procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal);
+    procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 
     property AvailableTextureMemory: Cardinal read GetAvailableTextureMemory;
     property BlendMode: TQuadBlendMode read Fqbm;
@@ -266,7 +267,7 @@ begin
   Vertexes[3] := Vertexes[2];
   Vertexes[4] := Vertexes[1];
 
-  move(Vertexes, FVertexBuffer[FCount], 6 * SizeOf(TVertex));
+  Move(Vertexes, FVertexBuffer[FCount], 6 * SizeOf(TVertex));
   Inc(FCount, 6);
 
   if FCount >= MaxBufferCount then
@@ -300,7 +301,7 @@ begin
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
   while FIsDeviceLost do
   begin
-    Sleep(1000);
+    Sleep(100);
     if not FIsDeviceLost then
       Device.LastResultCode := FD3DDevice.BeginScene;
   end;
@@ -572,6 +573,7 @@ end;
 procedure TQuadRender.DrawLine(const PointA, PointB: TVec2f; Color: Cardinal);
 var
   ver: array [0..1] of TVertex;
+  i: Integer;
 begin
   if FIsDeviceLost then
     Exit;
@@ -585,11 +587,11 @@ begin
   ver[0] := PointA;
   ver[1] := PointB;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
+  ver[0].Color := Color;
+  ver[1].Color := Color;
 
   Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
-  inc(FCount, 2);
+  Inc(FCount, 2);
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -742,10 +744,8 @@ begin
 
   Device.LastResultCode := FD3DDevice.EndScene;
   if not FIsRenderIntoTexture then
-  begin
     Device.LastResultCode := FD3DDevice.Present(nil, nil, 0, nil);
-//    ResetDevice;
-  end;
+
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atEndScene);
   FProfiler.EndTick;
@@ -766,8 +766,8 @@ end;
 //=============================================================================
 procedure TQuadRender.FlushBuffer;
 var
-  pver : Pointer;
-  PrimitiveCount : Cardinal;
+  pver: Pointer;
+  PrimitiveCount: Cardinal;
 begin
   if FIsDeviceLost then
     Exit;
@@ -778,25 +778,25 @@ begin
   PrimitiveCount := 0;
 
   case FRenderMode of
-    D3DPT_POINTLIST :
+    D3DPT_POINTLIST:
     begin
-      // if vertex count less then six — exit
-      // else we cannot draw quad (2 triangles)
+      // if vertex count less then one — exit
+      // else we cannot draw point (1 vertex)
       if FCount = 0 then
         Exit;
 
       PrimitiveCount := FCount;
     end;
-    D3DPT_LINELIST :
+    D3DPT_LINELIST:
     begin
-      // if vertex count less then six — exit
-      // else we cannot draw quad (2 triangles)
+      // if vertex count less then two — exit
+      // else we cannot draw line (2 triangles)
       if FCount < 2 then
         Exit;
 
       PrimitiveCount := FCount div 2;
     end;
-    D3DPT_TRIANGLELIST :
+    D3DPT_TRIANGLELIST:
     begin
       // if vertex count less then six — exit
       // else we cannot draw quad (2 triangles)
@@ -805,6 +805,8 @@ begin
 
       PrimitiveCount := FCount div 3;
     end;
+  else
+    Exit;
   end;
 
   Device.LastResultCode := FD3DVB.Lock(0, 0, pver, 0);
@@ -1443,11 +1445,11 @@ end;
 //=============================================================================
 procedure TQuadRender.SetRenderMode(const Value: TD3DPrimitiveType);
 begin
-  if Value <> FRenderMode then
-  begin
-    FlushBuffer;
-    FRenderMode := Value;
-  end;
+  if Value = FRenderMode then
+    Exit;
+
+  FlushBuffer;
+  FRenderMode := Value;
 end;
 
 //=============================================================================

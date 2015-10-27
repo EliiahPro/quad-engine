@@ -265,10 +265,11 @@ namespace QuadEngine
         void SetTextureMirroring(TQuadTextureMirroring ATextureMirroring);
         void SetPointSize(UInt32 ASize);
         void SkipClipRect();
+        /// <summary>Take and save to disk .png screenshot</summary>
+        /// <param name="AFileName">Name and path of saved screenshot</param>
         void TakeScreenshot(string AFileName);
         void ResetDevice();
-        [PreserveSig]
-        IntPtr GetD3DDevice();
+        [PreserveSig] IntPtr GetD3DDevice();
     }
  
     /* Quad Texture */
