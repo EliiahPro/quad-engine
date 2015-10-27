@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.7.1 Umber header file for Embarcadero™ Delphi® and FreePascal
+  Quad engine 0.8.0 Diamond header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
