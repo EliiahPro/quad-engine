@@ -34,7 +34,7 @@ const
     (Stream: $FF; Offset: 0;  _Type: D3DDECLTYPE_UNUSED;   Method: D3DDECLMETHOD_DEFAULT; Usage: D3DDECLUSAGE_POSITION; UsageIndex: 0)
     );
 
-  MaxBufferCount = 60000;
+  MaxBufferCount = 40000;
 
 type
   TQuadRender = class(TInterfacedObject, IQuadRender)
@@ -48,6 +48,7 @@ type
     FD3DDevice: IDirect3DDevice9;
     FD3DPP: TD3DPresentParameters;
     FD3DVB: IDirect3DVertexBuffer9;
+    FD3DIB: IDirect3DIndexBuffer9;
     FD3DVD: IDirect3DVertexDeclaration9;
     FHandle: THandle;
     FHeight: Integer;
@@ -82,6 +83,7 @@ type
     function GetIsSupportedNonPow2: Boolean;
     function GetNumSimultaneousRTs: Cardinal;
     function GetIsSeparateAlphaBlend: Boolean;
+    procedure FillIndexBuffer;
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -258,17 +260,14 @@ begin
     CalcTBN(Vertexes[0].tangent, Vertexes[0].binormal, Vertexes[0].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
     CalcTBN(Vertexes[1].tangent, Vertexes[1].binormal, Vertexes[1].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
     CalcTBN(Vertexes[2].tangent, Vertexes[2].binormal, Vertexes[2].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[5].tangent, Vertexes[5].binormal, Vertexes[5].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
+    CalcTBN(Vertexes[3].tangent, Vertexes[3].binormal, Vertexes[3].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
     {$IFDEF DEBUG}
     FProfiler.EndCount(atCalculateTBN);
     {$ENDIF}
   end;
 
-  Vertexes[3] := Vertexes[2];
-  Vertexes[4] := Vertexes[1];
-
-  Move(Vertexes, FVertexBuffer[FCount], 6 * SizeOf(TVertex));
-  Inc(FCount, 6);
+  Move(Vertexes, FVertexBuffer[FCount], 4 * SizeOf(TVertex));
+  Inc(FCount, 4);
 
   if FCount >= MaxBufferCount then
     FlushBuffer;
@@ -407,7 +406,7 @@ end;
 procedure TQuadRender.DrawrectRot(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
+  ver: array [0..3] of TVertex;
   Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Single;
@@ -456,19 +455,19 @@ begin
   ver[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
   ver[2].z := 0;
 
-  ver[5].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[5].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[5].z := 0;
+  ver[3].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  ver[3].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  ver[3].z := 0;
 
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
-  ver[5].color := Color;
+  ver[3].color := Color;
 
   ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
   ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
   ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
-  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
+  ver[3].u := realUVB.U;   ver[3].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -483,7 +482,7 @@ end;
 procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
+  ver: array [0..3] of TVertex;
   Alpha: Single;
   SinA, CosA: Single;
   realUVA, realUVB: TVec2f;
@@ -530,19 +529,19 @@ begin
   ver[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
   ver[2].z := 0;
 
-  ver[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[5].z := 0;
+  ver[3].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  ver[3].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  ver[3].z := 0;
 
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
-  ver[5].color := Color;
+  ver[3].color := Color;
 
   ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
   ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
   ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
-  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
+  ver[3].u := realUVB.U;   ver[3].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -638,7 +637,7 @@ procedure TQuadRender.DrawQuadLine(const PointA, PointB: TVec2f; width1, width2:
 var
   line: TVec2f;
   perpendicular: TVec2f;
-  ver : array [0..5] of TVertex;
+  ver : array [0..3] of TVertex;
   i: Integer;
 begin
   if FIsDeviceLost then
@@ -660,12 +659,12 @@ begin
   ver[1] := pointA + perpendicular * (width1 / 2);
   ver[0] := pointA - perpendicular * (width1 / 2);
   ver[2] := pointB - perpendicular * (width2 / 2);
-  ver[5] := pointB + perpendicular * (width2 / 2);
+  ver[3] := pointB + perpendicular * (width2 / 2);
 
   ver[0].color := Color1;
   ver[1].color := Color1;
   ver[2].color := Color2;
-  ver[5].color := Color2;
+  ver[3].color := Color2;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -679,7 +678,7 @@ end;
 //=============================================================================
 procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
+  ver: array [0..3] of TVertex;
   realUVA, realUVB: TVec2f;
 begin
   if FIsDeviceLost then
@@ -710,17 +709,17 @@ begin
   ver[0] := PointA;
   ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
   ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
-  ver[5] := PointB;
+  ver[3] := PointB;
 
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
-  ver[5].color := Color;
+  ver[3].color := Color;
 
   ver[0].u := realUVA.X;  ver[0].v := realUVA.Y;
   ver[1].u := realUVB.X;  ver[1].v := realUVA.Y;
   ver[2].u := realUVA.X;  ver[2].v := realUVB.Y;
-  ver[5].u := realUVB.X;  ver[5].v := realUVB.Y;
+  ver[3].u := realUVB.X;  ver[3].v := realUVB.Y;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -753,12 +752,43 @@ begin
 end;
 
 //=============================================================================
+// Fill the index buffer
+//=============================================================================
+procedure TQuadRender.FillIndexBuffer;
+var
+  pindex: Pointer;
+  ind: Integer;
+  i: Word;
+  IndexBuffer: array [0..MaxBufferCount * 3] of Word;
+begin
+   ind := 0;
+
+   Device.LastResultCode := FD3DIB.Lock(0, 0, pindex, 0);
+
+   for i := 0 to MaxBufferCount div 4 - 1 do
+   begin
+     IndexBuffer[ind] := i * 4;
+     IndexBuffer[ind + 1] := i * 4 + 1;
+     IndexBuffer[ind + 2] := i * 4 + 2;
+     IndexBuffer[ind + 3] := i * 4 + 2;
+     IndexBuffer[ind + 4] := i * 4 + 1;
+     IndexBuffer[ind + 5] := i * 4 + 3;
+     Inc(ind, 6);
+   end;
+
+   Move(IndexBuffer, pindex^, MaxBufferCount * 3);
+
+   Device.LastResultCode := FD3DIB.Unlock;
+end;
+
+//=============================================================================
 // Finalization routine
 //=============================================================================
 procedure TQuadRender.Finalize;
 begin
   FD3DVD := nil;
-  FD3DVB := nil
+  FD3DVB := nil;
+  FD3DIB := nil;
 end;
 
 //=============================================================================
@@ -800,10 +830,10 @@ begin
     begin
       // if vertex count less then six — exit
       // else we cannot draw quad (2 triangles)
-      if FCount < 6 then
+      if FCount < 4 then
         Exit;
 
-      PrimitiveCount := FCount div 3;
+      PrimitiveCount := FCount div 2;
     end;
   else
     Exit;
@@ -812,7 +842,8 @@ begin
   Device.LastResultCode := FD3DVB.Lock(0, 0, pver, 0);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
-  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
+  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, 0, 0, FCount, 0, PrimitiveCount);
+//  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
   FCount := 0;
   {$IFDEF DEBUG}
   FProfiler.EndCount(atFlushBuffer);
@@ -1020,7 +1051,7 @@ begin
   Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
   FCount := 0;
 
-  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
+//  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
   Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
   Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
 
@@ -1040,7 +1071,7 @@ begin
   end;
 
   // disable culling
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
@@ -1060,7 +1091,7 @@ end;
 //=============================================================================
 procedure TQuadRender.Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal);
 var
-  ver : array [0..5] of TVertex;
+  ver : array [0..3] of TVertex;
   i : Integer;
 begin
   if FIsDeviceLost then
@@ -1078,12 +1109,12 @@ begin
   ver[0] := PointA;
   ver[1] := PointB;
   ver[2] := PointC;
-  ver[5] := PointD;
+  ver[3] := PointD;
 
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
-  ver[5].color := Color;
+  ver[3].color := Color;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -1097,7 +1128,7 @@ end;
 //=============================================================================
 procedure TQuadRender.Rectangle(const PointA, PointB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
+  ver: array [0..3] of TVertex;
   i: Integer;
 begin
   if FIsDeviceLost then
@@ -1115,12 +1146,12 @@ begin
   ver[0] := PointA;
   ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
   ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
-  ver[5] := PointB;
+  ver[3] := PointB;
 
   ver[0].color := Color;
   ver[1].color := Color;
   ver[2].color := Color;
-  ver[5].color := Color;
+  ver[3].color := Color;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -1135,7 +1166,7 @@ end;
 procedure TQuadRender.RectangleEx(const PointA, PointB: TVec2f; Color1, Color2,
   Color3, Color4: Cardinal);
 var
-  ver : array [0..5] of TVertex;
+  ver : array [0..3] of TVertex;
   i : Integer;
 begin
   if FIsDeviceLost then
@@ -1154,12 +1185,12 @@ begin
   ver[0] := PointA;
   ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
   ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
-  ver[5] := PointB;
+  ver[3] := PointB;
 
   ver[0].color := Color1;
   ver[1].color := Color2;
   ver[2].color := Color3;
-  ver[5].color := Color4;
+  ver[3].color := Color4;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -1573,11 +1604,23 @@ begin
 
   // set VB source
   Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
-                                                         0,
+                                                         D3DUSAGE_WRITEONLY,
                                                          0,
                                                          D3DPOOL_MANAGED,
                                                          FD3DVB,
                                                          nil);
+
+  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3,
+                                                        D3DUSAGE_WRITEONLY,
+                                                        D3DFMT_INDEX16,
+                                                        D3DPOOL_MANAGED,
+                                                        FD3DIB,
+                                                        nil);
+
+  FillIndexBuffer;
+
+  Device.LastResultCode := FD3DDevice.SetIndices(FD3DIB);
+
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
