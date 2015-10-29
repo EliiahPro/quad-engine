@@ -300,7 +300,6 @@ begin
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
   while FIsDeviceLost do
   begin
-    Sleep(100);
     if not FIsDeviceLost then
       Device.LastResultCode := FD3DDevice.BeginScene;
   end;
@@ -440,8 +439,6 @@ begin
   Alpha := Angle * (pi / 180);
 
   FastSinCos(Alpha, SinA, CosA);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
 
   ver[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
   ver[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
@@ -514,8 +511,6 @@ begin
   Alpha := Angle * (pi / 180);
 
   FastSinCos(Alpha, SinA, CosA);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
 
   ver[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
   ver[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
@@ -704,8 +699,7 @@ begin
 
 
   RenderMode := D3DPT_TRIANGLELIST;
-                                        { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
+
   ver[0] := PointA;
   ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
   ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
@@ -839,11 +833,10 @@ begin
     Exit;
   end;
 
-  Device.LastResultCode := FD3DVB.Lock(0, 0, pver, 0);
+  Device.LastResultCode := FD3DVB.Lock(0, FCount * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
   Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, 0, 0, FCount, 0, PrimitiveCount);
-//  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
   FCount := 0;
   {$IFDEF DEBUG}
   FProfiler.EndCount(atFlushBuffer);
@@ -1048,10 +1041,27 @@ begin
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
 
+  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
+                                                         D3DUSAGE_WRITEONLY or D3DUSAGE_DYNAMIC,
+                                                         0,
+                                                         D3DPOOL_DEFAULT,
+                                                         FD3DVB,
+                                                         nil);
+
+  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3,
+                                                        D3DUSAGE_WRITEONLY or D3DUSAGE_DYNAMIC,
+                                                        D3DFMT_INDEX16,
+                                                        D3DPOOL_DEFAULT,
+                                                        FD3DIB,
+                                                        nil);
+
+  FillIndexBuffer;
+
   Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
+  Device.LastResultCode := FD3DDevice.SetIndices(FD3DIB);
   FCount := 0;
 
-//  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
+  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
   Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
   Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
 
@@ -1071,7 +1081,7 @@ begin
   end;
 
   // disable culling
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
@@ -1104,8 +1114,7 @@ begin
 
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
+
   ver[0] := PointA;
   ver[1] := PointB;
   ver[2] := PointC;
@@ -1141,8 +1150,7 @@ begin
 
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
+
   ver[0] := PointA;
   ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
   ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
@@ -1180,8 +1188,7 @@ begin
 
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
+                                    
   ver[0] := PointA;
   ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
   ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
@@ -1207,6 +1214,8 @@ begin
   RenderToTexture(False);
   Device.FreeRenderTargets;
   FBackBuffer := nil;
+  FD3DVB := nil;
+  FD3DIB := nil;
 end;
 
 //=============================================================================
@@ -1492,7 +1501,7 @@ procedure TQuadRender.InitializeEx(const ARenderInit: TRenderInit);
   function CompleteBooleanText(AText: PChar; AState: Boolean): PChar; inline;
   begin
     Result := PChar(AText + ': ');
-    if AState then
+    if not AState then
       Result := PChar(Result + 'Off')
     else
       Result := PChar(Result + 'On');
@@ -1602,25 +1611,6 @@ begin
 
   Device.LastResultCode := Device.D3D.GetDeviceCaps(Device.ActiveMonitorIndex, D3DDEVTYPE_HAL, FD3DCaps);
 
-  // set VB source
-  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
-                                                         D3DUSAGE_WRITEONLY,
-                                                         0,
-                                                         D3DPOOL_MANAGED,
-                                                         FD3DVB,
-                                                         nil);
-
-  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3,
-                                                        D3DUSAGE_WRITEONLY,
-                                                        D3DFMT_INDEX16,
-                                                        D3DPOOL_MANAGED,
-                                                        FD3DIB,
-                                                        nil);
-
-  FillIndexBuffer;
-
-  Device.LastResultCode := FD3DDevice.SetIndices(FD3DIB);
-
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
@@ -1630,6 +1620,7 @@ begin
     Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));
     Device.Log.Write(PChar('Vertex shaders: ' + PixelShaderVersionString));
     Device.Log.Write(PChar('Pixel shaders: ' + PixelShaderVersionString));
+    Device.Log.Write(PChar('Max Vertex Index: ' + IntToStr(FD3DCaps.MaxVertexIndex)));
     if IsSeparateAlphaBlend then
       Device.Log.Write('Separate alpha blending');
     if IsSupportedNonPow2 then
