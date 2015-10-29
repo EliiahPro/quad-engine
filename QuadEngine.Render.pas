@@ -58,7 +58,6 @@ type
     FIsInitialized: Boolean;
     FIsRenderIntoTexture: Boolean;
     Fqbm: TQuadBlendMode;
-    FVertexBuffer: array [0..MaxBufferCount - 1] of TVertex;
     FTextureAdressing: TQuadTextureAdressing;
     FTextureFiltering: TQuadTextureFiltering;
     FTextureMirroring: TQuadTextureMirroring;
@@ -251,6 +250,8 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.AddQuadToBuffer(Vertexes: array of TVertex);
+var
+  pver: Pointer;
 begin
   if FIsAutoCalculateTBN then
   begin
@@ -266,7 +267,10 @@ begin
     {$ENDIF}
   end;
 
-  Move(Vertexes, FVertexBuffer[FCount], 4 * SizeOf(TVertex));
+  Device.LastResultCode := FD3DVB.Lock(FCount * SizeOf(TVertex), 4 * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
+  Move(Vertexes, Pver^, 4 * SizeOf(TVertex));
+  Device.LastResultCode := FD3DVB.Unlock;
+
   Inc(FCount, 4);
 
   if FCount >= MaxBufferCount then
@@ -278,11 +282,11 @@ end;
 //=============================================================================
 procedure TQuadRender.AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal);
 begin
-  Move(AVertexes, FVertexBuffer[FCount], ACount * SizeOf(TVertex));
-  Inc(FCount, ACount);
-
-  if FCount >= MaxBufferCount then
-    FlushBuffer;
+//  Move(AVertexes, FVertexBuffer[FCount], ACount * SizeOf(TVertex));
+//  Inc(FCount, ACount);
+//
+//  if FCount >= MaxBufferCount then
+//    FlushBuffer;
 end;
 
 //=============================================================================
@@ -584,8 +588,8 @@ begin
   ver[0].Color := Color;
   ver[1].Color := Color;
 
-  Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
-  Inc(FCount, 2);
+//  Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
+//  Inc(FCount, 2);
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -614,8 +618,8 @@ begin
   ver[0] := Point;
   ver[0].color := Color;
 
-  Move(ver, FVertexBuffer[FCount], SizeOf(TVertex));
-  inc(FCount, 1);
+//  Move(ver, FVertexBuffer[FCount], SizeOf(TVertex));
+//  inc(FCount, 1);
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -833,9 +837,9 @@ begin
     Exit;
   end;
 
-  Device.LastResultCode := FD3DVB.Lock(0, FCount * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
-  Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
-  Device.LastResultCode := FD3DVB.Unlock;
+//  Device.LastResultCode := FD3DVB.Lock(0, FCount * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
+//  Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
+//  Device.LastResultCode := FD3DVB.Unlock;
   Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, 0, 0, FCount, 0, PrimitiveCount);
   FCount := 0;
   {$IFDEF DEBUG}
