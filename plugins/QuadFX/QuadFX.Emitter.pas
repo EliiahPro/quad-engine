@@ -91,7 +91,7 @@ type
 implementation
 
 uses
-  Math, QuadEngine.Utils, QuadFX.Effect, QuadFX.Manager;
+  Math, QuadEngine.Utils, QuadFX.Effect, QuadFX.Manager, QuadFX.Profiler;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 var
@@ -285,9 +285,12 @@ var
   EmissionTime: Double;
   LifePos: Single;
   V: PVertexes;
+  ProfilerCounter: Int64;
 begin
   if not Assigned(FParams) then
     Exit;
+
+//  ProfilerCounter := Profiler.StartPerformanceCounter;
 
   P := FParticles;
 
@@ -350,6 +353,8 @@ begin
       ParticleUpdate(Add, FLastTime);
     end;
   end;
+
+//  Profiler.EndPerformanceCounter('--' + FParams.Name, ProfilerCounter);
 end;
 
 procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
