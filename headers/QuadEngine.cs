@@ -259,7 +259,7 @@ namespace QuadEngine
         void SetAutoCalculateTBN(bool Value);
         void SetBlendMode(TQuadBlendMode TQuadBlendMode);
         void SetClipRect(UInt32 X, UInt32 Y, UInt32 X2, UInt32 Y2);
-        void SetTexture(byte ARegister, IntPtr ATexture);
+        void SetTexture(byte ARegister, ref IntPtr ATexture);
         void SetTextureAdressing(TQuadTextureAdressing ATextureAdressing);
         void SetTextureFiltering(TQuadTextureFiltering ATextureAdressing);
         void SetTextureMirroring(TQuadTextureMirroring ATextureMirroring);

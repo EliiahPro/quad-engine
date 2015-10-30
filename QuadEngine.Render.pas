@@ -121,7 +121,7 @@ type
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
-    procedure SetTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure SetTexture(ARegister: Byte; const ATexture: IDirect3DTexture9); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
@@ -1656,7 +1656,7 @@ end;
 //=============================================================================
 // Set active texures and flush buffer if texture changed
 //=============================================================================
-procedure TQuadRender.SetTexture(aRegister : Byte; aTexture: IDirect3DTexture9);
+procedure TQuadRender.SetTexture(aRegister : Byte; const aTexture: IDirect3DTexture9);
 begin
   if (ARegister >= MaxTextureStages) or (aTexture = FActiveTexture[aRegister]) then
     Exit;
