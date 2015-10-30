@@ -62,12 +62,12 @@ type
     function GetStartAngle: Single;
   public
     FValuesIndex: array[0..2] of Integer;
-    constructor Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
+    constructor Create(const AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
     destructor Destroy; override;
     procedure Restart;
     procedure RestartParams;
 
-    procedure Update(ADelta: Double); stdcall;
+    procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
 
     property Position: TVec2f read GetPosition;
@@ -197,7 +197,7 @@ begin
   Result := FValues[Index];
 end;
 
-constructor TQuadFXEmitter.Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
+constructor TQuadFXEmitter.Create(const AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
 //var
 //  i: Integer;
 begin
@@ -279,7 +279,7 @@ begin
   inherited;
 end;
 
-procedure TQuadFXEmitter.Update(ADelta: Double);
+procedure TQuadFXEmitter.Update(const ADelta: Double);
 var
   P: PQuadFXParticle;
   EmissionTime: Double;

@@ -21,8 +21,8 @@ type
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
     procedure Clear; stdcall;
-    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
-    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+    function CreateEffect(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+    function CreateEffectEx(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     procedure SetGravitation(Avector: TVec2f); stdcall;
@@ -61,14 +61,14 @@ begin
   inherited;
 end;
 
-function TQuadFXLayer.CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+function TQuadFXLayer.CreateEffect(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
 var
   NewEffect: IQuadFXEffect;
 begin
   Result := CreateEffectEx(AEffectParams, APosition, NewEffect, AAngle, AScale);
 end;
 
-function TQuadFXLayer.CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+function TQuadFXLayer.CreateEffectEx(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
 var
   NewEffect: IQuadFXEffect;
 begin

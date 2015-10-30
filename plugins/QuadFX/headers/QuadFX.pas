@@ -23,7 +23,7 @@ type
   PQuadFXEmitterShape = ^TQuadFXEmitterShape;
   IQuadFXEmitter = interface;
 
-  TQuadFXEmitterDrawEvent = procedure(AEmitter: IQuadFXEmitter; AParticles: PQuadFXParticle; AParticleCount: Integer) of object; stdcall;
+  TQuadFXEmitterDrawEvent = procedure(const AEmitter: IQuadFXEmitter; const AParticles: PQuadFXParticle; const AParticleCount: Integer) of object; stdcall;
 
   TQuadFXParticleValue = record
   public
@@ -179,12 +179,12 @@ type
     procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     function CreateSprite(out ASprite: PQuadFXSprite): HResult; stdcall;
     function DeleteSprite(ASprite: PQuadFXSprite): HResult; stdcall;
-    procedure SetTexture(ATesture: IQuadTexture); stdcall;
+    procedure SetTexture(const ATexture: IQuadTexture); stdcall;
   end;
 
   IQuadFXEmitter = interface(IUnknown)
     ['{2F2841E6-88FF-4F1E-8261-3C9197EA89AE}']
-    procedure Update(ADelta: Double); stdcall;
+    procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
     function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetParticleCount: integer; stdcall;
@@ -228,8 +228,8 @@ type
     procedure Clear; stdcall;
     procedure Draw; stdcall;
     procedure Update(const ADelta: Double); stdcall;
-    function CreateEffect(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
-    function CreateEffectEx(AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+    function CreateEffect(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
+    function CreateEffectEx(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
     procedure SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
     procedure SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
     procedure SetGravitation(Avector: TVec2f); stdcall;
@@ -246,15 +246,15 @@ type
     function CreateAtlas(out AAtlas: IQuadFXAtlas): HResult; stdcall;
   end;
 
-  TCreateQuadFXManager    = function(AQuadDevice: IQuadDevice; out AQuadFXManager: IQuadFXManager): HResult; stdcall;
+  TCreateQuadFXManager = function(AQuadDevice: IQuadDevice; out AQuadFXManager: IQuadFXManager): HResult; stdcall;
   TCheckQuadFXLibraryVersion = function(ARelease, AMajor, AMinor: Byte): Boolean; stdcall;
 
-  function CreateQuadFXManager(AQuadDevice: IQuadDevice): IQuadFXManager;
+  function CreateQuadFXManager(const AQuadDevice: IQuadDevice): IQuadFXManager;
 
 implementation
 
 // Creating of main QuadFX interface object
-function CreateQuadFXManager(AQuadDevice: IQuadDevice): IQuadFXManager;
+function CreateQuadFXManager(const AQuadDevice: IQuadDevice): IQuadFXManager;
 var
   h: THandle;
   Creator: TCreateQuadFXManager;

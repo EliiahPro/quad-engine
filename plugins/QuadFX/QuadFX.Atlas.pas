@@ -27,7 +27,7 @@ type
     procedure LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
     function CreateSprite(out ASprite: PQuadFXSprite): HResult; stdcall;
     function DeleteSprite(ASprite: PQuadFXSprite): HResult; stdcall;
-    procedure SetTexture(ATesture: IQuadTexture); stdcall;
+    procedure SetTexture(const ATexture: IQuadTexture); stdcall;
 
     property Texture: IQuadTexture read FTexture write SetTexture;
     property Name: WideString read FName write FName;
@@ -55,9 +55,9 @@ begin
   FSprites.Free;
 end;
 
-procedure TQuadFXAtlas.SetTexture(ATesture: IQuadTexture); stdcall;
+procedure TQuadFXAtlas.SetTexture(const ATexture: IQuadTexture); stdcall;
 begin
-  FTexture := ATesture;
+  FTexture := ATexture;
 end;
 
 function TQuadFXAtlas.GetSize: TVec2f;
