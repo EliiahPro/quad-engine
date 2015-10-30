@@ -20,7 +20,7 @@ uses
   QuadEngine, System.SyncObjs, Vec2f, QuadEngine.TextureLoader;
 
 type
-  TQuadTexture =  class(TInterfacedObject, IQuadTexture)
+  TQuadTexture = class(TInterfacedObject, IQuadTexture)
   private
     FQuadRender: TQuadRender;
     FTextures: array of IDirect3DTexture9;
@@ -33,7 +33,7 @@ type
     FPatternSize: TVec2f;
     FIsLoaded: Boolean;
     FSync: TCriticalSection;
-    procedure SetTextureStages;
+    procedure SetTextureStages; inline;
   public
     constructor Create(QuadRender: TQuadRender);
     destructor Destroy; override;
@@ -536,6 +536,9 @@ begin
   FIsLoaded := True;
 end;
 
+//=============================================================================
+//
+//=============================================================================
 procedure TQuadTexture.SetTextureStages;
 var
   i: Integer;

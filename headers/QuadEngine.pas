@@ -279,7 +279,7 @@ type
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
-    procedure SetTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
+    procedure SetTexture(const ARegister: Byte; const ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;

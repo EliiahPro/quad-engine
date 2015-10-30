@@ -69,10 +69,11 @@ type
     FOldScreenWidth: Integer;
     FOldScreenHeight: Integer;
     FCircleRadius: Single;
+    Fver: array [0..3] of TVertex;
     {$IFDEF DEBUG}
     FProfiler: TQuadProfiler;
     {$ENDIF}
-    procedure AddQuadToBuffer(Vertexes: array of TVertex);
+    procedure AddQuadToBuffer();
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure InitializeVolatileResources;
@@ -122,7 +123,7 @@ type
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
-    procedure SetTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure SetTexture(const ARegister: Byte; const ATexture: IDirect3DTexture9); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
@@ -249,7 +250,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.AddQuadToBuffer(Vertexes: array of TVertex);
+procedure TQuadRender.AddQuadToBuffer();
 var
   pver: Pointer;
 begin
@@ -258,17 +259,17 @@ begin
     {$IFDEF DEBUG}
     FProfiler.BeginCount(atCalculateTBN);
     {$ENDIF}
-    CalcTBN(Vertexes[0].tangent, Vertexes[0].binormal, Vertexes[0].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[1].tangent, Vertexes[1].binormal, Vertexes[1].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[2].tangent, Vertexes[2].binormal, Vertexes[2].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[3].tangent, Vertexes[3].binormal, Vertexes[3].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
+    CalcTBN(Fver[0].tangent, Fver[0].binormal, Fver[0].normal, Fver[0], Fver[1], Fver[2]);
+    CalcTBN(Fver[1].tangent, Fver[1].binormal, Fver[1].normal, Fver[0], Fver[1], Fver[2]);
+    CalcTBN(Fver[2].tangent, Fver[2].binormal, Fver[2].normal, Fver[0], Fver[1], Fver[2]);
+    CalcTBN(Fver[3].tangent, Fver[3].binormal, Fver[3].normal, Fver[0], Fver[1], Fver[2]);
     {$IFDEF DEBUG}
     FProfiler.EndCount(atCalculateTBN);
     {$ENDIF}
   end;
 
   Device.LastResultCode := FD3DVB.Lock(FCount * SizeOf(TVertex), 4 * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
-  Move(Vertexes, Pver^, 4 * SizeOf(TVertex));
+  Move(Fver, Pver^, 4 * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
 
   Inc(FCount, 4);
@@ -409,7 +410,6 @@ end;
 procedure TQuadRender.DrawrectRot(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..3] of TVertex;
   Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Single;
@@ -444,37 +444,37 @@ begin
 
   FastSinCos(Alpha, SinA, CosA);
 
-  ver[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[0].z := 0;
+  FVer[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[0].z := 0;
 
-  ver[1].x := ((PointB.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[1].y := ((PointB.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[1].z := 0;
+  FVer[1].x := ((PointB.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[1].y := ((PointB.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[1].z := 0;
 
-  ver[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[2].z := 0;
+  FVer[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[2].z := 0;
 
-  ver[3].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[3].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[3].z := 0;
+  FVer[3].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[3].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[3].z := 0;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[3].color := Color;
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
-  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
-  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
-  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
-  ver[3].u := realUVB.U;   ver[3].v := realUVB.V;
+  FVer[0].u := realUVA.U;   FVer[0].v := realUVA.V;
+  FVer[1].u := realUVB.U;   FVer[1].v := realUVA.V;
+  FVer[2].u := realUVA.U;   FVer[2].v := realUVB.V;
+  FVer[3].u := realUVB.U;   FVer[3].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -483,7 +483,6 @@ end;
 procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..3] of TVertex;
   Alpha: Single;
   SinA, CosA: Single;
   realUVA, realUVB: TVec2f;
@@ -516,37 +515,37 @@ begin
 
   FastSinCos(Alpha, SinA, CosA);
 
-  ver[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[0].z := 0;
+  FVer[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[0].z := 0;
 
-  ver[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[1].z := 0;
+  FVer[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[1].z := 0;
 
-  ver[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[2].z := 0;
+  FVer[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[2].z := 0;
 
-  ver[3].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[3].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[3].z := 0;
+  FVer[3].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[3].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[3].z := 0;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[3].color := Color;
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
-  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
-  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
-  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
-  ver[3].u := realUVB.U;   ver[3].v := realUVB.V;
+  FVer[0].u := realUVA.U;   FVer[0].v := realUVA.V;
+  FVer[1].u := realUVB.U;   FVer[1].v := realUVA.V;
+  FVer[2].u := realUVA.U;   FVer[2].v := realUVB.V;
+  FVer[3].u := realUVB.U;   FVer[3].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -636,7 +635,6 @@ procedure TQuadRender.DrawQuadLine(const PointA, PointB: TVec2f; width1, width2:
 var
   line: TVec2f;
   perpendicular: TVec2f;
-  ver : array [0..3] of TVertex;
   i: Integer;
 begin
   if FIsDeviceLost then
@@ -655,21 +653,21 @@ begin
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
 
-  ver[1] := pointA + perpendicular * (width1 / 2);
-  ver[0] := pointA - perpendicular * (width1 / 2);
-  ver[2] := pointB - perpendicular * (width2 / 2);
-  ver[3] := pointB + perpendicular * (width2 / 2);
+  FVer[1] := pointA + perpendicular * (width1 / 2);
+  FVer[0] := pointA - perpendicular * (width1 / 2);
+  FVer[2] := pointB - perpendicular * (width2 / 2);
+  FVer[3] := pointB + perpendicular * (width2 / 2);
 
-  ver[0].color := Color1;
-  ver[1].color := Color1;
-  ver[2].color := Color2;
-  ver[3].color := Color2;
+  FVer[0].color := Color1;
+  FVer[1].color := Color1;
+  FVer[2].color := Color2;
+  FVer[3].color := Color2;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -677,7 +675,6 @@ end;
 //=============================================================================
 procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..3] of TVertex;
   realUVA, realUVB: TVec2f;
 begin
   if FIsDeviceLost then
@@ -704,26 +701,26 @@ begin
 
   RenderMode := D3DPT_TRIANGLELIST;
 
-  ver[0] := PointA;
-  ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
-  ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
-  ver[3] := PointB;
+  Fver[0] := PointA;
+  Fver[1].x := PointB.X;    Fver[1].y := PointA.Y;
+  Fver[2].x := PointA.X;    Fver[2].y := PointB.Y;
+  Fver[3] := PointB;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[3].color := Color;
+  Fver[0].color := Color;
+  Fver[1].color := Color;
+  Fver[2].color := Color;
+  Fver[3].color := Color;
 
-  ver[0].u := realUVA.X;  ver[0].v := realUVA.Y;
-  ver[1].u := realUVB.X;  ver[1].v := realUVA.Y;
-  ver[2].u := realUVA.X;  ver[2].v := realUVB.Y;
-  ver[3].u := realUVB.X;  ver[3].v := realUVB.Y;
+  Fver[0].u := realUVA.X;  Fver[0].v := realUVA.Y;
+  Fver[1].u := realUVB.X;  Fver[1].v := realUVA.Y;
+  Fver[2].u := realUVA.X;  Fver[2].v := realUVB.Y;
+  Fver[3].u := realUVB.X;  Fver[3].v := realUVB.Y;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1109,7 +1106,6 @@ end;
 //=============================================================================
 procedure TQuadRender.Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal);
 var
-  ver : array [0..3] of TVertex;
   i : Integer;
 begin
   if FIsDeviceLost then
@@ -1123,21 +1119,21 @@ begin
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
 
-  ver[0] := PointA;
-  ver[1] := PointB;
-  ver[2] := PointC;
-  ver[3] := PointD;
+  FVer[0] := PointA;
+  FVer[1] := PointB;
+  FVer[2] := PointC;
+  FVer[3] := PointD;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[3].color := Color;
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1145,7 +1141,6 @@ end;
 //=============================================================================
 procedure TQuadRender.Rectangle(const PointA, PointB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..3] of TVertex;
   i: Integer;
 begin
   if FIsDeviceLost then
@@ -1159,21 +1154,21 @@ begin
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
 
-  ver[0] := PointA;
-  ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
-  ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
-  ver[3] := PointB;
+  FVer[0] := PointA;
+  FVer[1].x := PointB.X;     FVer[1].y := PointA.Y;     FVer[1].z := 0;
+  FVer[2].x := PointA.X;     FVer[2].y := PointB.Y;     FVer[2].z := 0;
+  FVer[3] := PointB;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[3].color := Color;
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1182,7 +1177,6 @@ end;
 procedure TQuadRender.RectangleEx(const PointA, PointB: TVec2f; Color1, Color2,
   Color3, Color4: Cardinal);
 var
-  ver : array [0..3] of TVertex;
   i : Integer;
 begin
   if FIsDeviceLost then
@@ -1197,21 +1191,21 @@ begin
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
                                     
-  ver[0] := PointA;
-  ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
-  ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
-  ver[3] := PointB;
+  FVer[0] := PointA;
+  FVer[1].x := PointB.X;     FVer[1].y := PointA.Y;     FVer[1].z := 0;
+  FVer[2].x := PointA.X;     FVer[2].y := PointB.Y;     FVer[2].z := 0;
+  FVer[3] := PointB;
 
-  ver[0].color := Color1;
-  ver[1].color := Color2;
-  ver[2].color := Color3;
-  ver[3].color := Color4;
+  FVer[0].color := Color1;
+  FVer[1].color := Color2;
+  FVer[2].color := Color3;
+  FVer[3].color := Color4;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1689,7 +1683,7 @@ begin
     end;
     qsmNone:
       if Device.Log <> nil then
-        Device.Log.Write('Samder model not specified');
+        Device.Log.Write('Shader model not specified');
   end;
 
   FIsInitialized := True;
@@ -1698,7 +1692,7 @@ end;
 //=============================================================================
 // Set active texures and flush buffer if texture changed
 //=============================================================================
-procedure TQuadRender.SetTexture(aRegister : Byte; aTexture: IDirect3DTexture9);
+procedure TQuadRender.SetTexture(const aRegister: Byte; const aTexture: IDirect3DTexture9);
 begin
   if (ARegister >= MaxTextureStages) or (aTexture = FActiveTexture[aRegister]) then
     Exit;
