@@ -1041,6 +1041,7 @@ end;
 procedure TQuadRender.InitializeVolatileResources;
 var
   i: Integer;
+  qbm: TQuadBlendMode;
 begin
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
@@ -1065,7 +1066,6 @@ begin
   Device.LastResultCode := FD3DDevice.SetIndices(FD3DIB);
   FCount := 0;
 
-  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
   Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
   Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
 
@@ -1089,8 +1089,12 @@ begin
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
-  FIsEnabledBlending := True;
+
+  // restore blending
+  qbm := Fqbm;
+  Fqbm := qbmInvalid;
+  SetBlendMode(qbm);
+
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
