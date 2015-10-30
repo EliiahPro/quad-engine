@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.7.1 Umber header file for Visual C#
+  Quad engine 0.8.0 Diamond header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -259,16 +259,17 @@ namespace QuadEngine
         void SetAutoCalculateTBN(bool Value);
         void SetBlendMode(TQuadBlendMode TQuadBlendMode);
         void SetClipRect(UInt32 X, UInt32 Y, UInt32 X2, UInt32 Y2);
-        void SetTexture(byte ARegister, IntPtr ATexture);
+        void SetTexture(byte ARegister, ref IntPtr ATexture);
         void SetTextureAdressing(TQuadTextureAdressing ATextureAdressing);
         void SetTextureFiltering(TQuadTextureFiltering ATextureAdressing);
         void SetTextureMirroring(TQuadTextureMirroring ATextureMirroring);
         void SetPointSize(UInt32 ASize);
         void SkipClipRect();
+        /// <summary>Take and save to disk .png screenshot</summary>
+        /// <param name="AFileName">Name and path of saved screenshot</param>
         void TakeScreenshot(string AFileName);
         void ResetDevice();
-        [PreserveSig]
-        IntPtr GetD3DDevice();
+        [PreserveSig] IntPtr GetD3DDevice();
     }
  
     /* Quad Texture */

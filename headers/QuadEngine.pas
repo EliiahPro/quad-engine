@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.7.1 Umber header file for Embarcadero™ Delphi® and FreePascal
+  Quad engine 0.8.0 Diamond header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -279,12 +279,14 @@ type
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
-    procedure SetTexture(ARegister: Byte; ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
+    procedure SetTexture(ARegister: Byte; const ATexture: {$IFDEF USED3D}IDirect3DTexture9{$ELSE}Pointer{$ENDIF}); stdcall;
     procedure SetTextureAdressing(ATextureAdressing: TQuadTextureAdressing); stdcall;
     procedure SetTextureFiltering(ATextureFiltering: TQuadTextureFiltering); stdcall;
     procedure SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring); stdcall;
     procedure SetPointSize(ASize: Cardinal); stdcall;
     procedure SkipClipRect; stdcall;
+    /// <summary>Take and save to disk .png screenshot</summary>
+    /// <param name="AFileName">Name and path of saved screenshot</param>
     procedure TakeScreenshot(AFileName: PWideChar); stdcall;
     procedure ResetDevice; stdcall;
     function GetD3DDevice: {$IFDEF USED3D}IDirect3DDevice9{$ELSE}Pointer{$ENDIF} stdcall;

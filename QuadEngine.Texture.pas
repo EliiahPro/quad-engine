@@ -157,7 +157,7 @@ var
   px2, py2 : Integer;
 begin
   SetTextureStages;
-                                                        {todo: todo what?}
+
   px := (Pattern mod (FFrameWidth div FPatternWidth)) * FPatternWidth;
   py := (Pattern div (FFrameWidth div FPatternWidth)) * FPatternHeight;
   px2 := px + FPatternWidth;
@@ -510,9 +510,7 @@ begin
     Exit;
   end;
 
-
-  if (APatternWidth = 0) or (APatternHeight = 0)
-  then
+  if (APatternWidth = 0) or (APatternHeight = 0) then
   begin
     FPatternWidth := FFrameWidth;
     FPatternHeight := FFrameHeight;

@@ -23,7 +23,7 @@ uses
   {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
 
 const
-  QuadVersion: PWideChar = 'Quad Engine v0.7.2 (Agath)';
+  QuadVersion: PWideChar = 'Quad Engine v0.8.0 (Diamond)';
 
 type
   PRenderTarget = ^TRenderTarget;
@@ -107,7 +107,7 @@ constructor TQuadDevice.Create;
 var
   AD3DDM: TD3DDisplayMode;
   Aspect: Single;
-  AspectString: String;
+  AspectString: string;
   MonitorsCount: Byte;
   i: Byte;
 begin
@@ -269,7 +269,7 @@ begin
     FLastErrorText := PWideChar('Unknown error. Code ' + IntToStr(FLastResultCode));
   end;
 
-  if FLog <> nil then        {todo : why that?}
+  if Assigned(FLog) then
     FLog.Write(PChar('Error: ' + FLastErrorText));
 end;
 
@@ -448,7 +448,7 @@ begin
 
   Device.LastResultCode := FRender.D3DDevice.CreateTexture(AWidth, AHeight, 1,
                                              D3DUSAGE_RENDERTARGET or D3DUSAGE_AUTOGENMIPMAP,  // with mipmaps
-                                             D3DFMT_A8R8G8B8,                                  // 8888 ARGB format
+                                             D3DFMT_A8R8G8B8,
                                              D3DPOOL_DEFAULT,
                                              Target,
                                              nil);
@@ -466,7 +466,7 @@ begin
     FRender.D3DDevice.ShowCursor(False);
 end;
 
-procedure TQuadDevice.SetCursorPosition(x, y: integer);
+procedure TQuadDevice.SetCursorPosition(x, y: Integer);
 begin
   FRender.D3DDevice.SetCursorPosition(x, y, D3DCURSOR_IMMEDIATE_UPDATE);
 end;
