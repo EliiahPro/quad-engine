@@ -55,13 +55,13 @@ type
   TQuadFont = class(TInterfacedObject, IQuadFont)
     const CHAR_SPACE = 32;
   strict private
-    FColors: array [Word] of Cardinal;
+    FColors: array[Word] of Cardinal;
     FDistanceFieldParams: TInternalDistanceFieldParams;
     FHeight: Word;
     FIsSmartColoring: Boolean;
     FKerning: Single;
     FSpacing: Single;
-    FLetters: array [Word] of TLetterUV;
+    FLetters: array[Word] of TLetterUV;
     FLog: TQuadLog;
     FQuadRender: TQuadRender;
     FTexture: TQuadTexture;
@@ -72,8 +72,9 @@ type
     FIsDistanceField: Boolean;
     FQuadFontHeader: TQuadFontHeader;
     FQuadChars: array [Word] of TQuadChar;
+
     FKerningPairs: array of tagKERNINGPAIR;
-    function TextWidthEx(AText: PWideChar; AScale: Single = 1.0; IsIncludeSpaces: Boolean = True) : Single;
+    function TextWidthEx(AText: PWideChar; AScale: Single = 1.0; IsIncludeSpaces: Boolean = True): Single;
   public
     constructor Create(AQuadRender : TQuadRender);
     destructor Destroy; override;
@@ -195,7 +196,10 @@ var
   TempUV: TLetterUV;
   c: array[0..3] of Char;
   Size: Cardinal;
-  i: Integer;
+  i, j: Integer;
+  idx: Word;
+  FQuadChars2: array of TQuadChar;
+  CharSize: Cardinal;
 begin
   if GetIsLoaded then
     FTexture.Free;
@@ -218,10 +222,12 @@ begin
     BlockRead(f, c, 8);
     BlockRead(f, Size, 4);
     BlockRead(f, FQuadFontHeader, Size);
+
     // chardata
     BlockRead(f, c, 8);
-    BlockRead(f, Size, 4);
-    BlockRead(f, FQuadChars, Size);
+    BlockRead(f, CharSize, 4);
+    SetLength(FQuadChars2, CharSize div SizeOf(TQuadChar));
+    BlockRead(f, FQuadChars2[0], CharSize);
 
     // kerning pairs
     BlockRead(f, c, 8);
@@ -230,9 +236,16 @@ begin
     BlockRead(f, FKerningPairs[0], Size);
 
     FFontHeight := 0;
-    for i := 0 to 65535 do
-      if FQuadChars[i].IncY > FFontHeight then
-        FFontHeight := FQuadChars[i].IncY;
+    for i := 0 to CharSize div SizeOf(TQuadChar) do
+    begin
+      if FQuadChars2[i].IncY > FFontHeight then
+        FFontHeight := FQuadChars2[i].IncY;
+
+      idx := FQuadChars2[i].id;
+      FQuadChars[idx] := FQuadChars2[i];
+    end;
+    FQuadChars[CHAR_SPACE] := FQuadChars2[CHAR_SPACE];
+    Device.Log.Write(PWideChar(String('Font loaded. Char count: ' + IntToStr(CharSize div SizeOf(TQuadChar)))));
   end
   else
   begin  // v1.0
@@ -371,14 +384,6 @@ begin
       if FIsDistanceField then
       begin
         TQuadShader.DistanceField.SetShaderState(True);
-        c := l;
-        for j := 0 to 65535 do
-          if c = FQuadChars[j].id then
-          begin
-            c := j;
-            break;
-          end;
-        l := c;
 
         if l <> CHAR_SPACE then
         FTexture.DrawMap(
@@ -467,14 +472,6 @@ begin
       if FIsDistanceField then
       begin
         c := l;
-        for j := 0 to 65535 do
-        begin
-          if l = FQuadChars[j].id then
-          begin
-            c := j;
-            Break;
-          end;
-        end;
         Result := Result + (FQuadChars[c].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning
       end
       else

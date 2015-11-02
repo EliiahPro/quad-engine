@@ -1259,7 +1259,6 @@ end;
 procedure TQuadRender.ResetDevice;
 var
   R: HRESULT;
-  s: _D3DSURFACE_DESC;
 begin
   R := FD3DDevice.TestCooperativeLevel;
 
