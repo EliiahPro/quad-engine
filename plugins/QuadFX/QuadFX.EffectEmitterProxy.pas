@@ -3,7 +3,7 @@ unit QuadFX.EffectEmitterProxy;
 interface
 
 uses
-  Vec2f, QuadFX.LayerEffectProxy;
+  Vec2f, QuadFX, QuadFX.LayerEffectProxy;
 
 type
   IEffectEmitterProxy = interface
@@ -27,6 +27,7 @@ type
     function GetAngle: Single; inline;
     procedure SetAngle(Value: Single);
     function GetGravitation: TVec2f; inline;
+    function GetOnDraw: TQuadFXEmitterDrawEvent; inline;
   public
     constructor Create(APosition: TVec2f; AAngle, AScale: Single);
     procedure GetSinCos(out ASinRad, ACosRad: Single);
@@ -35,6 +36,7 @@ type
     property Position: TVec2f read GetPosition write FPosition;
     property Angle: Single read GetAngle write SetAngle;
     property Scale: Single read GetScale write FScale;
+    property OnDraw: TQuadFXEmitterDrawEvent read GetOnDraw;
   end;
 
 implementation
@@ -88,6 +90,11 @@ begin
   if FAngle <> Value then
     FastSinCos(Value, FSinRad, FCosRad);
   FAngle := Value;
+end;
+
+function TEffectEmitterProxy.GetOnDraw: TQuadFXEmitterDrawEvent;
+begin
+  Result := FLayerEffectProxy.GetOnDraw;
 end;
 
 end.

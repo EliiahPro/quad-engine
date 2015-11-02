@@ -3,23 +3,46 @@ unit QuadFX.Profiler;
 interface
 
 uses
-  Winapi.Windows, System.SysUtils, System.SyncObjs;
+  Winapi.Windows, System.SysUtils, System.SyncObjs, TypInfo;
 
 type
+  TQuadFXProfilerType = (
+    ptUpdate = 0,
+    ptDraw = 1,
+    ptEffects = 2,
+    ptEmitters = 3,
+    ptParticlesAdd = 4,
+    ptParticles = 5,
+    ptParticlesUpdate = 6,
+    ptParticlesVertexes = 7,
+    ptParticlesParams = 8
+  );
+
+  TQuadFXProfilerItem = packed record
+    Num: Cardinal;
+    Count: Int64;
+    CountFastest: Int64;
+    CountSlowest: Int64;
+  end;
+
   TQuadFXProfiler = class
   private
     FFilename: string;
     FSync: TCriticalSection;
 
     FPerformanceFrequency: Int64;
-    FPerformanceLastCounter: Int64;
-    FPerformanceCounter: Int64;
+    FTime: Double;
+    FCountStart: array[TQuadFXProfilerType] of Int64;
+    FData: array[TQuadFXProfilerType] of TQuadFXProfilerItem;
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
 
-    function StartPerformanceCounter: Int64;
-    procedure EndPerformanceCounter(const AText: WideString; AStart: Int64);
+    procedure BeginCount(AType: TQuadFXProfilerType);
+    procedure EndCount(AType: TQuadFXProfilerType);
+    procedure BeginTick(const ADelta: Double);
+    procedure EndTick;
+
     procedure Write(AString: PWideChar); stdcall;
   end;
 
@@ -31,9 +54,12 @@ implementation
 constructor TQuadFXProfiler.Create;
 var
   f: TextFile;
+  Str, Name: String;
+  i: TQuadFXProfilerType;
 begin
+  FTime := 0;
   FSync := TCriticalSection.Create;
-  FFilename := 'QuadFX.log';
+  FFilename := 'QuadFX.csv';
   if FileExists(FFilename) then
     DeleteFile(Pchar(FFilename));
 
@@ -45,8 +71,24 @@ begin
   end;
 
   QueryPerformanceFrequency(FPerformanceFrequency);
-  QueryPerformanceCounter(FPerformanceCounter);
-  FPerformanceLastCounter := FPerformanceCounter;
+
+  Str := '';
+  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
+  begin
+    Name := GetEnumName(System.TypeInfo(TQuadFXProfilerType), Integer(i));
+    Str := Str + Name + ';';
+  end;
+
+  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
+  begin
+    Name := GetEnumName(System.TypeInfo(TQuadFXProfilerType), Integer(i));
+    Str := Str +
+      Name + 'N;' +
+      Name + 'F;' +
+      Name + 'S;';
+  end;
+
+  Write(PWideChar(Str));
 end;
 
 destructor TQuadFXProfiler.Destroy;
@@ -55,19 +97,58 @@ begin
   inherited;
 end;
 
-function TQuadFXProfiler.StartPerformanceCounter: Int64;
+procedure TQuadFXProfiler.BeginCount(AType: TQuadFXProfilerType);
 begin
-  QueryPerformanceCounter(Result);
+  QueryPerformanceCounter(FCountStart[AType]);
 end;
 
-procedure TQuadFXProfiler.EndPerformanceCounter(const AText: WideString; AStart: Int64);
+procedure TQuadFXProfiler.EndCount(AType: TQuadFXProfilerType);
 var
   Counter: Int64;
 begin
   QueryPerformanceCounter(Counter);
-  Write(PWideChar(
-    AText + ' - ' + IntToStr(Counter - AStart)
-  ));
+  Counter := (Counter - FCountStart[AType]);
+  FData[AType].Count := FData[AType].Count + Counter;
+
+  Inc(FData[AType].Num);
+
+  if FData[AType].CountFastest > Counter then
+    FData[AType].CountFastest := Counter;
+
+  if FData[AType].CountSlowest < Counter then
+    FData[AType].CountSlowest := Counter;
+end;
+
+procedure TQuadFXProfiler.BeginTick(const ADelta: Double);
+var
+  i: TQuadFXProfilerType;
+begin
+  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
+  begin
+    FData[i].Num := 0;
+    FData[i].Count := 0;
+    FData[i].CountFastest := MAXDWORD;
+    FData[i].CountSlowest := 0;
+  end;
+end;
+
+procedure TQuadFXProfiler.EndTick;
+  function ToTime(ACount: Int64): String;
+  begin
+    Result := FloatToStr(ACount / FPerformanceFrequency * 1000) + ';';
+  end;
+var
+  i: TQuadFXProfilerType;
+  Str: String;
+begin
+  Str := '';
+  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
+    Str := Str + ToTime(FData[i].Count);
+
+  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
+    Str := Str + IntToStr(FData[i].Num) + ';' + ToTime(FData[i].CountFastest) + ToTime(FData[i].CountSlowest);
+
+  Write(PWideChar(Str));
 end;
 
 procedure TQuadFXProfiler.Write(AString: PWideChar);

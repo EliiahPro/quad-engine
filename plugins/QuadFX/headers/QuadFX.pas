@@ -73,7 +73,7 @@ type
   end;
 
   PQuadFXColorDiagramValue = ^TQuadFXColorDiagramValue;
-  TQuadFXColorDiagramValue = record
+  TQuadFXColorDiagramValue = packed record
     Life: Single;
     Value: TQuadColor;
   end;
@@ -84,7 +84,7 @@ type
     Count: Integer;
   end;
 
-  TQuadFXSingleStartValue = record
+  TQuadFXSingleStartValue = packed record
     Min: Single;
     Max: Single;
   end;
@@ -116,7 +116,7 @@ type
     Diagram: array[0..1] of TQuadFXSingleDiagram;
   end;
 
-  TQuadFXSprite = record
+  TQuadFXSprite = packed record
     ID: Integer;
     Texture: IQuadTexture;
     Position: TVec2f;

@@ -3,7 +3,7 @@ unit QuadFX.Emitter;
 interface
 
 uses
-  QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.EffectEmitterProxy, Winapi.Windows;
+  Math, QuadEngine.Utils, QuadFX, QuadFX.Helpers, QuadEngine, QuadEngine.Color, Vec2f, QuadFX.EffectEmitterProxy, Winapi.Windows;
 
 type
   TQuadFXEmitter = class(TInterfacedObject, IQuadFXEmitter)
@@ -47,23 +47,23 @@ type
 
     FEffectEmitterProxy: IEffectEmitterProxy;
 
-    function Add: PQuadFXParticle;
+    function Add: PQuadFXParticle; inline;
     procedure ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
     function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
-    function GetParticleCount: integer; stdcall;
-    function GetValue(Index: Integer): Single;
-    function GetEmission: Single;
+    function GetValue(Index: Integer): Single; inline;
+    function GetEmission: Single; inline;
     function GetActive: Boolean; stdcall;
-    procedure UpdateParams;
-    function GetPosition: TVec2f;
-    function GetDirection: Single;
-    function GetSpread: Single;
-    function GetStartVelocity: Single;
-    function GetStartAngle: Single;
+    procedure UpdateParams; inline;
+    function GetPosition: TVec2f; inline;
+    function GetDirection: Single; inline;
+    function GetSpread: Single; inline;
+    function GetStartVelocity: Single; inline;
+    function GetStartAngle: Single; inline;
   public
     FValuesIndex: array[0..2] of Integer;
     constructor Create(const AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
     destructor Destroy; override;
+    function GetParticleCount: integer; stdcall;
     procedure Restart;
     procedure RestartParams;
 
@@ -86,12 +86,14 @@ type
     property Spread: Single read GetSpread;
     property StartVelocity: Single read GetStartVelocity;
     property StartAngle: Single read GetStartAngle;
+
+    property Params: PQuadFXEmitterParams read FParams;
   end;
 
 implementation
 
 uses
-  Math, QuadEngine.Utils, QuadFX.Effect, QuadFX.Manager, QuadFX.Profiler;
+  QuadFX.Effect, QuadFX.Manager, QuadFX.Profiler;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 var
@@ -285,13 +287,13 @@ var
   EmissionTime: Double;
   LifePos: Single;
   V: PVertexes;
-  ProfilerCounter: Int64;
 begin
   if not Assigned(FParams) then
     Exit;
 
-//  ProfilerCounter := Profiler.StartPerformanceCounter;
+  Profiler.BeginCount(ptEmitters);
 
+  Profiler.BeginCount(ptParticles);
   P := FParticles;
 
   if FIsDebug then
@@ -318,6 +320,7 @@ begin
       Dec(FParticlesCount);
     end;
   end;
+  Profiler.EndCount(ptParticles);
 
   FTime := FTime + ADelta;
 
@@ -335,8 +338,12 @@ begin
       RestartParams;
   end;
 
+  Profiler.BeginCount(ptParticlesParams);
   FLife := (FTime - FParams.BeginTime) / (FParams.EndTime - FParams.BeginTime);
   UpdateParams;
+  Profiler.EndCount(ptParticlesParams);
+
+  Profiler.BeginCount(ptParticlesAdd);
   if FEmission.Value > 0 then
   begin
     LifePos := FLife + FLastTime;
@@ -353,12 +360,13 @@ begin
       ParticleUpdate(Add, FLastTime);
     end;
   end;
+  Profiler.EndCount(ptParticlesAdd);
 
-//  Profiler.EndPerformanceCounter('--' + FParams.Name, ProfilerCounter);
+  Profiler.EndCount(ptEmitters);
 end;
 
 procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
-  function RealMod(const n, d: single): single;
+  function RealMod(const n, d: single): single; inline;
   var
     i: integer;
   begin
@@ -369,19 +377,33 @@ var
   CPrev, CNext: PQuadFXColorDiagramValue;
   SinRad, CosRad: Single;
   p1, p2: TVec2f;
+  //ProfilerCounter: Int64;
 begin
+  Profiler.BeginCount(ptParticlesUpdate);
   AParticle.Time := AParticle.Time + ADelta;
   AParticle.Life := AParticle.Time / AParticle.LifeTime;
 
+  //ProfilerCounter := Profiler.StartPerformanceCounter;
   // Velocity
   AParticle.Velocity.Update(AParticle.Life);
   AParticle.Position := AParticle.Position + (AParticle.StartVelocity * AParticle.Velocity.Value * FEffectEmitterProxy.GetScale + FEffectEmitterProxy.GetGravitation * AParticle.Gravitation.Value)  * ADelta;
 
+  //Profiler.EndPerformanceCounter('  Velocity', ProfilerCounter);
+  //ProfilerCounter := Profiler.StartPerformanceCounter;
+
   // Spin
   AParticle.Spin.Update(AParticle.Life);
   AParticle.Angle := RealMod(AParticle.StartAngle * AParticle.Spin.Value, 360);
+
+  //Profiler.EndPerformanceCounter('  Spin', ProfilerCounter);
+  //ProfilerCounter := Profiler.StartPerformanceCounter;
+
   // Scale
   AParticle.Scale.Update(AParticle.Life);
+
+  //Profiler.EndPerformanceCounter('  Scale', ProfilerCounter);
+  //ProfilerCounter := Profiler.StartPerformanceCounter;
+
   // Color
   if AParticle.Life > FParams.Particle.Color.List[0].Life then
   begin
@@ -403,10 +425,20 @@ begin
   end
   else
     AParticle.Color := FParams.Particle.Color.List[0].Value;
+
+  //Profiler.EndPerformanceCounter('  Color', ProfilerCounter);
+  //ProfilerCounter := Profiler.StartPerformanceCounter;
+
   // Opacity
   AParticle.Opacity.Update(AParticle.Life);
   AParticle.Color.A := AParticle.Opacity.Value;
 
+  Profiler.EndCount(ptParticlesUpdate);
+
+  //Profiler.EndPerformanceCounter('  Opacity', ProfilerCounter);
+  //ProfilerCounter := Profiler.StartPerformanceCounter;
+
+  Profiler.BeginCount(ptParticlesVertexes);
   if AParticle.Angle <> 0 then
   begin
     FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
@@ -485,6 +517,8 @@ begin
   AParticle.Vertexes[3] := AParticle.Vertexes[2];
   AParticle.Vertexes[4] := AParticle.Vertexes[1];
 
+  Profiler.EndCount(ptParticlesVertexes);
+  //Profiler.EndPerformanceCounter('  Vertexes', ProfilerCounter);
   {
   if FIsDebug then
   begin
@@ -600,7 +634,9 @@ begin
       Manager.QuadRender.SetTexture(i, nil);
   end;
 
+  Profiler.BeginCount(ptDraw);
   Manager.QuadRender.AddTrianglesToBuffer(FVertexes^, 6 * FParticlesCount);
+  Profiler.EndCount(ptDraw);
   Manager.QuadRender.FlushBuffer;
 end;
 

@@ -3,13 +3,12 @@ unit QuadFX.Layer;
 interface
 
 uses
-  QuadFX, QuadFX.Emitter, QuadEngine, QuadEngine.Color, Vec2f,
+  QuadFX, QuadFX.Emitter, QuadEngine, QuadEngine.Color, Vec2f, System.SysUtils,
   System.Generics.Collections, QuadFX.Effect, Winapi.Windows, QuadFX.LayerEffectProxy;
 
 type
   TQuadFXLayer = class(TInterfacedObject, IQuadFXLayer)
   private
-    FOnDraw: TQuadFXEmitterDrawEvent;
     FOnDebugDraw: TQuadFXEmitterDrawEvent;
     FEffects: TList<IQuadFXEffect>;
     FParticleCount: Integer;
@@ -39,7 +38,7 @@ uses
 
 procedure TQuadFXLayer.SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
 begin
-  FOnDraw := AOnDraw;
+  TLayerEffectProxy(FLayerEffectProxy).OnDraw := AOnDraw;
 end;
 
 procedure TQuadFXLayer.SetOnDebugDraw(AOnDebugDraw: TQuadFXEmitterDrawEvent);
@@ -69,8 +68,6 @@ begin
 end;
 
 function TQuadFXLayer.CreateEffectEx(const AEffectParams: IQuadFXEffectParams; APosition: TVec2f; out AEffect: IQuadFXEffect; AAngle: Single = 0; AScale: Single = 1): HResult; stdcall;
-var
-  NewEffect: IQuadFXEffect;
 begin
   AEffect := nil;
   if Assigned(AEffectParams) then
@@ -122,9 +119,9 @@ end;
 procedure TQuadFXLayer.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
-  ProfilerCounter: Int64;
 begin
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
+  Profiler.BeginTick(ADelta);
+  Profiler.BeginCount(ptUpdate);
   FParticleCount := 0;
   for i := FEffects.Count - 1 downto 0 do
     if TQuadFXEffect(FEffects[i]).IsNeedToKill then
@@ -138,31 +135,19 @@ begin
       FParticleCount := FParticleCount + FEffects[i].GetParticleCount;
     end;
 
-  //Profiler.EndPerformanceCounter('Update', ProfilerCounter);
+  Profiler.EndCount(ptUpdate);
 end;
 
 procedure TQuadFXLayer.Draw; stdcall;
 var
   i: Integer;
-  Effect: IQuadFXEffect;
-  Emitter: IQuadFXEmitter;
-  ProfilerCounter: Int64;
 begin
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
-  for Effect in FEffects do
-  begin
-    if Assigned(FOnDraw) then
-    begin
-      for i := 0 to Effect.GetEmitterCount - 1 do
-      begin
-        Effect.GetEmitter(i, Emitter);
-        FOnDraw(Emitter, TQuadFXEmitter(Emitter).Particle, Emitter.GetParticleCount);
-      end;
-    end
-    else
-      Effect.Draw;
-  end;
-  //Profiler.EndPerformanceCounter('Draw', ProfilerCounter);
+ // Profiler.BeginCount(ptDraw);
+  for i := 0 to FEffects.Count - 1 do
+    FEffects[i].Draw;
+
+//  Profiler.EndCount(ptDraw);
+  Profiler.EndTick;
 end;
 
 procedure TQuadFXLayer.EffectAdd(AEffect: TQuadFXEffect);

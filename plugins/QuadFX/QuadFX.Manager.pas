@@ -34,7 +34,7 @@ type
     property QuadDevice: IQuadDevice read FQuadDevice;
     property QuadRender: IQuadRender read FQuadRender;
 
-    function AddEffectToPool(AEffect: IQuadFXEffect): Boolean;
+    procedure AddEffectToPool(AEffect: IQuadFXEffect);
     function GetEffectFromPool(AEffectParams: IQuadFXEffectParams): IQuadFXEffect;
     property DefaultTexture: IQuadTexture read FDefaultTexture;
   end;
@@ -74,7 +74,7 @@ begin
   inherited;
 end;
 
-function TQuadFXManager.AddEffectToPool(AEffect: IQuadFXEffect): Boolean;
+procedure TQuadFXManager.AddEffectToPool(AEffect: IQuadFXEffect);
 var
   EffectParams: IQuadFXEffectParams;
   PoolIndex: Integer;

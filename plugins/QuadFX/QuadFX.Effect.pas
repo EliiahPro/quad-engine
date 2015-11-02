@@ -9,19 +9,19 @@ uses
 type
   TQuadFXEffect = class(TInterfacedObject, IQuadFXEffect)
   private
-    FOldPosition: TVec2f;
-   // FPosition: TVec2f;
+    //FOldPosition: TVec2f;
+    //FPosition: TVec2f;
     FIsNeedToKill: Boolean;
     FParams: IQuadFXEffectParams;
     FEmmiters: TList<IQuadFXEmitter>;
     FCount: Integer;
     FLife: Single;
     FAction: Boolean;
-    FOldScale: Single;
-   //FScale: Single;
-    FOldAngle: Single;
-   // FAngle: Single;
-   // FSinRad, FCosRad: Single;
+    //FOldScale: Single;
+    //FScale: Single;
+    //FOldAngle: Single;
+    //FAngle: Single;
+    //FSinRad, FCosRad: Single;
 
     FEffectEmitterProxy: TEffectEmitterProxy;
 
@@ -36,6 +36,7 @@ type
     procedure Update(const ADelta: Double); stdcall;
     procedure Draw; stdcall;
     function GetEmitter(Index: Integer; out AEmitter: IQuadFXEmitter): HResult; stdcall;
+    function GetEmitterEx(Index: Integer): TQuadFXEmitter;
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
@@ -56,6 +57,9 @@ type
     property IsNeedToKill: Boolean read FIsNeedToKill;
     property Life: Single read FLife;
     property Action: Boolean read FAction;
+
+    property Emmiters[Index: Integer]: TQuadFXEmitter read GetEmitterEx;
+    property EmmiterCount: Integer read GetEmitterCount;
   end;
 
 implementation
@@ -92,7 +96,6 @@ end;
 procedure TQuadFXEffect.Restart(APosition: TVec2f; AAngle, AScale: Single);
 var
   i: Integer;
-  Emmiter: IQuadFXEmitter;
 begin
   FLife := 0;
   FCount := 0;
@@ -100,8 +103,9 @@ begin
   FAction := True;
 
   FEffectEmitterProxy.Create(APosition, AAngle, AScale);
-  for Emmiter in FEmmiters do
-    TQuadFXEmitter(Emmiter).Restart;
+
+  for i := 0 to FEmmiters.Count - 1 do
+    TQuadFXEmitter(FEmmiters[i]).Restart;
 end;
 
 function TQuadFXEffect.CreateEmitter(AParams: PQuadFXEmitterParams): IQuadFXEmitter;
@@ -113,10 +117,9 @@ end;
 function TQuadFXEffect.DeleteEmitter(AParams: PQuadFXEmitterParams): Boolean;
 var
   i: Integer;
-  Params: PQuadFXEmitterParams;
 begin
   for i := 0 to FEmmiters.Count - 1 do
-    if (FEmmiters[i].GetEmitterParams(Params) = S_OK) and (Params = AParams) then
+    if TQuadFXEmitter(FEmmiters[i]).Params = AParams then
     begin
       FEmmiters.Delete(i);
       Exit(True);
@@ -149,25 +152,23 @@ end;
 procedure TQuadFXEffect.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
-  Emmiter: IQuadFXEmitter;
   Ac: Boolean;
-  ProfilerCounter: Int64;
 begin
   if FIsNeedToKill then
     Exit;
 
-//  ProfilerCounter := Profiler.StartPerformanceCounter;
+  Profiler.BeginCount(ptEffects);
 
   FLife := FLife + ADelta;
 
   Ac := False;
   FCount := 0;
-  for Emmiter in FEmmiters do
-    if Assigned(Emmiter) then
+  for i := 0 to FEmmiters.Count - 1 do
+    if Assigned(FEmmiters[i]) then
     begin
-      Emmiter.Update(ADelta);
-      FCount := FCount + Emmiter.GetParticleCount;
-      if Emmiter.GetActive then
+      FEmmiters[i].Update(ADelta);
+      FCount := FCount + FEmmiters[i].GetParticleCount;
+      if FEmmiters[i].GetActive then
         Ac := True;
     end;
 
@@ -176,16 +177,18 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
-
-//  Profiler.EndPerformanceCounter('Effect', ProfilerCounter);
+  Profiler.EndCount(ptEffects);
 end;
 
 procedure TQuadFXEffect.Draw; stdcall;
 var
-  Emmiter: IQuadFXEmitter;
+  i: Integer;
 begin
-  for Emmiter in FEmmiters do
-    Emmiter.Draw;
+  for i := 0 to FEmmiters.Count - 1 do
+    if Assigned(FEffectEmitterProxy.OnDraw) then
+      FEffectEmitterProxy.OnDraw(FEmmiters[i], TQuadFXEmitter(FEmmiters[i]).Particle, FEmmiters[i].GetParticleCount)
+    else
+      FEmmiters[i].Draw;
 end;
 
 function TQuadFXEffect.GetParticleCount: integer; stdcall;
@@ -250,6 +253,11 @@ begin
     Result := S_OK
   else
     Result := E_FAIL;
+end;
+
+function TQuadFXEffect.GetEmitterEx(Index: Integer): TQuadFXEmitter;
+begin
+  Result := TQuadFXEmitter(FEmmiters[Index]);
 end;
 
 function TQuadFXEffect.GetEmitter(Index: Integer; out AEmitter: IQuadFXEmitter): HResult; stdcall;
