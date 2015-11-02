@@ -118,7 +118,7 @@
                     <VersionInfo Name="MajorVer">0</VersionInfo>
                     <VersionInfo Name="MinorVer">4</VersionInfo>
                     <VersionInfo Name="Release">0</VersionInfo>
-                    <VersionInfo Name="Build">427</VersionInfo>
+                    <VersionInfo Name="Build">441</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -130,7 +130,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">0.4.0.427</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">0.4.0.441</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
