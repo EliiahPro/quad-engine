@@ -314,7 +314,7 @@ begin
 end;
 
 //=============================================================================
-// Clears render target with color
+//
 //=============================================================================
 procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True);
 begin
@@ -337,14 +337,17 @@ begin
 end;
 
 //=============================================================================
-//
+// Clears render target with color
 //=============================================================================
 procedure TQuadRender.Clear(AColor: Cardinal);
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atClear);
   {$ENDIF}
-  Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET or D3DCLEAR_ZBUFFER, AColor, 1.0, 0);
+  if FIsRenderIntoTexture then
+    Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0)
+  else
+    Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET or D3DCLEAR_ZBUFFER, AColor, 1.0, 0)
   {$IFDEF DEBUG}
   FProfiler.EndCount(atClear);
   {$ENDIF}
