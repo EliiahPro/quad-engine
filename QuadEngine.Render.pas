@@ -344,7 +344,7 @@ begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atClear);
   {$ENDIF}
-  Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0);
+  Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET or D3DCLEAR_ZBUFFER, AColor, 1.0, 0);
   {$IFDEF DEBUG}
   FProfiler.EndCount(atClear);
   {$ENDIF}
@@ -446,19 +446,15 @@ begin
 
   FQuad[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
   FQuad[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  FQuad[0].z := 0;
 
   FQuad[1].x := ((PointB.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
   FQuad[1].y := ((PointB.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  FQuad[1].z := 0;
 
   FQuad[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
   FQuad[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  FQuad[2].z := 0;
 
   FQuad[5].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
   FQuad[5].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  FQuad[5].z := 0;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
@@ -519,19 +515,15 @@ begin
 
   FQuad[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
   FQuad[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  FQuad[0].z := 0;
 
   FQuad[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
   FQuad[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  FQuad[1].z := 0;
 
   FQuad[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
   FQuad[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  FQuad[2].z := 0;
 
   FQuad[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
   FQuad[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  FQuad[5].z := 0;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
@@ -705,8 +697,8 @@ begin
                                         { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
   FQuad[0] := PointA;
-  FQuad[1].x := PointB.X;    FQuad[1].y := PointA.Y;    FQuad[1].z := 0.0;
-  FQuad[2].x := PointA.X;    FQuad[2].y := PointB.Y;    FQuad[2].z := 0.0;
+  FQuad[1].x := PointB.X;    FQuad[1].y := PointA.Y;
+  FQuad[2].x := PointA.X;    FQuad[2].y := PointB.Y;
   FQuad[5] := PointB;
 
   FQuad[0].color := Color;
@@ -1025,7 +1017,6 @@ begin
   Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
   FCount := 0;
 
-  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
   Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
   Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
 
@@ -1045,7 +1036,7 @@ begin
   end;
 
   // disable culling
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
@@ -1057,7 +1048,8 @@ begin
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
 
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iTrue);
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZWRITEENABLE, iTrue);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iFalse);   
 
   FD3DDevice.GetRenderTarget(0, FBackBuffer);
