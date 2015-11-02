@@ -34,7 +34,7 @@ const
     (Stream: $FF; Offset: 0;  _Type: D3DDECLTYPE_UNUSED;   Method: D3DDECLMETHOD_DEFAULT; Usage: D3DDECLUSAGE_POSITION; UsageIndex: 0)
     );
 
-  MaxBufferCount = 60000;
+  MaxBufferCount = 40000;
 
 type
   TQuadRender = class(TInterfacedObject, IQuadRender)
@@ -48,6 +48,7 @@ type
     FD3DDevice: IDirect3DDevice9;
     FD3DPP: TD3DPresentParameters;
     FD3DVB: IDirect3DVertexBuffer9;
+    FD3DIB: IDirect3DIndexBuffer9;
     FD3DVD: IDirect3DVertexDeclaration9;
     FHandle: THandle;
     FHeight: Integer;
@@ -57,7 +58,6 @@ type
     FIsInitialized: Boolean;
     FIsRenderIntoTexture: Boolean;
     Fqbm: TQuadBlendMode;
-    FVertexBuffer: array [0..MaxBufferCount - 1] of TVertex;
     FTextureAdressing: TQuadTextureAdressing;
     FTextureFiltering: TQuadTextureFiltering;
     FTextureMirroring: TQuadTextureMirroring;
@@ -69,10 +69,11 @@ type
     FOldScreenWidth: Integer;
     FOldScreenHeight: Integer;
     FCircleRadius: Single;
+    Fver: array [0..3] of TVertex;
     {$IFDEF DEBUG}
     FProfiler: TQuadProfiler;
     {$ENDIF}
-    procedure AddQuadToBuffer(Vertexes: array of TVertex);
+    procedure AddQuadToBuffer();
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure InitializeVolatileResources;
@@ -82,6 +83,7 @@ type
     function GetIsSupportedNonPow2: Boolean;
     function GetNumSimultaneousRTs: Cardinal;
     function GetIsSeparateAlphaBlend: Boolean;
+    procedure FillIndexBuffer;
   public
     constructor Create;
     function GetClipRect: TRect; stdcall;
@@ -248,27 +250,29 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.AddQuadToBuffer(Vertexes: array of TVertex);
+procedure TQuadRender.AddQuadToBuffer();
+var
+  pver: Pointer;
 begin
   if FIsAutoCalculateTBN then
   begin
     {$IFDEF DEBUG}
     FProfiler.BeginCount(atCalculateTBN);
     {$ENDIF}
-    CalcTBN(Vertexes[0].tangent, Vertexes[0].binormal, Vertexes[0].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[1].tangent, Vertexes[1].binormal, Vertexes[1].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[2].tangent, Vertexes[2].binormal, Vertexes[2].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
-    CalcTBN(Vertexes[5].tangent, Vertexes[5].binormal, Vertexes[5].normal, Vertexes[0], Vertexes[1], Vertexes[2]);
+    CalcTBN(Fver[0].tangent, Fver[0].binormal, Fver[0].normal, Fver[0], Fver[1], Fver[2]);
+    CalcTBN(Fver[1].tangent, Fver[1].binormal, Fver[1].normal, Fver[0], Fver[1], Fver[2]);
+    CalcTBN(Fver[2].tangent, Fver[2].binormal, Fver[2].normal, Fver[0], Fver[1], Fver[2]);
+    CalcTBN(Fver[3].tangent, Fver[3].binormal, Fver[3].normal, Fver[0], Fver[1], Fver[2]);
     {$IFDEF DEBUG}
     FProfiler.EndCount(atCalculateTBN);
     {$ENDIF}
   end;
 
-  Vertexes[3] := Vertexes[2];
-  Vertexes[4] := Vertexes[1];
+  Device.LastResultCode := FD3DVB.Lock(FCount * SizeOf(TVertex), 4 * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
+  Move(Fver, Pver^, 4 * SizeOf(TVertex));
+  Device.LastResultCode := FD3DVB.Unlock;
 
-  Move(Vertexes, FVertexBuffer[FCount], 6 * SizeOf(TVertex));
-  Inc(FCount, 6);
+  Inc(FCount, 4);
 
   if FCount >= MaxBufferCount then
     FlushBuffer;
@@ -279,11 +283,11 @@ end;
 //=============================================================================
 procedure TQuadRender.AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal);
 begin
-  Move(AVertexes, FVertexBuffer[FCount], ACount * SizeOf(TVertex));
-  Inc(FCount, ACount);
-
-  if FCount >= MaxBufferCount then
-    FlushBuffer;
+//  Move(AVertexes, FVertexBuffer[FCount], ACount * SizeOf(TVertex));
+//  Inc(FCount, ACount);
+//
+//  if FCount >= MaxBufferCount then
+//    FlushBuffer;
 end;
 
 //=============================================================================
@@ -301,7 +305,6 @@ begin
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
   while FIsDeviceLost do
   begin
-    Sleep(100);
     if not FIsDeviceLost then
       Device.LastResultCode := FD3DDevice.BeginScene;
   end;
@@ -407,7 +410,6 @@ end;
 procedure TQuadRender.DrawrectRot(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
   Origin: TVec2f;
   Alpha: Single;
   SinA, CosA: Single;
@@ -441,40 +443,38 @@ begin
   Alpha := Angle * (pi / 180);
 
   FastSinCos(Alpha, SinA, CosA);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
 
-  ver[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[0].z := 0;
+  FVer[0].x := ((PointA.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[0].y := ((PointA.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[0].z := 0;
 
-  ver[1].x := ((PointB.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[1].y := ((PointB.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[1].z := 0;
+  FVer[1].x := ((PointB.X - Origin.X) * cosA - (PointA.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[1].y := ((PointB.X - Origin.X) * sinA + (PointA.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[1].z := 0;
 
-  ver[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[2].z := 0;
+  FVer[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[2].z := 0;
 
-  ver[5].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  ver[5].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
-  ver[5].z := 0;
+  FVer[3].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FVer[3].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FVer[3].z := 0;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[5].color := Color;
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
-  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
-  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
-  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
-  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
+  FVer[0].u := realUVA.U;   FVer[0].v := realUVA.V;
+  FVer[1].u := realUVB.U;   FVer[1].v := realUVA.V;
+  FVer[2].u := realUVA.U;   FVer[2].v := realUVB.V;
+  FVer[3].u := realUVB.U;   FVer[3].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -483,7 +483,6 @@ end;
 procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
   Alpha: Single;
   SinA, CosA: Single;
   realUVA, realUVB: TVec2f;
@@ -515,40 +514,38 @@ begin
   Alpha := Angle * (pi / 180);
 
   FastSinCos(Alpha, SinA, CosA);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
 
-  ver[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[0].z := 0;
+  FVer[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[0].z := 0;
 
-  ver[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[1].z := 0;
+  FVer[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[1].z := 0;
 
-  ver[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[2].z := 0;
+  FVer[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[2].z := 0;
 
-  ver[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  ver[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
-  ver[5].z := 0;
+  FVer[3].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FVer[3].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FVer[3].z := 0;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[5].color := Color;
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
-  ver[0].u := realUVA.U;   ver[0].v := realUVA.V;
-  ver[1].u := realUVB.U;   ver[1].v := realUVA.V;
-  ver[2].u := realUVA.U;   ver[2].v := realUVB.V;
-  ver[5].u := realUVB.U;   ver[5].v := realUVB.V;
+  FVer[0].u := realUVA.U;   FVer[0].v := realUVA.V;
+  FVer[1].u := realUVB.U;   FVer[1].v := realUVA.V;
+  FVer[2].u := realUVA.U;   FVer[2].v := realUVB.V;
+  FVer[3].u := realUVB.U;   FVer[3].v := realUVB.V;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -590,8 +587,8 @@ begin
   ver[0].Color := Color;
   ver[1].Color := Color;
 
-  Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
-  Inc(FCount, 2);
+//  Move(ver, FVertexBuffer[FCount], 2 * SizeOf(TVertex));
+//  Inc(FCount, 2);
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -620,8 +617,8 @@ begin
   ver[0] := Point;
   ver[0].color := Color;
 
-  Move(ver, FVertexBuffer[FCount], SizeOf(TVertex));
-  inc(FCount, 1);
+//  Move(ver, FVertexBuffer[FCount], SizeOf(TVertex));
+//  inc(FCount, 1);
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
@@ -638,7 +635,6 @@ procedure TQuadRender.DrawQuadLine(const PointA, PointB: TVec2f; width1, width2:
 var
   line: TVec2f;
   perpendicular: TVec2f;
-  ver : array [0..5] of TVertex;
   i: Integer;
 begin
   if FIsDeviceLost then
@@ -657,21 +653,21 @@ begin
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
 
-  ver[1] := pointA + perpendicular * (width1 / 2);
-  ver[0] := pointA - perpendicular * (width1 / 2);
-  ver[2] := pointB - perpendicular * (width2 / 2);
-  ver[5] := pointB + perpendicular * (width2 / 2);
+  FVer[1] := pointA + perpendicular * (width1 / 2);
+  FVer[0] := pointA - perpendicular * (width1 / 2);
+  FVer[2] := pointB - perpendicular * (width2 / 2);
+  FVer[3] := pointB + perpendicular * (width2 / 2);
 
-  ver[0].color := Color1;
-  ver[1].color := Color1;
-  ver[2].color := Color2;
-  ver[5].color := Color2;
+  FVer[0].color := Color1;
+  FVer[1].color := Color1;
+  FVer[2].color := Color2;
+  FVer[3].color := Color2;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -679,7 +675,6 @@ end;
 //=============================================================================
 procedure TQuadRender.Drawrect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
   realUVA, realUVB: TVec2f;
 begin
   if FIsDeviceLost then
@@ -705,28 +700,27 @@ begin
 
 
   RenderMode := D3DPT_TRIANGLELIST;
-                                        { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
-  ver[0] := PointA;
-  ver[1].x := PointB.X;    ver[1].y := PointA.Y;    ver[1].z := 0.0;
-  ver[2].x := PointA.X;    ver[2].y := PointB.Y;    ver[2].z := 0.0;
-  ver[5] := PointB;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[5].color := Color;
+  Fver[0] := PointA;
+  Fver[1].x := PointB.X;    Fver[1].y := PointA.Y;
+  Fver[2].x := PointA.X;    Fver[2].y := PointB.Y;
+  Fver[3] := PointB;
 
-  ver[0].u := realUVA.X;  ver[0].v := realUVA.Y;
-  ver[1].u := realUVB.X;  ver[1].v := realUVA.Y;
-  ver[2].u := realUVA.X;  ver[2].v := realUVB.Y;
-  ver[5].u := realUVB.X;  ver[5].v := realUVB.Y;
+  Fver[0].color := Color;
+  Fver[1].color := Color;
+  Fver[2].color := Color;
+  Fver[3].color := Color;
+
+  Fver[0].u := realUVA.X;  Fver[0].v := realUVA.Y;
+  Fver[1].u := realUVB.X;  Fver[1].v := realUVA.Y;
+  Fver[2].u := realUVA.X;  Fver[2].v := realUVB.Y;
+  Fver[3].u := realUVB.X;  Fver[3].v := realUVB.Y;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -753,12 +747,43 @@ begin
 end;
 
 //=============================================================================
+// Fill the index buffer
+//=============================================================================
+procedure TQuadRender.FillIndexBuffer;
+var
+  pindex: Pointer;
+  ind: Integer;
+  i: Word;
+  IndexBuffer: array [0..MaxBufferCount * 3] of Word;
+begin
+   ind := 0;
+
+   Device.LastResultCode := FD3DIB.Lock(0, 0, pindex, 0);
+
+   for i := 0 to MaxBufferCount div 4 - 1 do
+   begin
+     IndexBuffer[ind] := i * 4;
+     IndexBuffer[ind + 1] := i * 4 + 1;
+     IndexBuffer[ind + 2] := i * 4 + 2;
+     IndexBuffer[ind + 3] := i * 4 + 2;
+     IndexBuffer[ind + 4] := i * 4 + 1;
+     IndexBuffer[ind + 5] := i * 4 + 3;
+     Inc(ind, 6);
+   end;
+
+   Move(IndexBuffer, pindex^, MaxBufferCount * 3);
+
+   Device.LastResultCode := FD3DIB.Unlock;
+end;
+
+//=============================================================================
 // Finalization routine
 //=============================================================================
 procedure TQuadRender.Finalize;
 begin
   FD3DVD := nil;
-  FD3DVB := nil
+  FD3DVB := nil;
+  FD3DIB := nil;
 end;
 
 //=============================================================================
@@ -800,19 +825,19 @@ begin
     begin
       // if vertex count less then six — exit
       // else we cannot draw quad (2 triangles)
-      if FCount < 6 then
+      if FCount < 4 then
         Exit;
 
-      PrimitiveCount := FCount div 3;
+      PrimitiveCount := FCount div 2;
     end;
   else
     Exit;
   end;
 
-  Device.LastResultCode := FD3DVB.Lock(0, 0, pver, 0);
-  Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
-  Device.LastResultCode := FD3DVB.Unlock;
-  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
+//  Device.LastResultCode := FD3DVB.Lock(0, FCount * SizeOf(TVertex), pver, D3DLOCK_NOOVERWRITE);
+//  Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
+//  Device.LastResultCode := FD3DVB.Unlock;
+  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, 0, 0, FCount, 0, PrimitiveCount);
   FCount := 0;
   {$IFDEF DEBUG}
   FProfiler.EndCount(atFlushBuffer);
@@ -1013,14 +1038,31 @@ end;
 procedure TQuadRender.InitializeVolatileResources;
 var
   i: Integer;
+  qbm: TQuadBlendMode;
 begin
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
 
+  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
+                                                         D3DUSAGE_WRITEONLY or D3DUSAGE_DYNAMIC,
+                                                         0,
+                                                         D3DPOOL_DEFAULT,
+                                                         FD3DVB,
+                                                         nil);
+
+  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3,
+                                                        D3DUSAGE_WRITEONLY or D3DUSAGE_DYNAMIC,
+                                                        D3DFMT_INDEX16,
+                                                        D3DPOOL_DEFAULT,
+                                                        FD3DIB,
+                                                        nil);
+
+  FillIndexBuffer;
+
   Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
+  Device.LastResultCode := FD3DDevice.SetIndices(FD3DIB);
   FCount := 0;
 
-  Device.LastResultCode := FD3DDevice.SetFVF(D3DFVF_XYZ or D3DFVF_NORMAL or D3DFVF_TEX3 or D3DFVF_DIFFUSE);
   Device.LastResultCode := FD3DDevice.CreateVertexDeclaration(@decl, FD3DVD);
   Device.LastResultCode := FD3DDevice.SetVertexDeclaration(FD3DVD);
 
@@ -1044,8 +1086,12 @@ begin
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
-  FIsEnabledBlending := True;
+
+  // restore blending
+  qbm := Fqbm;
+  Fqbm := qbmInvalid;
+  SetBlendMode(qbm);
+
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
@@ -1060,7 +1106,6 @@ end;
 //=============================================================================
 procedure TQuadRender.Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal);
 var
-  ver : array [0..5] of TVertex;
   i : Integer;
 begin
   if FIsDeviceLost then
@@ -1073,23 +1118,22 @@ begin
 
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
-  ver[0] := PointA;
-  ver[1] := PointB;
-  ver[2] := PointC;
-  ver[5] := PointD;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[5].color := Color;
+  FVer[0] := PointA;
+  FVer[1] := PointB;
+  FVer[2] := PointC;
+  FVer[3] := PointD;
+
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1097,7 +1141,6 @@ end;
 //=============================================================================
 procedure TQuadRender.Rectangle(const PointA, PointB: TVec2f; Color: Cardinal);
 var
-  ver: array [0..5] of TVertex;
   i: Integer;
 begin
   if FIsDeviceLost then
@@ -1110,23 +1153,22 @@ begin
 
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
-  ver[0] := PointA;
-  ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
-  ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
-  ver[5] := PointB;
 
-  ver[0].color := Color;
-  ver[1].color := Color;
-  ver[2].color := Color;
-  ver[5].color := Color;
+  FVer[0] := PointA;
+  FVer[1].x := PointB.X;     FVer[1].y := PointA.Y;     FVer[1].z := 0;
+  FVer[2].x := PointA.X;     FVer[2].y := PointB.Y;     FVer[2].z := 0;
+  FVer[3] := PointB;
+
+  FVer[0].color := Color;
+  FVer[1].color := Color;
+  FVer[2].color := Color;
+  FVer[3].color := Color;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1135,7 +1177,6 @@ end;
 procedure TQuadRender.RectangleEx(const PointA, PointB: TVec2f; Color1, Color2,
   Color3, Color4: Cardinal);
 var
-  ver : array [0..5] of TVertex;
   i : Integer;
 begin
   if FIsDeviceLost then
@@ -1149,23 +1190,22 @@ begin
 
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
-                                      { NOTE : use only 0, 1, 2, 5 vertex.
-                                               Vertex 3, 4 autocalculated}
-  ver[0] := PointA;
-  ver[1].x := PointB.X;     ver[1].y := PointA.Y;     ver[1].z := 0;
-  ver[2].x := PointA.X;     ver[2].y := PointB.Y;     ver[2].z := 0;
-  ver[5] := PointB;
+                                    
+  FVer[0] := PointA;
+  FVer[1].x := PointB.X;     FVer[1].y := PointA.Y;     FVer[1].z := 0;
+  FVer[2].x := PointA.X;     FVer[2].y := PointB.Y;     FVer[2].z := 0;
+  FVer[3] := PointB;
 
-  ver[0].color := Color1;
-  ver[1].color := Color2;
-  ver[2].color := Color3;
-  ver[5].color := Color4;
+  FVer[0].color := Color1;
+  FVer[1].color := Color2;
+  FVer[2].color := Color3;
+  FVer[3].color := Color4;
 
   {$IFDEF DEBUG}
   FProfiler.EndCount(atDraw);
   {$ENDIF}
 
-  AddQuadToBuffer(ver);
+  AddQuadToBuffer();
 end;
 
 //=============================================================================
@@ -1176,6 +1216,8 @@ begin
   RenderToTexture(False);
   Device.FreeRenderTargets;
   FBackBuffer := nil;
+  FD3DVB := nil;
+  FD3DIB := nil;
 end;
 
 //=============================================================================
@@ -1460,7 +1502,7 @@ procedure TQuadRender.InitializeEx(const ARenderInit: TRenderInit);
   function CompleteBooleanText(AText: PChar; AState: Boolean): PChar; inline;
   begin
     Result := PChar(AText + ': ');
-    if AState then
+    if not AState then
       Result := PChar(Result + 'Off')
     else
       Result := PChar(Result + 'On');
@@ -1570,13 +1612,6 @@ begin
 
   Device.LastResultCode := Device.D3D.GetDeviceCaps(Device.ActiveMonitorIndex, D3DDEVTYPE_HAL, FD3DCaps);
 
-  // set VB source
-  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
-                                                         0,
-                                                         0,
-                                                         D3DPOOL_MANAGED,
-                                                         FD3DVB,
-                                                         nil);
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
@@ -1586,6 +1621,7 @@ begin
     Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));
     Device.Log.Write(PChar('Vertex shaders: ' + PixelShaderVersionString));
     Device.Log.Write(PChar('Pixel shaders: ' + PixelShaderVersionString));
+    Device.Log.Write(PChar('Max Vertex Index: ' + IntToStr(FD3DCaps.MaxVertexIndex)));
     if IsSeparateAlphaBlend then
       Device.Log.Write('Separate alpha blending');
     if IsSupportedNonPow2 then
@@ -1646,7 +1682,7 @@ begin
     end;
     qsmNone:
       if Device.Log <> nil then
-        Device.Log.Write('Samder model not specified');
+        Device.Log.Write('Shader model not specified');
   end;
 
   FIsInitialized := True;

@@ -63,6 +63,8 @@
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <Manifest_File>None</Manifest_File>
+        <DCC_Optimize>false</DCC_Optimize>
         <Version>7.0</Version>
         <DCC_DebugInformation>False</DCC_DebugInformation>
         <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
@@ -70,15 +72,12 @@
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-        <DCC_MapFile>3</DCC_MapFile>
-        <DCC_DebugInformation>true</DCC_DebugInformation>
+        <DCC_Optimize>true</DCC_Optimize>
         <DCC_DcuOutput>dcu</DCC_DcuOutput>
         <VerInfo_MinorVer>7</VerInfo_MinorVer>
         <DCC_UnitSearchPath>../;../headers;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.7.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=0.7.0.0;Comments=</VerInfo_Keys>
-        <Manifest_File>None</Manifest_File>
         <VerInfo_Build>0</VerInfo_Build>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -118,7 +117,7 @@
                     <VersionInfo Name="MajorVer">0</VersionInfo>
                     <VersionInfo Name="MinorVer">4</VersionInfo>
                     <VersionInfo Name="Release">0</VersionInfo>
-                    <VersionInfo Name="Build">441</VersionInfo>
+                    <VersionInfo Name="Build">454</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -130,7 +129,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">0.4.0.441</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">0.4.0.454</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Quad-engine</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
