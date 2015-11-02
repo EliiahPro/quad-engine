@@ -61,7 +61,7 @@ type
     function GetStartAngle: Single; inline;
   public
     FValuesIndex: array[0..2] of Integer;
-    constructor Create(const AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
+    constructor Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
     destructor Destroy; override;
     function GetParticleCount: integer; stdcall;
     procedure Restart;
@@ -199,7 +199,7 @@ begin
   Result := FValues[Index];
 end;
 
-constructor TQuadFXEmitter.Create(const AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
+constructor TQuadFXEmitter.Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
 //var
 //  i: Integer;
 begin
