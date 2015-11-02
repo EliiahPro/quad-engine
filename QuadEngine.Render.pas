@@ -806,7 +806,7 @@ begin
     Exit;
   end;
 
-  Device.LastResultCode := FD3DVB.Lock(0, 0, pver, 0);
+  Device.LastResultCode := FD3DVB.Lock(0, 0, pver, D3DLOCK_DISCARD);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
   Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
@@ -1010,9 +1010,17 @@ end;
 procedure TQuadRender.InitializeVolatileResources;
 var
   i: Integer;
+  qbm: TQuadBlendMode;
 begin
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
+
+  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
+                                                         D3DUSAGE_WRITEONLY,
+                                                         0,
+                                                         D3DPOOL_DEFAULT,
+                                                         FD3DVB,
+                                                         nil);
 
   Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
   FCount := 0;
@@ -1041,8 +1049,12 @@ begin
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
-  FIsEnabledBlending := True;
+
+  // restore blending
+  qbm := Fqbm;
+  Fqbm := qbmInvalid;
+  SetBlendMode(qbm);
+
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iFalse);
@@ -1170,6 +1182,7 @@ begin
   RenderToTexture(False);
   Device.FreeRenderTargets;
   FBackBuffer := nil;
+  FD3DVB := nil;
 end;
 
 //=============================================================================
@@ -1564,13 +1577,6 @@ begin
 
   Device.LastResultCode := Device.D3D.GetDeviceCaps(Device.ActiveMonitorIndex, D3DDEVTYPE_HAL, FD3DCaps);
 
-  // set VB source
-  Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
-                                                         0,
-                                                         0,
-                                                         D3DPOOL_MANAGED,
-                                                         FD3DVB,
-                                                         nil);
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
