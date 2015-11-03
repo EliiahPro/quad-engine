@@ -20,7 +20,7 @@ var
   df: TDistanceFieldParams;
 begin
   QuadRender.BeginRender;
-  QuadRender.Clear($00111111);
+  QuadRender.Clear($FF111111);
   QuadRender.SetBlendMode(qbmSrcAlpha);
 
   //Simple non-antialiased text
@@ -80,16 +80,31 @@ begin
 
   QuadFont.TextOut(TVec2f.Create(100, 300), 1.0, 'Outlined text', $00000000);
 
+    //Outlined text
+  df.FirstEdge := True;
+  df.Edge1X := 0.05;
+  df.Edge1Y := 0.50;
+  df.SecondEdge := True;
+  df.Edge2X := 0.45;
+  df.Edge2Y := 0.50;
+  df.OuterColor := TQuadColor.Violet;
+  QuadFont.SetDistanceFieldParams(df);
+  QuadFont.SetKerning(5);
+  QuadFont.TextOut(TVec2f.Create(100, 340), 1.0, 'Glowing text', TQuadColor.Fuchsia);
+  QuadFont.SetKerning(0);
 
   // downscale
   df.FirstEdge := True;
-  df.Edge1X := 0.43;
+  df.Edge1X := 0.40;
   df.Edge1Y := 0.5;
+  df.SecondEdge := False;
   QuadFont.SetDistanceFieldParams(df);
 
+  QuadFont.SetKerning(0.5); // for better readability
   QuadFont.TextOut(TVec2f.Create(100, 400), 0.5, 'downscaled to 0.5 antialiased text');
-  QuadFont.TextOut(TVec2f.Create(100, 415), 0.4, 'downscaled to 0.4 antialiased text');
+  QuadFont.TextOut(TVec2f.Create(100, 415), 0.3, 'downscaled to 0.3 antialiased text');
   QuadFont.TextOut(TVec2f.Create(100, 440), 0.75, 'downscaled to 0.75 antialiased text');
+  QuadFont.SetKerning(0);
 
   // upscale
   df.FirstEdge := True;
