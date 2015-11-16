@@ -344,10 +344,7 @@ begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atClear);
   {$ENDIF}
-  if FIsRenderIntoTexture then
-    Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0)
-  else
-    Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET or D3DCLEAR_ZBUFFER, AColor, 1.0, 0)
+  Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0)
   {$IFDEF DEBUG}
   FProfiler.EndCount(atClear);
   {$ENDIF}
@@ -749,6 +746,7 @@ end;
 //=============================================================================
 procedure TQuadRender.Finalize;
 begin
+  ReleaseVolatileResources;
   FD3DVD := nil;
   FD3DVB := nil
 end;
