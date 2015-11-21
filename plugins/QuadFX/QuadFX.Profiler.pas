@@ -46,8 +46,8 @@ type
     procedure Write(AString: PWideChar); stdcall;
   end;
 
-var
-  Profiler: TQuadFXProfiler;
+//var
+  //Profiler: TQuadFXProfiler;
 
 implementation
 
@@ -166,12 +166,12 @@ begin
   end;
   FSync.Leave;
 end;
-
+     {
 initialization
   Profiler := TQuadFXProfiler.Create;
 
 finalization
   if Assigned(Profiler) then
     Profiler.Free;
-
+       }
 end.

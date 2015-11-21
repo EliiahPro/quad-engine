@@ -65,7 +65,7 @@ type
 implementation
 
 uses
-  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils, QuadFX.Profiler;
+  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils{, QuadFX.Profiler};
 
 constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
 var
@@ -157,7 +157,7 @@ begin
   if FIsNeedToKill then
     Exit;
 
-  Profiler.BeginCount(ptEffects);
+  //Profiler.BeginCount(ptEffects);
 
   FLife := FLife + ADelta;
 
@@ -177,7 +177,7 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
-  Profiler.EndCount(ptEffects);
+  //Profiler.EndCount(ptEffects);
 end;
 
 procedure TQuadFXEffect.Draw; stdcall;

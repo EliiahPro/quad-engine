@@ -34,7 +34,7 @@ type
 implementation
 
 uses
-  QuadFX.Manager, QuadFX.Profiler;
+  QuadFX.Manager{, QuadFX.Profiler};
 
 procedure TQuadFXLayer.SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
 begin
@@ -120,8 +120,8 @@ procedure TQuadFXLayer.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
 begin
-  Profiler.BeginTick(ADelta);
-  Profiler.BeginCount(ptUpdate);
+  //Profiler.BeginTick(ADelta);
+  //Profiler.BeginCount(ptUpdate);
   FParticleCount := 0;
   for i := FEffects.Count - 1 downto 0 do
     if TQuadFXEffect(FEffects[i]).IsNeedToKill then
@@ -135,7 +135,7 @@ begin
       FParticleCount := FParticleCount + FEffects[i].GetParticleCount;
     end;
 
-  Profiler.EndCount(ptUpdate);
+  //Profiler.EndCount(ptUpdate);
 end;
 
 procedure TQuadFXLayer.Draw; stdcall;
@@ -147,7 +147,7 @@ begin
     FEffects[i].Draw;
 
 //  Profiler.EndCount(ptDraw);
-  Profiler.EndTick;
+  //Profiler.EndTick;
 end;
 
 procedure TQuadFXLayer.EffectAdd(AEffect: TQuadFXEffect);

@@ -93,7 +93,7 @@ type
 implementation
 
 uses
-  QuadFX.Effect, QuadFX.Manager, QuadFX.Profiler;
+  QuadFX.Effect, QuadFX.Manager{, QuadFX.Profiler};
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 var
@@ -291,9 +291,9 @@ begin
   if not Assigned(FParams) then
     Exit;
 
-  Profiler.BeginCount(ptEmitters);
+  //Profiler.BeginCount(ptEmitters);
 
-  Profiler.BeginCount(ptParticles);
+  //Profiler.BeginCount(ptParticles);
   P := FParticles;
 
   if FIsDebug then
@@ -320,7 +320,7 @@ begin
       Dec(FParticlesCount);
     end;
   end;
-  Profiler.EndCount(ptParticles);
+  //Profiler.EndCount(ptParticles);
 
   FTime := FTime + ADelta;
 
@@ -338,12 +338,12 @@ begin
       RestartParams;
   end;
 
-  Profiler.BeginCount(ptParticlesParams);
+  //Profiler.BeginCount(ptParticlesParams);
   FLife := (FTime - FParams.BeginTime) / (FParams.EndTime - FParams.BeginTime);
   UpdateParams;
-  Profiler.EndCount(ptParticlesParams);
+  //Profiler.EndCount(ptParticlesParams);
 
-  Profiler.BeginCount(ptParticlesAdd);
+  //Profiler.BeginCount(ptParticlesAdd);
   if FEmission.Value > 0 then
   begin
     LifePos := FLife + FLastTime;
@@ -360,9 +360,9 @@ begin
       ParticleUpdate(Add, FLastTime);
     end;
   end;
-  Profiler.EndCount(ptParticlesAdd);
+  //Profiler.EndCount(ptParticlesAdd);
 
-  Profiler.EndCount(ptEmitters);
+  //Profiler.EndCount(ptEmitters);
 end;
 
 procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
@@ -379,7 +379,7 @@ var
   p1, p2: TVec2f;
   //ProfilerCounter: Int64;
 begin
-  Profiler.BeginCount(ptParticlesUpdate);
+  //Profiler.BeginCount(ptParticlesUpdate);
   AParticle.Time := AParticle.Time + ADelta;
   AParticle.Life := AParticle.Time / AParticle.LifeTime;
 
@@ -433,12 +433,12 @@ begin
   AParticle.Opacity.Update(AParticle.Life);
   AParticle.Color.A := AParticle.Opacity.Value;
 
-  Profiler.EndCount(ptParticlesUpdate);
+  //Profiler.EndCount(ptParticlesUpdate);
 
   //Profiler.EndPerformanceCounter('  Opacity', ProfilerCounter);
   //ProfilerCounter := Profiler.StartPerformanceCounter;
 
-  Profiler.BeginCount(ptParticlesVertexes);
+  //Profiler.BeginCount(ptParticlesVertexes);
   if AParticle.Angle <> 0 then
   begin
     FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
@@ -517,7 +517,7 @@ begin
   AParticle.Vertexes[3] := AParticle.Vertexes[2];
   AParticle.Vertexes[4] := AParticle.Vertexes[1];
 
-  Profiler.EndCount(ptParticlesVertexes);
+  //Profiler.EndCount(ptParticlesVertexes);
   //Profiler.EndPerformanceCounter('  Vertexes', ProfilerCounter);
   {
   if FIsDebug then
@@ -634,9 +634,9 @@ begin
       Manager.QuadRender.SetTexture(i, nil);
   end;
 
-  Profiler.BeginCount(ptDraw);
+  //Profiler.BeginCount(ptDraw);
   Manager.QuadRender.AddTrianglesToBuffer(FVertexes^, 6 * FParticlesCount);
-  Profiler.EndCount(ptDraw);
+  //Profiler.EndCount(ptDraw);
   Manager.QuadRender.FlushBuffer;
 end;
 
