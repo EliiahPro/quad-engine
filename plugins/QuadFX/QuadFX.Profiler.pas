@@ -3,7 +3,7 @@ unit QuadFX.Profiler;
 interface
 
 uses
-  Winapi.Windows, System.SysUtils, System.SyncObjs, TypInfo;
+  Winapi.Windows, System.SysUtils, System.SyncObjs, TypInfo, QuadEngine.Socket;
 
 type
   TQuadFXProfilerType = (
@@ -29,6 +29,8 @@ type
   private
     FFilename: string;
     FSync: TCriticalSection;
+    FSocket: TQuadSocket;
+    FSocketAddress: PQuadSocketAddressItem;
 
     FPerformanceFrequency: Int64;
     FTime: Double;
@@ -59,6 +61,8 @@ var
 begin
   FTime := 0;
   FSync := TCriticalSection.Create;
+  QueryPerformanceFrequency(FPerformanceFrequency);
+  {
   FFilename := 'QuadFX.csv';
   if FileExists(FFilename) then
     DeleteFile(Pchar(FFilename));
@@ -69,8 +73,6 @@ begin
   finally
     CloseFile(f);
   end;
-
-  QueryPerformanceFrequency(FPerformanceFrequency);
 
   Str := '';
   for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
@@ -87,12 +89,16 @@ begin
       Name + 'F;' +
       Name + 'S;';
   end;
-
   Write(PWideChar(Str));
+  }
+  FSocket := TQuadSocket.Create;
+  FSocket.InitSocket;
+  FSocketAddress := FSocket.CreateAddress('127.0.0.1', 17788);
 end;
 
 destructor TQuadFXProfiler.Destroy;
 begin
+  FSocket.Free;
   FSync.Free;
   inherited;
 end;
@@ -123,6 +129,7 @@ procedure TQuadFXProfiler.BeginTick(const ADelta: Double);
 var
   i: TQuadFXProfilerType;
 begin
+  FTime := FTime + ADelta;
   for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
   begin
     FData[i].Num := 0;
@@ -133,22 +140,47 @@ begin
 end;
 
 procedure TQuadFXProfiler.EndTick;
-  function ToTime(ACount: Int64): String;
+type
+  TCell = packed record
+    ID: Integer;
+    Time: Double;
+    Value: Double;
+    ValueFastest: Double;
+    ValueSlowest: Double;
+    ValueCount: Integer;
+  end;
+
+  function ToTime(ACount: Int64): Double;
   begin
-    Result := FloatToStr(ACount / FPerformanceFrequency * 1000) + ';';
+    Result := ACount / FPerformanceFrequency * 1000;
   end;
 var
   i: TQuadFXProfilerType;
-  Str: String;
+  //Str: String;
+  Cell: TCell;
 begin
+{
   Str := '';
-  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
     Str := Str + ToTime(FData[i].Count);
 
   for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
     Str := Str + IntToStr(FData[i].Num) + ';' + ToTime(FData[i].CountFastest) + ToTime(FData[i].CountSlowest);
 
   Write(PWideChar(Str));
+  }
+  Cell.Time := FTime;
+  for i := Low(TQuadFXProfilerType) to High(TQuadFXProfilerType) do
+  begin
+    Cell.ID := Integer(i);
+    Cell.Value := ToTime(FData[i].Count);
+    Cell.ValueFastest := ToTime(FData[i].CountFastest);
+    Cell.ValueSlowest := ToTime(FData[i].CountSlowest);
+    Cell.ValueCount := FData[i].Num;
+    FSocket.Clear;
+    FSocket.Write(@Cell, SizeOf(Cell));
+    FSocket.Send(FSocketAddress);
+  end;
+
 end;
 
 procedure TQuadFXProfiler.Write(AString: PWideChar);
