@@ -28,7 +28,7 @@ begin
   QuadInput.Update;
 
   QuadRender.BeginRender;
-  QuadRender.Clear(0);
+  QuadRender.Clear($FF000000);
 
   DrawRect(TVec2f.Create(2, 1), QuadInput.IsKeyDown(ord('W')));
   DrawRect(TVec2f.Create(2, 2), QuadInput.IsKeyDown(ord('S')));

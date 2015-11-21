@@ -126,6 +126,9 @@ end;
 //=============================================================================
 procedure TQuadTexture.Draw(const Position: Tvec2f; Color: Cardinal);
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + TVec2f.Create(FFrameWidth, FFrameHeight),
@@ -156,6 +159,9 @@ var
   px, py : Integer;
   px2, py2 : Integer;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   px := (Pattern mod (FFrameWidth div FPatternWidth)) * FPatternWidth;
@@ -172,6 +178,9 @@ end;
 //=============================================================================
 procedure TQuadTexture.DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color : Cardinal);
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.Drawrect(PointA -0.5, PointB - 0.5, UVA, UVB, Color);
@@ -183,6 +192,9 @@ end;
 procedure TQuadTexture.DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f;
   angle, Scale: Double; Color: Cardinal); stdcall;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.DrawRectRotAxis(PointA - 0.5, PointB - 0.5, angle, Scale, Axis,
@@ -194,6 +206,9 @@ end;
 //=============================================================================
 procedure TQuadTexture.DrawPart(const Position: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.Drawrect(Position - 0.5, Position - 0.5 + RightBottom - LeftTop,
@@ -206,6 +221,9 @@ end;
 //=============================================================================
 procedure TQuadTexture.DrawPartRot(const Center: TVec2f; angle, Scale: Double; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.DrawRectRot(Center - 0.5, Center - 0.5 + RightBottom - LeftTop, angle, Scale,
@@ -218,6 +236,9 @@ end;
 //=============================================================================
 procedure TQuadTexture.DrawPartRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + RightBottom - LeftTop, angle, Scale, Axis,
@@ -234,6 +255,9 @@ var
   px, py : Integer;
   px2, py2 : Integer;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   px := (Pattern mod (FFrameWidth div FPatternWidth)) * FPatternWidth;
@@ -252,6 +276,9 @@ end;
 procedure TQuadTexture.DrawRotAxis(const Position: TVec2f; angle, Scale: Double;
   const Axis: TVec2f; Color: Cardinal);
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + TVec2f.Create(FFrameWidth, FFrameHeight),
@@ -267,6 +294,9 @@ var
   px, py : Integer;
   px2, py2 : Integer;
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   px := (Pattern mod (FFrameWidth div FPatternWidth)) * FPatternWidth;
@@ -283,6 +313,9 @@ end;
 //=============================================================================
 procedure TQuadTexture.DrawRot(const Center: TVec2f; angle, Scale: Double; Color : Cardinal);
 begin
+  if not FIsLoaded then
+    Exit;
+
   SetTextureStages;
 
   FQuadRender.Drawrectrot(Center - 0.5, Center - 0.5 + TVec2f.Create(FFrameWidth, FFrameHeight),
@@ -294,6 +327,9 @@ end;
 //=============================================================================
 function TQuadTexture.GetPatternCount: Integer;
 begin
+  if not FIsLoaded then
+    Exit;
+
   Result := (FFrameWidth div FPatternWidth) * (FFrameHeight div FPatternHeight);
 end;
 
