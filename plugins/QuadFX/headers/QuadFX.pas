@@ -188,7 +188,12 @@ type
     procedure Draw; stdcall;
     function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetParticleCount: integer; stdcall;
-    function GetActive: Boolean; stdcall;
+    function GetEnabled: Boolean; stdcall;
+    function GetEmissionEnabled: Boolean; stdcall;
+    function GetVisible: Boolean; stdcall;
+    procedure SetEnabled(AState: Boolean); stdcall;
+    procedure SetEmissionEnabled(AState: Boolean); stdcall;
+    procedure SetVisible(AState: Boolean); stdcall;
   end;
 
   IQuadFXEffectParams = interface(IUnknown)
@@ -216,6 +221,12 @@ type
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
     function GetSpawnWithLerp: Boolean; stdcall;
+    function GetEnabled: Boolean; stdcall;
+    function GetEmissionEnabled: Boolean; stdcall;
+    function GetVisible: Boolean; stdcall;
+    procedure SetEmissionEnabled(AState: Boolean); stdcall;
+    procedure SetEnabled(AState: Boolean); stdcall;
+    procedure SetVisible(AState: Boolean); stdcall;
 
     procedure SetPosition(APosition: TVec2f); stdcall;
     procedure SetAngle(AAngle: Single); stdcall;

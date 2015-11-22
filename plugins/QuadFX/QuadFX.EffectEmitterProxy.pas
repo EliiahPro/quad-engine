@@ -13,6 +13,9 @@ type
     function GetAngle: Single;
     function GetGravitation: TVec2f;
     procedure GetSinCos(out ASinRad, ACosRad: Single);
+    function GetEnabled: Boolean;
+    function GetVisible: Boolean;
+    function GetEmissionEnabled: Boolean;
   end;
 
   TEffectEmitterProxy = class(TInterfacedObject, IEffectEmitterProxy)
@@ -22,12 +25,18 @@ type
     FAngle: Single;
     FSinRad, FCosRad: Single;
     FLayerEffectProxy: ILayerEffectProxy;
+    FEnabled: Boolean;
+    FVisible: Boolean;
+    FEmissionEnabled: Boolean;
     function GetPosition: TVec2f; inline;
     function GetScale: Single; inline;
     function GetAngle: Single; inline;
     procedure SetAngle(Value: Single);
     function GetGravitation: TVec2f; inline;
     function GetOnDraw: TQuadFXEmitterDrawEvent; inline;
+    function GetEnabled: Boolean; inline;
+    function GetVisible: Boolean; inline;
+    function GetEmissionEnabled: Boolean; inline;
   public
     constructor Create(APosition: TVec2f; AAngle, AScale: Single);
     procedure GetSinCos(out ASinRad, ACosRad: Single);
@@ -36,6 +45,9 @@ type
     property Position: TVec2f read GetPosition write FPosition;
     property Angle: Single read GetAngle write SetAngle;
     property Scale: Single read GetScale write FScale;
+    property Enabled: Boolean read GetEnabled write FEnabled;
+    property EmissionEnabled: Boolean read GetEmissionEnabled write FEmissionEnabled;
+    property Visible: Boolean read GetVisible write FVisible;
     property OnDraw: TQuadFXEmitterDrawEvent read GetOnDraw;
   end;
 
@@ -49,6 +61,9 @@ begin
   Position := APosition;
   Scale := AScale;
   Angle := AAngle;
+  FEnabled := True;
+  FVisible := True;
+  FEmissionEnabled := True;
 end;
 
 function TEffectEmitterProxy.GetAngle: Single;
@@ -70,6 +85,21 @@ procedure TEffectEmitterProxy.GetSinCos(out ASinRad, ACosRad: Single);
 begin
   ASinRad := FSinRad;
   ACosRad := FCosRad;
+end;
+
+function TEffectEmitterProxy.GetEnabled: Boolean;
+begin
+  Result := FEnabled;
+end;
+
+function TEffectEmitterProxy.GetVisible: Boolean;
+begin
+  Result := FVisible;
+end;
+
+function TEffectEmitterProxy.GetEmissionEnabled: Boolean;
+begin
+  Result := FEmissionEnabled;
 end;
 
 function TEffectEmitterProxy.GetGravitation: TVec2f;
