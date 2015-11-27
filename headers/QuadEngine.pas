@@ -544,7 +544,7 @@ type
     function GetAngle: Single; stdcall;
     function GetMatrix: TMatrix4x4; stdcall;
     function GetScale: Single; stdcall;
-    procedure SetAngle(const AAngle: Single); stdcall;
+    procedure SetAngle(AAngle: Single); stdcall;
     procedure SetPosition(const APosition: TVec2f); stdcall;
     function GetTransformed(const AVec: TVec2f): TVec2f; stdcall;
   end;

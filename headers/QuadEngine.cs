@@ -584,7 +584,8 @@ namespace QuadEngine
         [PreserveSig] TMatrix4x4 GetMatrix();
         [PreserveSig] Vec2f GetScale();
         void SetAngle(float AAngle);
-        void SetPosition(Vec2f APosition);
+        void SetPosition(ref Vec2f APosition);
+        [PreserveSig] Vec2f GetTransformed(ref Vec2f AVec); 
     }
 
     /* Quad GBuffer */
