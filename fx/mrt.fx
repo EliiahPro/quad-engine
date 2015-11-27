@@ -24,9 +24,9 @@ vertexOutput std_VS(appdata Input)
     Output.Position = mul(VPM, Input.Position);
     Output.TexCoord = Input.UV;
 
-    Output.T = Input.Tangent;
-    Output.B = Input.Binormal;
-    Output.N = Input.Normal;
+    Output.T = normalize(mul(VPM, Input.Tangent));
+    Output.B = normalize(mul(VPM, Input.Binormal));
+    Output.N = normalize(mul(VPM, Input.Normal));
     
     return Output;
 }
