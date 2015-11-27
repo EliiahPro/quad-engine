@@ -38,8 +38,11 @@ type
     function GetAngle: Single; stdcall;
     function GetMatrix: TMatrix4x4; stdcall;
     function GetScale: Single; stdcall;
-    procedure SetAngle(AAngle: Single); stdcall;
-    procedure SetPosition(APosition: TVec2f); stdcall;
+    procedure SetAngle(const AAngle: Single); stdcall;
+    procedure SetPosition(const APosition: TVec2f); stdcall;
+    function GetTransformed(const AVec: TVec2f): TVec2f; stdcall;
+  class var
+    CurrentCamera: TQuadCamera;
   end;
 
 function MultiplyMatrix(const A, B: D3DMATRIX): D3DMATRIX; inline;
@@ -144,6 +147,8 @@ begin
 
   Device.LastResultCode := FRender.D3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
   FRender.ViewMatrix := FViewMatrix;
+
+  CurrentCamera := Self;
 end;
 
 constructor TQuadCamera.Create(AQuadRender: TQuadRender);
@@ -202,6 +207,8 @@ end;
 procedure TQuadCamera.Disable;
 begin
   FRender.ChangeResolution(FRender.Width, FRender.Height);
+
+  CurrentCamera := nil;
 end;
 
 function TQuadCamera.GetPosition: TVec2f;
@@ -242,12 +249,20 @@ begin
   Result := FScale;
 end;
 
-procedure TQuadCamera.SetAngle(AAngle: Single);
+function TQuadCamera.GetTransformed(const AVec: TVec2f): TVec2f;
+begin
+  Result.X := FViewMatrix._11 * AVec.X + FViewMatrix._21 * AVec.Y + FViewMatrix._31 + FViewMatrix._41;
+  Result.Y := FViewMatrix._12 * AVec.X + FViewMatrix._22 * AVec.Y + FViewMatrix._32 + FViewMatrix._42;
+  Result.X := (Result.X * Device.Render.Width + Device.Render.Width) / 2;
+  Result.Y := (-Result.Y * Device.Render.Height + Device.Render.Height) / 2;
+end;
+
+procedure TQuadCamera.SetAngle(const AAngle: Single);
 begin
   FAngle := AAngle;
 end;
 
-procedure TQuadCamera.SetPosition(APosition: TVec2f);
+procedure TQuadCamera.SetPosition(const APosition: TVec2f);
 begin
   FTranslation := APosition;
 end;

@@ -1,7 +1,7 @@
 program demo06;
 
 uses
-  QuadEngine, Vec2f, Classes;
+  QuadEngine, Vec2f, Classes, Windows, System.SysUtils;
 
 type
   PParticle = ^TParticle;
@@ -16,7 +16,9 @@ var
   QuadWindow: IQuadWindow;
   QuadRender: IQuadRender;
   QuadTimer: IQuadTimer;
+  QuadInput: IQuadInput;
   Texture: IQuadTexture;
+  Camera: IQuadCamera;
   diff: IQuadTexture;
   lightpos: TVec3f;
   LightUV: array[0..3] of Single;
@@ -31,15 +33,44 @@ var
   vec: PParticle;
   mVec: PParticle;
 begin
+  QuadInput.Update;
+
+  if QuadInput.IsKeyDown(VK_LEFT) then
+    Camera.Translate(TVec2f.Create(-3, 0));
+
+  if QuadInput.IsKeyDown(VK_RIGHT) then
+    Camera.Translate(TVec2f.Create(3, 0));
+
+  if QuadInput.IsKeyDown(VK_DOWN) then
+    Camera.Translate(TVec2f.Create(0, -3));
+
+  if QuadInput.IsKeyDown(VK_UP) then
+    Camera.Translate(TVec2f.Create(0, 3));
+
+  if QuadInput.IsKeyDown(VK_F1) then
+    Camera.Rotate(-1);
+  if QuadInput.IsKeyDown(VK_F4) then
+    Camera.Rotate(1);
+
+  if QuadInput.IsKeyDown(VK_F5) then
+    Camera.Scale(0.5);
+  if QuadInput.IsKeyDown(VK_F6) then
+    Camera.Scale(0.75);
+  if QuadInput.IsKeyDown(VK_F7) then
+    Camera.Scale(1.0);
+  if QuadInput.IsKeyDown(VK_F8) then
+    Camera.Scale(2.0);
+
+
   QuadRender.BeginRender;
   QuadRender.Clear($0);
 
-
+  Camera.Enable;
   QuadRender.RenderToGBuffer(True, QuadGBuffer);
   QuadRender.SetBlendMode(qbmNone);
   Texture.Draw(TVec2f.Zero);
   QuadRender.RenderToGBuffer(False, QuadGBuffer);
-
+  Camera.Disable;
 
   QuadGBuffer.DiffuseMap.Draw(TVec2f.Zero, $FF080808);
 
@@ -49,10 +80,10 @@ begin
   begin
     t := 0;
     GetMem(Vec, SizeOf(Tparticle));
-    vec^.radius := Random(250) / 1000 + 0.125;
-    vec^.X := Random(800) / 800;
-    vec^.Y := - 0.4;
-    vec^.Z := Random(500) / 1500 + 0.05;
+    vec^.radius := Random(200) + 50;
+    vec^.X := Random(800);
+    vec^.Y := - 100;
+    vec^.Z := Random(30) + 5;
     vec^.color := Random($FFFFFF) + $FF000000;
     mList.Add(vec);
   end;
@@ -63,16 +94,21 @@ begin
     begin
       mVec := mList.Items[i];
 
-      mVec^.Y := mVec^.Y + delta / 10;
+      mVec^.Y := mVec^.Y + delta * 100;
 
       QuadGBuffer.DrawLight(TVec3f.Create(mVec^.X, mVec.Y, mVec.Z), mVec^.radius, mVec^.color);
 
-      QuadRender.Rectangle(TVec2f.Create(mVec^.X * 800 - 2, mVec^.Y * 600 - 2),
-                           TVec2f.Create(mVec^.X * 800 + 2, mVec^.Y * 600 + 2),
+      Camera.Enable;
+      QuadRender.Rectangle(TVec2f.Create(mVec^.X - 2, mVec^.Y - 2),
+                           TVec2f.Create(mVec^.X + 2, mVec^.Y + 2),
                            mVec^.color);
+      Camera.Disable;
+
       QuadRender.FlushBuffer;
     end;
-    
+
+//  QuadGBuffer.DrawLight(TVec3f.Create((QuadInput.GetMousePosition).X, (QuadInput.GetMousePosition).Y, 10), 250, $FFFFFFFF);
+
   QuadRender.EndRender;
 end;
 
@@ -97,6 +133,10 @@ begin
   Texture.LoadFromFile(3, 'data\Bump.jpg');
 
   QuadDevice.CreateGBuffer(QuadGBuffer);
+
+  QuadDevice.CreateCamera(Camera);
+
+  QuadWindow.CreateInput(QuadInput);
 
   QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
 

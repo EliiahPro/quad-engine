@@ -17,7 +17,7 @@ interface
 
 uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Utils, QuadEngine,
-  System.SysUtils, Vec2f;
+  System.SysUtils, Vec2f, QuadEngine.Camera;
 
 type
   TQuadGBuffer = class(TInterfacedObject, IQuadGBuffer)
@@ -33,6 +33,7 @@ type
     FSpecularMap: IQuadTexture;
     FHeightMap: IQuadTexture;
     FQuadRender: TQuadRender;
+    FCamera: TQuadCamera;
   public
     constructor Create(AQuadRender: TQuadRender); reintroduce;
     function DiffuseMap: IQuadTexture; stdcall;
@@ -41,6 +42,7 @@ type
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
     procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
+    property Camera: TQuadCamera read FCamera write FCamera;
   end;
 
 implementation
@@ -98,29 +100,34 @@ var
   LightPos: TVec3f;
   LightUV: array[0..3] of Single;
   ScreenRatio: Single;
+  Position: TVec2f;
 begin
   ScreenRatio := FBuffer.GetTextureWidth / FBuffer.GetTextureHeight;
 
-  TQuadShader.DeferredShading.BindVariableToVS(4, @lightPos, 1);
+  Position := TVec2f.Create(APos.X, APos.Y);
+
+  if Assigned(FCamera) then
+  begin
+    Aradius := Aradius * FCamera.GetScale;
+    Position := FCamera.GetTransformed(Position);
+  end;
+
   TQuadShader.DeferredShading.BindVariableToPS(5, @LightUV[0], 1);
+  TQuadShader.DeferredShading.BindVariableToPS(6, @ScreenRatio, 1);
 
   Device.Render.SetBlendMode(qbmSrcAlphaAdd);
 
-  lightpos := TVec3f.Create(APos.X * Device.Render.Width,
-                            APos.Y * Device.Render.Height,
-                            Apos.Z);
-  lightUV[0] := APos.X;
-  lightUV[1] := APos.Y;
-  lightUV[2] := APos.Z;
-  lightUV[3] := Aradius;
-
+  lightUV[0] := Position.X / FBuffer.GetTextureWidth;
+  lightUV[1] := Position.Y / FBuffer.GetTextureHeight;
+  lightUV[2] := APos.Z / 100;
+  lightUV[3] := Aradius / FBuffer.GetTextureWidth;
 
   TQuadShader.DeferredShading.SetShaderState(True);
 
-  FBuffer.DrawMap(TVec2f.Create((APos.X - Aradius) * Device.Render.Width, (APos.Y - Aradius * ScreenRatio) * Device.Render.Height),
-                  TVec2f.Create((APos.X + Aradius) * Device.Render.Width, (APos.Y + Aradius * ScreenRatio) * Device.Render.Height),
-                  TVec2f.Create(APos.X - Aradius, APos.Y - Aradius * ScreenRatio),
-                  TVec2f.Create(APos.X + Aradius, APos.Y + Aradius * ScreenRatio),
+  FBuffer.DrawMap(TVec2f.Create(Position.X - Aradius, Position.Y - Aradius),
+                  TVec2f.Create(Position.X + Aradius, Position.Y + Aradius),
+                  TVec2f.Create((Position.X - Aradius) / FBuffer.GetTextureWidth, (Position.Y - Aradius) / FBuffer.GetTextureHeight),
+                  TVec2f.Create((Position.X + Aradius) / FBuffer.GetTextureWidth, (Position.Y + Aradius) / FBuffer.GetTextureHeight),
                   AColor);
 
   TQuadShader.DeferredShading.SetShaderState(False);

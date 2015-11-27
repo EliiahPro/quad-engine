@@ -79,7 +79,7 @@ type
     procedure InitializeVolatileResources;
     procedure ReleaseVolatileResources;
     procedure CreateOrthoMatrix;
-    procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
+    procedure SetViewMatrix(const AViewMatrix: TD3DMatrix);
     function GetIsSupportedNonPow2: Boolean;
     function GetNumSimultaneousRTs: Cardinal;
     function GetIsSeparateAlphaBlend: Boolean;
@@ -168,7 +168,7 @@ implementation
 
 uses
   QuadEngine.Texture, QuadEngine.Shader, QuadEngine.Font, QuadEngine.Timer,
-  QuadEngine.Device;
+  QuadEngine.Device, QuadEngine.GBuffer, QuadEngine.Camera;
 
 { TQuadRender }
 
@@ -1182,6 +1182,8 @@ end;
 // Enable/disable rendering into GBuffer
 //=============================================================================
 procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
+var
+  Obj: TQuadGBuffer;
 begin
   if FIsDeviceLost then
     Exit;
@@ -1192,6 +1194,9 @@ begin
     RenderToTexture(True, AQuadGBuffer.Buffer, 1, 1, AIsCropScreen);
     RenderToTexture(True, AQuadGBuffer.Buffer, 2, 2, AIsCropScreen);
     RenderToTexture(True, AQuadGBuffer.Buffer, 3, 3, AIsCropScreen);
+
+    Obj := AQuadGBuffer as TQuadGBuffer;
+    Obj.Camera := TQuadCamera.CurrentCamera;
 
     TQuadShader.MRTShader.SetShaderState(True);
   end
@@ -1740,7 +1745,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.SetViewMatrix(AViewMatrix: TD3DMatrix);
+procedure TQuadRender.SetViewMatrix(const AViewMatrix: TD3DMatrix);
 begin
   FViewMatrix := AViewMatrix;
 end;
