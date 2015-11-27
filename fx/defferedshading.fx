@@ -20,9 +20,8 @@ struct vertexOutput {
 
 vertexOutput std_VS(appdata Input) {
         vertexOutput Output = (vertexOutput)0;
-        float3 CamPos = (0.0, 0.0, 1.0);
+        float3 CamPos = (0.0, 0.0, 0.0);
 
-//	Input.Binormal.y = -Input.Binormal.y;
         float3x3 RM;
         RM[0] = Input.Tangent;
         RM[1] = Input.Binormal;
@@ -40,6 +39,7 @@ vertexOutput std_VS(appdata Input) {
 
                             
 float4 pos : register(c5);        
+float ratio : register(c6);  
 sampler2D DiffuseMap  : register(s0);   
 sampler2D NormalMap   : register(s1);
 sampler2D SpecularMap : register(s2);
@@ -48,10 +48,12 @@ sampler2D HeightMap   : register(s3);
 float4 std_PS(vertexOutput Input) : COLOR {  
             
         float4 Output;   
+
+	float2 corr = float2(ratio, 1.0);
                          
         float z = tex2D(HeightMap, Input.TexCoord).r;
         float3 n = tex2D(NormalMap, Input.TexCoord).rgb * 2.0 - 1.0;
-        float k = max(1.0 - distance(Input.TexCoord, pos) * (2.0 / pos.a), 0.0);        
+        float k = max(1.0 - distance(Input.TexCoord * corr, pos * corr) * (1.0 / pos.a), 0.0);        
         float4 c = tex2D(DiffuseMap, Input.TexCoord).rgba * k;         
         float3 s = tex2D(SpecularMap,  Input.TexCoord).rgb;
         float3 pp = (float3(Input.TexCoord, 0.0) - pos.rgb) * z / pos.z;

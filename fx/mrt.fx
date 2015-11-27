@@ -21,6 +21,7 @@ vertexOutput std_VS(appdata Input)
 {
     vertexOutput Output = (vertexOutput)0;
 
+Input.Binormal.y = -Input.Binormal.y;
     Output.Position = mul(VPM, Input.Position);
     Output.TexCoord = Input.UV;
 
