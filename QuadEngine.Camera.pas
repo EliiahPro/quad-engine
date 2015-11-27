@@ -257,7 +257,7 @@ begin
   Result.Y := (-Result.Y * Device.Render.Height + Device.Render.Height) / 2;
 end;
 
-procedure TQuadCamera.SetAngle(const AAngle: Single);
+procedure TQuadCamera.SetAngle(AAngle: Single);
 begin
   FAngle := AAngle;
 end;

@@ -557,8 +557,14 @@ type
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
-    procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
-  end;  
+    /// <summary>Draw light using GBuffer data</summary>
+    /// <param name="APos">Position in world space</param>
+    /// <param name="AHeight">Height of light. Lower is closer to plain.</param>
+    /// <param name="ARadius">Radius of light</param>
+    /// <param name="AColor">Light Color</param>
+    /// <remarks>DrawLight must be used without using camera. GBuffer stores camera used to create it.</remarks>
+    procedure DrawLight(const APos: TVec2f; AHeight: Single; ARadius: Single; AColor: Cardinal); stdcall;
+  end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
   TSecretMagicFunction = function: PWideChar;

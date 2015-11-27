@@ -96,7 +96,7 @@ begin
 
       mVec^.Y := mVec^.Y + delta * 100;
 
-      QuadGBuffer.DrawLight(TVec3f.Create(mVec^.X, mVec.Y, mVec.Z), mVec^.radius, mVec^.color);
+      QuadGBuffer.DrawLight(TVec2f.Create(mVec^.X, mVec.Y), mVec.Z, mVec^.radius, mVec^.color);
 
       Camera.Enable;
       QuadRender.Rectangle(TVec2f.Create(mVec^.X - 2, mVec^.Y - 2),
@@ -106,8 +106,6 @@ begin
 
       QuadRender.FlushBuffer;
     end;
-
-//  QuadGBuffer.DrawLight(TVec3f.Create((QuadInput.GetMousePosition).X, (QuadInput.GetMousePosition).Y, 10), 250, $FFFFFFFF);
 
   QuadRender.EndRender;
 end;

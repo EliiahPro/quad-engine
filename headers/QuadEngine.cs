@@ -600,7 +600,13 @@ namespace QuadEngine
         [PreserveSig] IQuadTexture SpecularMap();
         [PreserveSig] IQuadTexture HeightMap();
         [PreserveSig] IQuadTexture Buffer();
-        void DrawLight(ref Vec3f APos, float ARadius, UInt32 AColor);
+        /// <summary>Draw light using GBuffer data</summary>
+        /// <param name="APos">Position in world space</param>
+        /// <param name="AHeight">Height of light. Lower is closer to plain.</param>
+        /// <param name="ARadius">Radius of light</param>
+        /// <param name="AColor">Light Color</param>
+        /// <remarks>DrawLight must be used without using camera. GBuffer stores camera used to create it.</remarks>
+        void DrawLight(ref Vec2f APos, float AHeight, float ARadius, UInt32 AColor);
     }
     
 

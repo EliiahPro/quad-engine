@@ -41,7 +41,7 @@ type
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
-    procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
+    procedure DrawLight(const APos: TVec2f; AHeight: Single; ARadius: Single; AColor: Cardinal); stdcall;
     property Camera: TQuadCamera read FCamera write FCamera;
   end;
 
@@ -94,8 +94,8 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadGBuffer.DrawLight(const APos: TVec3f; ARadius: Single;
-  AColor: Cardinal);
+procedure TQuadGBuffer.DrawLight(const APos: TVec2f; AHeight: Single;
+  ARadius: Single; AColor: Cardinal);
 var
   LightPos: TVec3f;
   LightUV: array[0..3] of Single;
@@ -119,7 +119,7 @@ begin
 
   lightUV[0] := Position.X / FBuffer.GetTextureWidth;
   lightUV[1] := Position.Y / FBuffer.GetTextureHeight;
-  lightUV[2] := APos.Z / 100;
+  lightUV[2] := AHeight / 100;
   lightUV[3] := Aradius / FBuffer.GetTextureWidth;
 
   TQuadShader.DeferredShading.SetShaderState(True);
