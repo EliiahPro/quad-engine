@@ -15,16 +15,9 @@ type
     FIsNeedToKill: Boolean;
     FParams: PQuadFXEmitterParams;
 
-    FVertexes: PVertexes;
-    FVertexesLastRecord: PVertexes;
-    FVertexeSize: Cardinal;
-    FVertexesSize: Cardinal;
-
-    FParticles: PQuadFXParticle;
+    FVertexes: array of TVertexes;
+    FParticles: array of  TQuadFXParticle;
     FParticlesCount: Cardinal;
-    FParticlesLastRecord: PQuadFXParticle;
-    FParticleSize: Cardinal;
-    FParticlesSize: Cardinal;
 
     FPosition: record
       X: TQuadFXParticleValue;
@@ -56,6 +49,8 @@ type
     function GetValue(Index: Integer): Single; inline;
     function GetEmission: Single; inline;
     procedure UpdateParams; inline;
+    function GetVertexes: PVertexes;
+    function GetParticles: PQuadFXParticle;
     function GetPosition: TVec2f; inline;
     function GetDirection: Single; inline;
     function GetSpread: Single; inline;
@@ -81,8 +76,8 @@ type
     property Position: TVec2f read GetPosition;
     property IsDebug: Boolean read FIsDebug write FIsDebug;
 
-    property Vertexes: PVertexes read FVertexes;
-    property Particle: PQuadFXParticle read FParticles;
+    property Vertexes: PVertexes read GetVertexes;
+    property Particle: PQuadFXParticle read GetParticles;
     property ParticleCount: Cardinal read FParticlesCount;
     property IsNeedToKill: Boolean read FIsNeedToKill;
 
@@ -126,6 +121,16 @@ begin
   Result := FSpread.Value;
 end;
 
+function TQuadFXEmitter.GetVertexes: PVertexes;
+begin
+  Result := @FVertexes[0];
+end;
+
+function TQuadFXEmitter.GetParticles: PQuadFXParticle;
+begin
+  Result := @FParticles[0];
+end;
+
 procedure TQuadFXEmitter.RestartParams;
 var
   i: Integer;
@@ -149,13 +154,15 @@ begin
 end;
 
 procedure TQuadFXEmitter.Restart;
-var
+{var
   P: PQuadFXParticle;
-  V: PVertexes;
+  V: PVertexes;  }
 begin
   RestartParams;
   FTime := 0;
 
+  FParticlesCount := 0;
+             {
   P := FParticles;
   while Cardinal(P) < Cardinal(FParticlesLastRecord) do
   begin
@@ -166,7 +173,7 @@ begin
     V^ := FParticlesLastRecord.Vertexes^;
     P.Vertexes := V;
     Dec(FParticlesCount);
-  end;
+  end;  }
 end;
 
 function TQuadFXEmitter.GetStartVelocity: Single;
@@ -217,6 +224,10 @@ begin
   FLife := 0;
   FLastTime := 0;
   FParticlesCount := 0;
+
+  SetLength(FParticles, AParams.MaxParticles);
+  SetLength(FVertexes, AParams.MaxParticles);
+            {
   FParticleSize := SizeOf(TQuadFXParticle);
   FParticlesSize := FParticleSize * AParams.MaxParticles;
   GetMem(FParticles, FParticlesSize);
@@ -227,7 +238,7 @@ begin
 
   FVertexesLastRecord := FVertexes;
   FParticlesLastRecord := FParticles;
-
+                                 }
   FParams := AParams;
   RestartParams;
   FTime := 0;
@@ -282,8 +293,10 @@ end;
 
 destructor TQuadFXEmitter.Destroy;
 begin
-  FreeMem(FParticles);
-  FreeMem(FVertexes);
+  SetLength(FParticles, 0);
+  SetLength(FVertexes, 0);
+  //FreeMem(FParticles);
+  //FreeMem(FVertexes);
   FEffectEmitterProxy := nil;
   inherited;
 end;
@@ -293,7 +306,8 @@ var
   P: PQuadFXParticle;
   EmissionTime: Double;
   LifePos: Single;
-  V: PVertexes;
+  //V: PVertexes;
+  i: Integer;
 begin
   if not Assigned(FParams) and FEnabled and FEffectEmitterProxy.GetEnabled then
     Exit;
@@ -301,7 +315,7 @@ begin
   //Profiler.BeginCount(ptEmitters);
 
   //Profiler.BeginCount(ptParticles);
-  P := FParticles;
+  //P := FParticles;
 
   if FIsDebug then
   begin
@@ -309,22 +323,28 @@ begin
     FRect.RightBottom := FRect.LeftTop;
   end;
 
-  while Cardinal(P) < Cardinal(FParticlesLastRecord) do
+ // while Cardinal(P) < Cardinal(FParticlesLastRecord) do
+  for i := FParticlesCount - 1 downto 0 do
   begin
+    P := @FParticles[i];
     if (P.Time + ADelta <= P.LifeTime) then
     begin
       ParticleUpdate(P, ADelta);
-      Inc(P);
+   //   Inc(P);
     end
     else
     begin
+      Dec(FParticlesCount);
+      FParticles[i] := FParticles[FParticlesCount];
+      FVertexes[i] := FVertexes[FParticlesCount];
+      FParticles[i].Vertexes := @FVertexes[i];
+      {
       Dec(FParticlesLastRecord);
       Dec(FVertexesLastRecord);
       V := P.Vertexes;
       P^ := FParticlesLastRecord^;
       V^ := FParticlesLastRecord.Vertexes^;
-      P.Vertexes := V;
-      Dec(FParticlesCount);
+      P.Vertexes := V;      }
     end;
   end;
   //Profiler.EndCount(ptParticles);
@@ -546,10 +566,10 @@ var
   SinRad, CosRad: Single;
   P: TVec2f;
 begin
-  Result := FParticlesLastRecord;
-  Result.Vertexes := FVertexesLastRecord;
-  Inc(FParticlesLastRecord);
-  Inc(FVertexesLastRecord);
+  Result := @FParticles[FParticlesCount];
+  Result.Vertexes := @FVertexes[FParticlesCount];
+ { Inc(FParticlesLastRecord);
+  Inc(FVertexesLastRecord);}
   Inc(FParticlesCount);
 
   Result.TextureIndex := Random(FParams.TextureCount);
@@ -627,7 +647,7 @@ procedure TQuadFXEmitter.Draw; stdcall;
 var
   i: Integer;
 begin
-  if not FVisible or not FEffectEmitterProxy.GetVisible then
+  if not FVisible or not FEffectEmitterProxy.GetVisible or (FParticlesCount = 0) then
     Exit;
 
   Manager.QuadRender.SetBlendMode(FParams.BlendMode);
@@ -645,7 +665,7 @@ begin
   end;
 
   //Profiler.BeginCount(ptDraw);
-  Manager.QuadRender.AddTrianglesToBuffer(FVertexes^, 6 * FParticlesCount);
+  Manager.QuadRender.AddTrianglesToBuffer(FVertexes[0], 6 * FParticlesCount);
   //Profiler.EndCount(ptDraw);
   Manager.QuadRender.FlushBuffer;
 end;

@@ -104,11 +104,11 @@ begin
   QuadFXManager.CreateLayer(QuadFXLayer);
   QuadFXLayer.SetGravitation(TVec2f.Create(10, 10));
 
- // QuadFXManager.CreateAtlas(QuadFXAtlas);
- // QuadFXAtlas.LoadFromFile('Atlas', 'data\QuadFX_Effect.json');
+  // QuadFXManager.CreateAtlas(QuadFXAtlas);
+  // QuadFXAtlas.LoadFromFile('Atlas', 'data\QuadFX_Effect.json');
 
   QuadFXManager.CreateEffectParams(QuadFXEffectParams);
-  QuadFXEffectParams.LoadFromFile('Dirt1', 'data\dirt.json');
+  QuadFXEffectParams.LoadFromFile('Effect1', 'data\QuadFX_Effect.json');
 
   QuadFXManager.CreateEffectParams(QuadFXEffectParams2);
   QuadFXEffectParams2.LoadFromFile('Effect2', 'data\QuadFX_Effect.json');
