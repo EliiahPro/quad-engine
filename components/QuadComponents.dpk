@@ -30,6 +30,10 @@ requires
 
 contains
   QuadIcon in 'QuadIcon.pas',
-  QuadMemo in 'QuadMemo.pas';
+  QuadMemo in 'QuadMemo.pas',
+  FloatSpinEdit in 'FloatSpinEdit.pas',
+  Quad.Diagram in 'Quad.Diagram.pas',
+  Quad.EffectTimeLine in 'Quad.EffectTimeLine.pas',
+  Quad.GradientEdit in 'Quad.GradientEdit.pas';
 
 end.

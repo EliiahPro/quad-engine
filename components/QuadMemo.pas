@@ -547,11 +547,11 @@ begin
 
           if FOptions.IsTextShadowed and (i <> CurrentLine) then
           begin
-            font.Color := RGB(Trunc(GetRValue(FColors.BackGround) * 0.90), Trunc(GetGValue(FColors.BackGround)*0.90), Trunc(GetBValue(FColors.BackGround) * 0.90),);
+            font.Color := RGB(Trunc(GetRValue(FColors.BackGround) * 0.90), Trunc(GetGValue(FColors.BackGround)*0.90), Trunc(GetBValue(FColors.BackGround) * 0.90));
             TextOut(FServiceBarWidth + (FParser.TokenItems[j].TLineChar + FCameraPos.X) * FCharWidth, (i + FCameraPos.Y) * FCharHeight + 3, FParser.TokenItems[j].TText);
-            font.Color := RGB(Trunc(GetRValue(FColors.BackGround) * 0.80), Trunc(GetGValue(FColors.BackGround)*0.80), Trunc(GetBValue(FColors.BackGround) * 0.80),);
+            font.Color := RGB(Trunc(GetRValue(FColors.BackGround) * 0.80), Trunc(GetGValue(FColors.BackGround)*0.80), Trunc(GetBValue(FColors.BackGround) * 0.80));
             TextOut(FServiceBarWidth + (FParser.TokenItems[j].TLineChar + FCameraPos.X) * FCharWidth, (i + FCameraPos.Y) * FCharHeight + 2, FParser.TokenItems[j].TText);
-            font.Color := RGB(Trunc(GetRValue(FColors.BackGround) * 0.70), Trunc(GetGValue(FColors.BackGround)*0.70), Trunc(GetBValue(FColors.BackGround) * 0.70),);
+            font.Color := RGB(Trunc(GetRValue(FColors.BackGround) * 0.70), Trunc(GetGValue(FColors.BackGround)*0.70), Trunc(GetBValue(FColors.BackGround) * 0.70));
             TextOut(FServiceBarWidth + (FParser.TokenItems[j].TLineChar + FCameraPos.X) * FCharWidth, (i + FCameraPos.Y) * FCharHeight + 1, FParser.TokenItems[j].TText);
           end;
 
@@ -745,6 +745,7 @@ var
   Caret: TPoint;
   cd: TColorDialog;
   DecimalChar: Char;
+
 begin
   inherited;
   GetCaretPos(Caret);
@@ -886,11 +887,22 @@ begin
       begin
         cd := TColorDialog.Create(Self);
         cd.Options := [cdFullOpen];
+
+        {$IF CompilerVersion >= 27}
+        DecimalChar := FormatSettings.DecimalSeparator;
+        FormatSettings.DecimalSeparator := '.';
+        {$ELSE}
         DecimalChar := DecimalSeparator;
         DecimalSeparator := '.';
+        {$IFEND}
         if cd.Execute then
           InsertText(Format('(%f, %f, %f, 1.0)', [GetRValue(cd.Color) / 255, GetGValue(cd.Color) / 255, GetBValue(cd.Color) / 255]));
-        DecimalSeparator := DecimalChar;          
+
+        {$IF CompilerVersion >= 27}
+        FormatSettings.DecimalSeparator := DecimalChar;
+        {$ELSE}
+        DecimalSeparator := DecimalChar;
+        {$IFEND}
       end;
 {    Ord('V'): if ssCtrl in Shift then InsertText(Clipboard.AsText);
     Ord('X'): if ssCtrl in Shift then CopySelection(True);
