@@ -123,12 +123,13 @@ var
   AtlasName: WideString;
 begin
   AtlasName := (AJsonObject.GetValue('Name') as TJSONString).Value;
-  Result := Manager.AtlasByName(FPackName, AtlasName);
+  Result := Manager.AtlasByName(FPackName, FGUID, AtlasName);
   if Assigned(Result) then
     Exit;
 
   Manager.CreateAtlas(Result);
   TQuadFXAtlas(Result).PackName := FPackName;
+  TQuadFXAtlas(Result).GUID := FGUID;
   TQuadFXAtlas(Result).Name := AtlasName;
 
   if Assigned(AJsonObject.GetValue('Data')) then
@@ -344,6 +345,11 @@ begin
 
     if Assigned(Result.Get('PackName')) then
       FPackName := Result.GetValue('PackName').Value;
+
+    if Assigned(Result.Get('GUID')) then
+      FGUID := StringToGUID(Result.GetValue('GUID').Value)
+    else
+      FGUID := StringToGUID('{00000000-0000-0000-0000-000000000000}');
 
     if Assigned(Result.Get('Textures')) then
     begin

@@ -11,6 +11,7 @@ type
   private
     FName: WideString;
     FPackName: WideString;
+    FGUID: TGUID;
     FSprites: TList<PQuadFXSprite>;
     FTexture: IQuadTexture;
     FLoadFromFile: Boolean;
@@ -19,6 +20,7 @@ type
     destructor Destroy; override;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    function GetGUID: TGUID; stdcall;
     function GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     function GetSpriteCount: Integer; stdcall;
     function GetSize: TVec2f; stdcall;
@@ -32,6 +34,7 @@ type
     property Texture: IQuadTexture read FTexture write SetTexture;
     property Name: WideString read FName write FName;
     property PackName: WideString read FPackName write FPackName;
+    property GUID: TGUID read FGUID write FGUID;
   end;
 
 implementation
@@ -104,6 +107,11 @@ end;
 function TQuadFXAtlas.GetPackName: PWideChar; stdcall;
 begin
   Result := PWideChar(FPackName);
+end;
+
+function TQuadFXAtlas.GetGUID: TGUID; stdcall;
+begin
+  Result := FGUID;
 end;
 
 function TQuadFXAtlas.CreateSprite(out ASprite: PQuadFXSprite): HResult; stdcall;

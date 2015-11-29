@@ -174,6 +174,7 @@ type
     function GetSize: TVec2f; stdcall;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    function GetGUID: TGUID; stdcall;
     function SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;

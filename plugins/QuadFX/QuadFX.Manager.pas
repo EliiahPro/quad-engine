@@ -29,7 +29,7 @@ type
     function CreateLayer(out ALayer: IQuadFXLayer): HResult; stdcall;
     function CreateAtlas(out AAtlas: IQuadFXAtlas): HResult; stdcall;
 
-    function AtlasByName(const APackName, AAtlasName: WideString): IQuadFXAtlas;
+    function AtlasByName(const APackName: WideString; const AGUID: TGUID; const AAtlasName: WideString): IQuadFXAtlas;
     procedure AddLog(AString: PWideChar);
     property QuadDevice: IQuadDevice read FQuadDevice;
     property QuadRender: IQuadRender read FQuadRender;
@@ -141,13 +141,13 @@ begin
     Result := E_FAIL;
 end;
 
-function TQuadFXManager.AtlasByName(const APackName, AAtlasName: WideString): IQuadFXAtlas;
+function TQuadFXManager.AtlasByName(const APackName: WideString; const AGUID: TGUID; const AAtlasName: WideString): IQuadFXAtlas;
 var
   i: Integer;
 begin
   Result := nil;
   for i := 0 to FAtlases.Count - 1 do
-    if Assigned(FAtlases[i]) and ( FAtlases[i].GetPackName = APackName) and (FAtlases[i].GetName = AAtlasName) then
+    if Assigned(FAtlases[i]) and (FAtlases[i].GetPackName = APackName) and (FAtlases[i].GetGUID = AGUID) and (FAtlases[i].GetName = AAtlasName) then
       Exit(FAtlases[i]);
 end;
 
