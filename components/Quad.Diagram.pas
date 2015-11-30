@@ -242,17 +242,11 @@ type
     property OnPointDelete: TQuadPointChangeEvent read FOnPointDelete write FOnPointDelete;
   end;
 
-procedure Register;
-
 implementation
 
 uses
   Math;
 
-procedure Register;
-begin
-  RegisterComponents('Quad', [TQuadDiagram]);
-end;
        {
 type
   TQuadStyleType = (

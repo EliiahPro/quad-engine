@@ -34,6 +34,7 @@ contains
   FloatSpinEdit in 'FloatSpinEdit.pas',
   Quad.Diagram in 'Quad.Diagram.pas',
   Quad.EffectTimeLine in 'Quad.EffectTimeLine.pas',
-  Quad.GradientEdit in 'Quad.GradientEdit.pas';
+  Quad.GradientEdit in 'Quad.GradientEdit.pas',
+  QuadReg in 'QuadReg.pas';
 
 end.

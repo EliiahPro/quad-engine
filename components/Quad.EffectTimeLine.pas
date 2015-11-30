@@ -109,17 +109,10 @@ type
     property ScrollBarH: TScrollBar read FScrollH write SetScrollBarH;
   end;
 
-procedure Register;
-
 implementation
 
 uses
   Math;
-
-procedure Register;
-begin
-  RegisterComponents('Quad', [TEffectTimeLine]);
-end;
 
 { TEffectTimeLineItem }
 
