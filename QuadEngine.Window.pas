@@ -200,9 +200,6 @@ end;
 
 destructor TQuadWindow.Destroy;
 begin
-  if Assigned(FInput) then
-    FInput.Free;
-
   inherited;
 end;
 

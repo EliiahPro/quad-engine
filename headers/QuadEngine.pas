@@ -494,8 +494,8 @@ type
 
   IQuadInput = interface(IUnknown)
   ['{AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98}']
-    function IsKeyDown(const AKey: Byte): Boolean; stdcall;
-    function IsKeyPress(const AKey: Byte): Boolean; stdcall;
+    function IsKeyDown(AKey: Byte): Boolean; stdcall;
+    function IsKeyPress(AKey: Byte): Boolean; stdcall;
     function GetMousePosition: TVec2f; stdcall;
     function GetMouseVector: TVec2f; stdcall;
     function IsMouseDown(const AButton: TMouseButtons): Boolean; stdcall;

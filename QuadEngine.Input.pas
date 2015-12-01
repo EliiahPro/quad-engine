@@ -42,8 +42,8 @@ type
 
   public
     constructor Create;
-    function IsKeyDown(const AKey: Byte): Boolean; stdcall;
-    function IsKeyPress(const AKey: Byte): Boolean; stdcall;
+    function IsKeyDown(AKey: Byte): Boolean; stdcall;
+    function IsKeyPress(AKey: Byte): Boolean; stdcall;
 
     function GetMousePosition: TVec2f; stdcall;
     function GetMouseVector: TVec2f; stdcall;
@@ -122,12 +122,12 @@ begin
   FMouseCanWheel := TVec2f.Zero;
 end;
 
-function TQuadInput.IsKeyDown(const AKey: Byte): Boolean; stdcall;
+function TQuadInput.IsKeyDown(AKey: Byte): Boolean; stdcall;
 begin
   Result := FIsKeysDown[AKey];
 end;
 
-function TQuadInput.IsKeyPress(const AKey: Byte): Boolean; stdcall;
+function TQuadInput.IsKeyPress(AKey: Byte): Boolean; stdcall;
 begin
   Result := FIsKeysPress[AKey];
 end;
