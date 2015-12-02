@@ -545,6 +545,9 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadWindow 
     {
+        /// <summary>Return a QuadInput object.</summary>
+        /// <param name="QuadInput">IQuadInput variable to recieve object.</param>
+        uint CreateInput(out IQuadInput IQuadInput);
         void Start(); 
         void SetCaption(string ACaption);
         void SetSize(int AWidth, int AHeight); 
