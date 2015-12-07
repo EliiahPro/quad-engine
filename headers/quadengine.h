@@ -26,9 +26,26 @@
 #include "Vec2f.h"
 
 static const char* QUAD_DLL = "qei.dll";
+static const char* CreateQuadDeviceProcName = "CreateQuadDevice";
+static const char* SecretMagicFunctionProcName = "SecretMagicFunction";
+static const unsigned char QuadEngineMinorVersion = 0;
+static const unsigned char QuadEngineMajorVersion = 7;
+static const unsigned char QuadEngineReleaseVersion = 2;
+
+interface __declspec(uuid("E28626FF-738F-43B0-924C-1AFC7DEC26C7")) IQuadDevice;
+interface __declspec(uuid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")) IQuadRender;
+interface __declspec(uuid("9A617F86-2CEC-4701-BF33-7F4989031BBA")) IQuadTexture;
+interface __declspec(uuid("7B7F4B1C-7F05-4BC2-8C11-A99696946073")) IQuadShader;
+interface __declspec(uuid("A47417BA-27C2-4DE0-97A9-CAE546FABFBA")) IQuadFont;
+interface __declspec(uuid("7A4CE319-C7AF-4BF3-9218-C2A744F915E6")) IQuadLog;
+interface __declspec(uuid("EA3BD116-01BF-4E12-B504-07D5E3F3AD35")) IQuadTimer;
+interface __declspec(uuid("AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98")) IQuadInput;
+interface __declspec(uuid("E8691EB1-4C5D-4565-8B78-3FC7C620DFFB")) IQuadWindow;
+interface __declspec(uuid("BBC0BBF2-7602-489A-BE2A-37D681B7A242")) IQuadCamera;
+interface __declspec(uuid("FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9")) IQuadGBuffer;
 
 // Blending mode types
-enum QuadBlendMode {
+enum TQuadBlendMode {
 	qbmInvalid = 0,
 	qbmNone = 1,			/* Without blending */
 	qbmAdd = 2,				/* Add source to dest */
@@ -42,7 +59,7 @@ enum QuadBlendMode {
 };    
 
 // Texture adressing mode
-enum QuadTextureAdressing {
+enum TQuadTextureAdressing {
 	qtaInvalid = 0,
 	qtaWrap = 1,		/* Repeat UV */
 	qtaMirror = 2,		/* Repeat UV with mirroring */
@@ -52,7 +69,7 @@ enum QuadTextureAdressing {
 };  
 
 // Texture filtering mode
-enum QuadTextureFiltering {
+enum TQuadTextureFiltering {
 	qtfInvalid = 0,
 	qtfNone = 1,			/* Filtering disabled (valid for mip filter only) */
 	qtfPoint = 2,			/* Nearest */
@@ -64,7 +81,7 @@ enum QuadTextureFiltering {
 };   
 
 // Texture Mirroring mode
-enum QuadTextureMirroring {
+enum TQuadTextureMirroring {
 	qtmInvalid = 0,
 	qtmNone = 1,		/* No mirroring */
 	qtmHorizontal = 2,	/* Horizontal mirroring */
@@ -72,16 +89,41 @@ enum QuadTextureMirroring {
 	qtmBoth = 4			/* Horizontal and vertical mirroring */
 }; 
 
+// Vector record declaration
+struct TVector
+{
+	float x, y, z;
+};
+
+struct TMatrix4x4
+{
+	float _11, _12, _13, _14;
+	float _21, _22, _23, _24;
+	float _31, _32, _33, _34;
+	float _41, _42, _43, _44;
+};
+
+ // vertex record declaration
+struct TVertex
+{
+	float x, y, z;		/* X, Y of vertex. Z not used */
+	TVector normal;		/* Normal vector */
+	unsigned int color;	/* Color */
+	float u, v;			/* Texture UV coord */
+	TVector tangent;	/* Tangent vector */
+	TVector binormal;	/* Binormal vector */
+};
+
 // Shader model
-enum QuadShaderModel {
+enum TQuadShaderModel {
 	qsmInvalid = 0,
 	qsmNone = 1,	// do not use shaders
 	qsm20 = 2,		// shader model 2.0
 	qsm30 = 3		// shader model 3.0
-};  
+};
 
 // Initialization record
-struct RenderInit {
+struct TRenderInit {
 	HWND handle;
 	int width;
 	int height;
@@ -91,27 +133,10 @@ struct RenderInit {
 	bool softwareVertexProcessing;
 	bool multiThreaded;
 	bool verticalSync;
-	QuadShaderModel shaderModel;
+	TQuadShaderModel shaderModel;
 };
 
-// Vector record declaration
-struct QuadVec
-{
-	float x, y, z;
-};
-
- // vertex record declaration
-struct QuadVert
-{
-	float x, y, z;		/* X, Y of vertex. Z not used */
-	QuadVec normal;		/* Normal vector */
-	unsigned int color;	/* Color */
-	float u, v;			/* Texture UV coord */
-	QuadVec tangent;	/* Tangent vector */
-	QuadVec binormal;	/* Binormal vector */
-};
-
-struct QuadRect
+struct TRect
 {
 	unsigned int Left;
 	unsigned int Top;
@@ -119,30 +144,8 @@ struct QuadRect
 	unsigned int Bottom;
 };
 
-
-struct Matrix4x4
-{
-	float _11, _12, _13, _14;
-	float _21, _22, _23, _24;
-	float _31, _32, _33, _34;
-	float _41, _42, _43, _44;
-};
-
-interface __declspec(uuid("E28626FF-738F-43B0-924C-1AFC7DEC26C7")) IQuadDevice;
-interface __declspec(uuid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")) IQuadRender;
-interface __declspec(uuid("9A617F86-2CEC-4701-BF33-7F4989031BBA")) IQuadTexture;
-interface __declspec(uuid("7B7F4B1C-7F05-4BC2-8C11-A99696946073")) IQuadShader;
-interface __declspec(uuid("A47417BA-27C2-4DE0-97A9-CAE546FABFBA")) IQuadFont;
-interface __declspec(uuid("7A4CE319-C7AF-4BF3-9218-C2A744F915E6")) IQuadLog;
-interface __declspec(uuid("EA3BD116-01BF-4E12-B504-07D5E3F3AD35")) IQuadTimer;
-interface __declspec(uuid("3E6AF547-AB0B-42ED-A40E-8DC10FC6C45F")) IQuadSprite;
-interface __declspec(uuid("E8691EB1-4C5D-4565-8B78-3FC7C620DFFB")) IQuadWindow;
-interface __declspec(uuid("BBC0BBF2-7602-489A-BE2A-37D681B7A242")) IQuadCamera;
-interface __declspec(uuid("FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9")) IQuadGBuffer;
-interface __declspec(uuid("AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98")) IQuadInput;
-
-typedef void (WINAPI *QuadOnErrorFunction)(char* Errorstring);
-typedef void (WINAPI *QuadTimerProcedure)(double& delta, unsigned int id);
+typedef void (WINAPI *TOnErrorFunction)(wchar_t* Errorstring);
+typedef void (WINAPI *TTimerProcedure)(double& delta, unsigned int id);
 
 /* Quad Device */
 
@@ -157,7 +160,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 	virtual HRESULT CALLBACK CreateShader(IQuadShader* &pQuadShader) = 0;
 	virtual HRESULT CALLBACK CreateTexture(IQuadTexture* &pQuadTexture) = 0;
 	virtual HRESULT CALLBACK CreateTimer(IQuadTimer* &pQuadTimer) = 0;
-	virtual HRESULT CALLBACK CreateTimerEx(IQuadTimer* &pQuadTimer, QuadTimerProcedure proc, unsigned short interval, bool isEnabled);
+	virtual HRESULT CALLBACK CreateTimerEx(IQuadTimer* &pQuadTimer, TTimerProcedure proc, unsigned short interval, bool isEnabled) = 0;
 	virtual HRESULT CALLBACK CreateRender(IQuadRender* &pQuadRender) = 0;
 	virtual HRESULT CALLBACK CreateRenderTarget(unsigned short width, unsigned short height, IQuadTexture* &texture, byte ARegister) = 0;
 	virtual HRESULT CALLBACK CreateWindowEx(IQuadWindow* &pQuadWindow) = 0;
@@ -166,7 +169,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 	virtual unsigned char CALLBACK GetMonitorsCount() = 0;
 	virtual HRESULT CALLBACK GetSupportedScreenResolution(int index, COORD &Resolution) = 0;
 	virtual void CALLBACK SetActiveMonitor(unsigned char monitorIndex) = 0;
-	virtual void CALLBACK SetOnErrorCallBack(QuadOnErrorFunction proc) = 0;
+	virtual void CALLBACK SetOnErrorCallBack(TOnErrorFunction proc) = 0;
 	virtual void CALLBACK ShowCursor(bool show) = 0;
 	virtual void CALLBACK SetCursorPosition(int x, int y) = 0;
 	virtual void CALLBACK SetCursorProperties(unsigned int xHotSpot, unsigned int yHotSpot, IQuadTexture* image) = 0;
@@ -176,7 +179,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 
 DECLARE_INTERFACE_(IQuadRender, IUnknown)
 {
-	virtual QuadRect CALLBACK GetClipRect() = 0;
+	virtual TRect CALLBACK GetClipRect() = 0;
 	virtual unsigned int CALLBACK GetAvailableTextureMemory() = 0;
 	virtual unsigned int CALLBACK GetMaxAnisotropy() = 0;
 	virtual unsigned int CALLBACK GetMaxTextureHeight() = 0;
@@ -189,7 +192,7 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual unsigned char CALLBACK GetVSVersionMajor() = 0;
 	virtual unsigned char CALLBACK GetVSVersionMinor() = 0;
 	virtual wchar_t* CALLBACK GetRenderDeviceName() = 0;
-	virtual void CALLBACK AddTrianglesToBuffer(const QuadVert* vertexes, unsigned int count) = 0;
+	virtual void CALLBACK AddTrianglesToBuffer(const TVertex* vertexes, unsigned int count) = 0;
 	virtual void CALLBACK BeginRender() = 0;
 	virtual void CALLBACK ChangeResolution(unsigned short width, unsigned short height, bool isVirtual = true) = 0;
 	virtual void CALLBACK Clear(unsigned int color) = 0;
@@ -205,8 +208,8 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual void CALLBACK EndRender() = 0;
 	virtual void CALLBACK Finalize() = 0;
 	virtual void CALLBACK FlushBuffer() = 0;
-	virtual void CALLBACK Initialize(HWND handle, int width, int height, bool isFullscreen, QuadShaderModel isCreateLog = qsm20) = 0;
-	virtual void CALLBACK InitializeEx(const RenderInit renderInit) = 0;
+	virtual void CALLBACK Initialize(HWND handle, int width, int height, bool isFullscreen, TQuadShaderModel isCreateLog = qsm20) = 0;
+	virtual void CALLBACK InitializeEx(const TRenderInit renderInit) = 0;
 	virtual void CALLBACK InitializeFromIni(HANDLE AHandle, wchar_t* AFilename) = 0;
 	virtual void CALLBACK Polygon(const Vec2f& pointA, const Vec2f& pointB, const Vec2f& pointC, const Vec2f& pointD, unsigned int color) = 0;
 	virtual void CALLBACK Rectangle(const Vec2f& pointA, const Vec2f& pointB, unsigned int color) = 0;
@@ -214,12 +217,12 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual void CALLBACK RenderToGBuffer(bool isRenderToGBuffer, IQuadGBuffer* quadGBuffer = NULL, bool isCropScreen = false) = 0;
 	virtual void CALLBACK RenderToTexture(bool isRenderToTexture, IQuadTexture* texture, unsigned char textureRegister = 0, unsigned char renderTargetRegister = 0, bool isCropScreen = false) = 0;
 	virtual void CALLBACK SetAutoCalculateTBN(bool Value) = 0;
-	virtual void CALLBACK SetBlendMode(QuadBlendMode Mode) = 0;
+	virtual void CALLBACK SetBlendMode(TQuadBlendMode Mode) = 0;
 	virtual void CALLBACK SetClipRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) = 0;
 	virtual void CALLBACK SetTexture(unsigned char register, IDirect3DTexture9* texture) = 0;
-	virtual void CALLBACK SetTextureAdressing(QuadTextureAdressing textureAdressing) = 0;
-	virtual void CALLBACK SetTextureFiltering(QuadTextureFiltering textureFiltering) = 0;
-	virtual void CALLBACK SetTextureMirroring(QuadTextureMirroring textureMirroring) = 0;
+	virtual void CALLBACK SetTextureAdressing(TQuadTextureAdressing textureAdressing) = 0;
+	virtual void CALLBACK SetTextureFiltering(TQuadTextureFiltering textureFiltering) = 0;
+	virtual void CALLBACK SetTextureMirroring(TQuadTextureMirroring textureMirroring) = 0;
 	virtual void CALLBACK SetPointSize(unsigned int size) = 0;
 	virtual void CALLBACK SkipClipRect() = 0;
 	virtual void CALLBACK TakeScreenshot(wchar_t* fileName) = 0;
@@ -308,27 +311,36 @@ DECLARE_INTERFACE_(IQuadShader, IUnknown)
 ** Do not override "!" char **  */
 
 // font alignments
-enum QuadFontAlign {
+enum TqfAlign {
 	qfaInvalid = 0,
 	qfaLeft = 1,		/* Align by left */
 	qfaRight = 2,		/* Align by right */
 	qfaCenter = 3,      /* Align by center */
 	qfaJustify = 4		/* Align by both sides */
-};     
+};   
+
+// distance field options
+struct TDistanceFieldParams {
+	float edge1X, edge1Y;
+	float edge2X, edge2Y;
+	unsigned int outerColor;
+	bool firstEdge, secondEdge;
+};
 
 DECLARE_INTERFACE_(IQuadFont, IUnknown)
 {
 	virtual bool CALLBACK GetIsLoaded() = 0;
 	virtual float CALLBACK GetKerning() = 0;
-	virtual void CALLBACK LoadFromFile(wchar_t* ATextureFilename, wchar_t* AUVFilename) = 0;
-	virtual void CALLBACK SetSmartColor(char AColorChar, unsigned int AColor) = 0;
+	virtual void CALLBACK SetKerning(float value) = 0;
+	virtual float CALLBACK GetSpacing() = 0;
+	virtual void CALLBACK SetSpacing(float value) = 0;
+	virtual void CALLBACK LoadFromFile(wchar_t* textureFilename, wchar_t* UVFilename) = 0;
+	virtual void CALLBACK SetSmartColor(wchar_t colorChar, unsigned int color) = 0;
+	virtual void CALLBACK SetDistanceFieldParams(const TDistanceFieldParams& distanceFieldParams) = 0;
 	virtual void CALLBACK SetIsSmartColoring(bool Value) = 0;
-	virtual void CALLBACK SetKerning(float AValue) = 0;
 	virtual float CALLBACK TextHeight(wchar_t* AText, float AScale = 1.0) = 0;
 	virtual float CALLBACK TextWidth(wchar_t* AText, float AScale = 1.0) = 0;
-	virtual void CALLBACK TextOut(float x, float y, float Scale, wchar_t* Text, unsigned int Color = 0xFFFFFFFF) = 0;
-	virtual void CALLBACK TextOutAligned(float x, float y, float Scale, wchar_t* Text, unsigned int Color = 0xFFFFFFFF, QuadFontAlign Align = qfaLeft) = 0;
-	virtual void CALLBACK TextOutCentered(float x, float y, float Scale, wchar_t* Text, unsigned int Color = 0xFFFFFFFF) = 0;
+	virtual void CALLBACK TextOut(const Vec2f& position, float scale, wchar_t* text, unsigned int color = 0xFFFFFFFF, TqfAlign align = qfaLeft) = 0;
 };
 
 DECLARE_INTERFACE_(IQuadLog, IUnknown)
@@ -336,7 +348,7 @@ DECLARE_INTERFACE_(IQuadLog, IUnknown)
 	virtual void CALLBACK Write(wchar_t* str) = 0;
 };
 
-	/* Quad Timer */
+/* Quad Timer */
 
 DECLARE_INTERFACE_(IQuadTimer, IUnknown)
 {
@@ -346,31 +358,14 @@ DECLARE_INTERFACE_(IQuadTimer, IUnknown)
 	virtual double CALLBACK GetWholeTime() = 0;
 	virtual unsigned int CALLBACK GetTimerId() = 0;
 	virtual void CALLBACK ResetWholeTimeCounter() = 0;
-	virtual void CALLBACK SetCallBack(QuadTimerProcedure proc) = 0;
-	virtual void CALLBACK SetInterval(unsigned short interval) = 0;
-	virtual void CALLBACK SetState(bool isEnabled) = 0;
+	virtual void CALLBACK SetCallBack(TTimerProcedure AProc) = 0;
+	virtual void CALLBACK SetInterval(unsigned short AInterval) = 0;
+	virtual void CALLBACK SetState(bool AIsEnabled) = 0;
 };
 
-	/* Quad Camera */
+/* Quad Input */
 
-DECLARE_INTERFACE_(IQuadCamera, IUnknown)   
-{
-	virtual void CALLBACK Scale(float scale) = 0;
-	virtual void CALLBACK Rotate(float angle) = 0;
-	virtual void CALLBACK Translate(const Vec2f& distance) = 0;
-	virtual void CALLBACK Reset() = 0;
-	virtual void CALLBACK Enable() = 0;
-	virtual void CALLBACK Disable() = 0;
-	virtual Vec2f CALLBACK GetPosition() = 0;
-	virtual float CALLBACK GetAngle() = 0;
-	virtual Matrix4x4 CALLBACK GetMatrix() = 0;
-	virtual float CALLBACK GetScale() = 0;
-	virtual void CALLBACK SetAngle(float angle) = 0;
-	virtual void CALLBACK SetPosition(const Vec2f& position) = 0;
-	virtual Vec2f CALLBACK GetTransformed(const Vec2f& vector) = 0;
-};
-
-enum MouseButtons {
+enum TMouseButtons {
 	mbLeft = 0,
 	mbRight = 1,
 	mbMiddle = 2,
@@ -378,8 +373,7 @@ enum MouseButtons {
 	mbX2 = 4
 };    
 
-struct PressedMouseButtons
-{
+struct TPressedMouseButtons {
 	bool Left;
 	bool Right;
 	bool Middle;
@@ -387,13 +381,45 @@ struct PressedMouseButtons
 	bool X2;
 };
 
-typedef void (WINAPI *OnKeyPress)(const unsigned short key, const PressedMouseButtons pressedButtons);
-typedef void (WINAPI *OnKeyChar)(const int charCode, const PressedMouseButtons pressedButtons);
-typedef void (WINAPI *OnMouseMoveEvent)(const Vec2i& position, const PressedMouseButtons pressedButtons);
-typedef void (WINAPI *OnMouseEvent)(const Vec2i& position, const MouseButtons buttons, const PressedMouseButtons pressedButtons);
-typedef void (WINAPI *OnMouseWheelEvent)(const Vec2i& position, const Vec2i& vector, const PressedMouseButtons pressedButtons);
-typedef void (WINAPI *OnEvent)();
-typedef void (WINAPI *OnWindowMove)(const int xPos, const int yPos);
+enum TKeyButtons {
+	kbNone = 0,
+	kbShift = 1,
+	kbLShift = 2,
+	kbRShift = 3,
+	kbCtrl = 4,
+	kbLCtrl = 5,
+	kbRCtrl = 6,
+	kbAlt = 7,
+	kbLAlt = 8,
+	kbRAlt = 9
+};
+
+struct TPressedKeyButtons {
+	bool None, Shift, LShift, RShift, Ctrl, LCtrl, RCtrl, Alt, LAlt, RAlt;
+};
+
+typedef void (WINAPI *TOnKeyPress)(const unsigned short key, const TPressedKeyButtons pressedButtons);
+typedef void (WINAPI *TOnKeyChar)(const int charCode, const TPressedKeyButtons pressedButtons);
+typedef void (WINAPI *TOnMouseMoveEvent)(const Vec2i& position, const TPressedMouseButtons pressedButtons);
+typedef void (WINAPI *TOnMouseEvent)(const Vec2i& position, const TMouseButtons buttons, const TPressedMouseButtons pressedButtons);
+typedef void (WINAPI *TOnMouseWheelEvent)(const Vec2i& position, const Vec2i& vector, const TPressedMouseButtons pressedButtons);
+typedef void (WINAPI *TOnEvent)();
+typedef void (WINAPI *TOnWindowMove)(const int xPos, const int yPos);
+
+
+DECLARE_INTERFACE_(IQuadInput, IUnknown)
+{
+	virtual bool CALLBACK IsKeyDown(unsigned char key) = 0;
+	virtual bool CALLBACK IsKeyPress(unsigned char key) = 0;
+	virtual bool CALLBACK IsMouseDown(TMouseButtons button) = 0;
+	virtual bool CALLBACK IsMouseClick(TMouseButtons button) = 0;
+	virtual Vec2f CALLBACK GetMousePosition() = 0;
+	virtual Vec2f CALLBACK GetMouseVector() = 0;
+	virtual Vec2f CALLBACK GetMouseWheel() = 0;
+	virtual void CALLBACK Update() = 0;
+};
+
+/* Quad Window */
 
 DECLARE_INTERFACE_(IQuadWindow, IUnknown)
 {
@@ -404,32 +430,41 @@ DECLARE_INTERFACE_(IQuadWindow, IUnknown)
 	virtual void CALLBACK SetPosition(int xPos, int yPos) = 0;
 	virtual HWND CALLBACK GetHandle() = 0;
 		
-	virtual void CALLBACK SetOnKeyDown(OnKeyPress onKeyDown) = 0;
-	virtual void CALLBACK SetOnKeyUp(OnKeyPress onKeyUp) = 0;
-	virtual void CALLBACK SetOnKeyChar(OnKeyChar onKeyChar) = 0;
-	virtual void CALLBACK SetOnCreate(OnEvent onCreate) = 0;
-	virtual void CALLBACK SetOnClose(OnEvent onClose) = 0;
-	virtual void CALLBACK SetOnActivate(OnEvent onActivate) = 0;
-	virtual void CALLBACK SetOnDeactivate(OnEvent onDeactivate) = 0;
-	virtual void CALLBACK SetOnMouseMove(OnMouseMoveEvent onMouseMove) = 0;
-	virtual void CALLBACK SetOnMouseDown(OnMouseEvent onMouseDown) = 0;
-	virtual void CALLBACK SetOnMouseUp(OnMouseEvent onMouseUp) = 0;
-	virtual void CALLBACK SetOnMouseDblClick(OnMouseEvent onMouseDblClick) = 0;
-	virtual void CALLBACK SetOnMouseWheel(OnMouseWheelEvent onMouseWheel) = 0;
-	virtual void CALLBACK SetOnWindowMove(OnWindowMove onWindowMove) = 0;	
+	virtual void CALLBACK SetOnKeyDown(TOnKeyPress onKeyDown) = 0;
+	virtual void CALLBACK SetOnKeyUp(TOnKeyPress onKeyUp) = 0;
+	virtual void CALLBACK SetOnKeyChar(TOnKeyChar onKeyChar) = 0;
+	virtual void CALLBACK SetOnCreate(TOnEvent onCreate) = 0;
+	virtual void CALLBACK SetOnClose(TOnEvent onClose) = 0;
+	virtual void CALLBACK SetOnActivate(TOnEvent onActivate) = 0;
+	virtual void CALLBACK SetOnDeactivate(TOnEvent onDeactivate) = 0;
+	virtual void CALLBACK SetOnMouseMove(TOnMouseMoveEvent onMouseMove) = 0;
+	virtual void CALLBACK SetOnMouseDown(TOnMouseEvent onMouseDown) = 0;
+	virtual void CALLBACK SetOnMouseUp(TOnMouseEvent onMouseUp) = 0;
+	virtual void CALLBACK SetOnMouseDblClick(TOnMouseEvent onMouseDblClick) = 0;
+	virtual void CALLBACK SetOnMouseWheel(TOnMouseWheelEvent onMouseWheel) = 0;
+	virtual void CALLBACK SetOnWindowMove(TOnWindowMove onWindowMove) = 0;	
 };
 
-DECLARE_INTERFACE_(IQuadInput, IUnknown)
+/* Quad Camera */
+
+DECLARE_INTERFACE_(IQuadCamera, IUnknown)
 {
-	virtual bool CALLBACK IsKeyDown(unsigned char key) = 0;
-	virtual bool CALLBACK IsKeyPress(unsigned char key) = 0;
-	virtual bool CALLBACK IsMouseDown(MouseButtons button) = 0;
-	virtual bool CALLBACK IsMouseClick(MouseButtons button) = 0;
-	virtual Vec2f CALLBACK GetMousePosition() = 0;
-	virtual Vec2f CALLBACK GetMouseVector() = 0;
-	virtual Vec2f CALLBACK GetMouseWheel() = 0;
-	virtual void CALLBACK Update() = 0;
+	virtual void CALLBACK Scale(float scale) = 0;
+	virtual void CALLBACK Rotate(float angle) = 0;
+	virtual void CALLBACK Translate(const Vec2f& distance) = 0;
+	virtual void CALLBACK Reset() = 0;
+	virtual void CALLBACK Enable() = 0;
+	virtual void CALLBACK Disable() = 0;
+	virtual Vec2f CALLBACK GetPosition() = 0;
+	virtual float CALLBACK GetAngle() = 0;
+	virtual TMatrix4x4 CALLBACK GetMatrix() = 0;
+	virtual float CALLBACK GetScale() = 0;
+	virtual void CALLBACK SetAngle(float angle) = 0;
+	virtual void CALLBACK SetPosition(const Vec2f& position) = 0;
+	virtual Vec2f CALLBACK GetTransformed(const Vec2f& vector) = 0;
 };
+
+/* Quad GBuffer */
 
 DECLARE_INTERFACE_(IQuadGBuffer, IUnknown)
 {
