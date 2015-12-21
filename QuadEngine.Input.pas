@@ -44,13 +44,12 @@ type
     constructor Create;
     function IsKeyDown(AKey: Byte): Boolean; stdcall;
     function IsKeyPress(AKey: Byte): Boolean; stdcall;
-
-    function GetMousePosition: TVec2f; stdcall;
-    function GetMouseVector: TVec2f; stdcall;
-
     function IsMouseDown(const AButton: TMouseButtons): Boolean; stdcall;
     function IsMouseClick(const AButton: TMouseButtons): Boolean; stdcall;
-    function GetMouseWheel: TVec2f; stdcall;
+
+    procedure GetMousePosition(out AMousePosition: TVec2f); stdcall;
+    procedure GetMouseVector(out AMouseVector: TVec2f); stdcall;
+    procedure GetMouseWheel(out AMouseWheel: TVec2f); stdcall;
 
     procedure Update; stdcall;
 
@@ -132,16 +131,6 @@ begin
   Result := FIsKeysPress[AKey];
 end;
 
-function TQuadInput.GetMousePosition: TVec2f; stdcall;
-begin
-  Result := FMousePosition;
-end;
-
-function TQuadInput.GetMouseVector: TVec2f; stdcall;
-begin
-  Result := FMouseVector;
-end;
-
 function TQuadInput.IsMouseDown(const AButton: TMouseButtons): Boolean; stdcall;
 begin
   Result := FIsMouseDown[AButton];
@@ -152,9 +141,19 @@ begin
   Result := FIsMouseClick[AButton];
 end;
 
-function TQuadInput.GetMouseWheel: TVec2f; stdcall;
+procedure TQuadInput.GetMousePosition(out AMousePosition: TVec2f); stdcall;
 begin
-  Result := FMouseWheel;
+  AMousePosition := FMousePosition;
+end;
+
+procedure TQuadInput.GetMouseVector(out AMouseVector: TVec2f); stdcall;
+begin
+  AMouseVector := FMouseVector;
+end;
+
+procedure TQuadInput.GetMouseWheel(out AMouseWheel: TVec2f); stdcall;
+begin
+  AMouseWheel := FMouseWheel;
 end;
 
 end.

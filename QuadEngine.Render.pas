@@ -85,7 +85,7 @@ type
     function GetIsSeparateAlphaBlend: Boolean;
   public
     constructor Create;
-    function GetClipRect: TRect; stdcall;
+    procedure GetClipRect(out ARect: TRect); stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
@@ -241,9 +241,9 @@ begin
   normalize(n);
 end;
 
-function TQuadRender.GetClipRect: TRect;
+procedure TQuadRender.GetClipRect(out ARect: TRect); stdcall;
 begin
-  Result := FViewport;
+  ARect := FViewport;
 end;
 
 //=============================================================================

@@ -34,13 +34,13 @@ type
     procedure Reset; stdcall;
     procedure Enable; stdcall;
     procedure Disable; stdcall;
-    function GetPosition: TVec2f; stdcall;
+    procedure GetPosition(out APosition: TVec2f); stdcall;
     function GetAngle: Single; stdcall;
-    function GetMatrix: TMatrix4x4; stdcall;
+    procedure GetMatrix(out AMatrix: TMatrix4x4); stdcall;
     function GetScale: Single; stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
     procedure SetPosition(const APosition: TVec2f); stdcall;
-    function GetTransformed(const AVec: TVec2f): TVec2f; stdcall;
+    procedure Project(const AVec: TVec2f; out AProjectedVec: TVec2f);  stdcall;
   class var
     CurrentCamera: TQuadCamera;
   end;
@@ -211,9 +211,9 @@ begin
   CurrentCamera := nil;
 end;
 
-function TQuadCamera.GetPosition: TVec2f;
+procedure TQuadCamera.GetPosition(out APosition: TVec2f); stdcall;
 begin
-  Result := FTranslation;
+  APosition := FTranslation;
 end;
 
 function TQuadCamera.GetAngle: Single;
@@ -221,27 +221,27 @@ begin
   Result := FAngle;
 end;
 
-function TQuadCamera.GetMatrix: TMatrix4x4;
+procedure TQuadCamera.GetMatrix(out AMatrix: TMatrix4x4); stdcall;
 begin
-  Result._11 := FViewMatrix._11;
-  Result._12 := FViewMatrix._12;
-  Result._13 := FViewMatrix._13;
-  Result._14 := FViewMatrix._14;
+  AMatrix._11 := FViewMatrix._11;
+  AMatrix._12 := FViewMatrix._12;
+  AMatrix._13 := FViewMatrix._13;
+  AMatrix._14 := FViewMatrix._14;
 
-  Result._21 := FViewMatrix._21;
-  Result._22 := FViewMatrix._22;
-  Result._23 := FViewMatrix._23;
-  Result._24 := FViewMatrix._24;
+  AMatrix._21 := FViewMatrix._21;
+  AMatrix._22 := FViewMatrix._22;
+  AMatrix._23 := FViewMatrix._23;
+  AMatrix._24 := FViewMatrix._24;
 
-  Result._31 := FViewMatrix._31;
-  Result._32 := FViewMatrix._32;
-  Result._33 := FViewMatrix._33;
-  Result._34 := FViewMatrix._34;
+  AMatrix._31 := FViewMatrix._31;
+  AMatrix._32 := FViewMatrix._32;
+  AMatrix._33 := FViewMatrix._33;
+  AMatrix._34 := FViewMatrix._34;
 
-  Result._41 := FViewMatrix._41;
-  Result._42 := FViewMatrix._42;
-  Result._43 := FViewMatrix._43;
-  Result._44 := FViewMatrix._44;
+  AMatrix._41 := FViewMatrix._41;
+  AMatrix._42 := FViewMatrix._42;
+  AMatrix._43 := FViewMatrix._43;
+  AMatrix._44 := FViewMatrix._44;
 end;
 
 function TQuadCamera.GetScale: Single;
@@ -249,12 +249,12 @@ begin
   Result := FScale;
 end;
 
-function TQuadCamera.GetTransformed(const AVec: TVec2f): TVec2f;
+procedure TQuadCamera.Project(const AVec: TVec2f; out AProjectedVec: TVec2f);  stdcall;
 begin
-  Result.X := FViewMatrix._11 * AVec.X + FViewMatrix._21 * AVec.Y + FViewMatrix._31 + FViewMatrix._41;
-  Result.Y := FViewMatrix._12 * AVec.X + FViewMatrix._22 * AVec.Y + FViewMatrix._32 + FViewMatrix._42;
-  Result.X := (Result.X * Device.Render.Width + Device.Render.Width) / 2;
-  Result.Y := (-Result.Y * Device.Render.Height + Device.Render.Height) / 2;
+  AProjectedVec.X := FViewMatrix._11 * AVec.X + FViewMatrix._21 * AVec.Y + FViewMatrix._31 + FViewMatrix._41;
+  AProjectedVec.Y := FViewMatrix._12 * AVec.X + FViewMatrix._22 * AVec.Y + FViewMatrix._32 + FViewMatrix._42;
+  AProjectedVec.X := (AProjectedVec.X * Device.Render.Width + Device.Render.Width) / 2;
+  AProjectedVec.Y := (-AProjectedVec.Y * Device.Render.Height + Device.Render.Height) / 2;
 end;
 
 procedure TQuadCamera.SetAngle(AAngle: Single);
