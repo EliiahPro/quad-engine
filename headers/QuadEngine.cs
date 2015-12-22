@@ -25,7 +25,7 @@ namespace QuadEngine
 {
     // Blending mode types
     ///<summary>Blending mode types.</summary>     
-    public enum TQuadBlendMode{qbmInvalid        = 0,
+    public enum TQuadBlendMode{qbmInvalid = 0,
                                ///<summary>Without blending</summary>
                                qbmNone = 1,
                                ///<summary>Add source to destination</summary>
@@ -99,6 +99,7 @@ namespace QuadEngine
         ushort Y;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct TRect {
         int Left;
         int Top;
@@ -297,17 +298,17 @@ namespace QuadEngine
         [PreserveSig] UInt16 GetTextureWidth();
         void AddTexture(byte ARegister, IntPtr ATexture);  // ATexture: IDirect3DTexture9
         void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
-        void Draw(ref Vec2f Position, UInt32 Color = 0xFFFFFFFF);
-        void DrawFrame(ref Vec2f Position, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
-        void DrawMap(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color = 0xFFFFFFFF);
-        void DrawMapRotAxis(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f UVA, ref Vec2f UVB, ref Vec2f Axis, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
-        void DrawPart(ref Vec2f Position, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void Draw(ref Vec2f position, UInt32 Color = 0xFFFFFFFF);
+        void DrawFrame(ref Vec2f position, UInt16 pattern, UInt32 Color = 0xFFFFFFFF);
+        void DrawMap(ref Vec2f pointA, ref Vec2f pointB, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color = 0xFFFFFFFF);
+        void DrawMapRotAxis(ref Vec2f pointA, ref Vec2f pointB, ref Vec2f UVA, ref Vec2f UVB, ref Vec2f Axis, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
+        void DrawPart(ref Vec2f position, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
         void DrawPartRot(ref Vec2f Center, double angle, double Scale, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
-        void DrawPartRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void DrawPartRotAxis(ref Vec2f position, double angle, double Scale, ref Vec2f Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
         void DrawRot(ref Vec2f Center, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
         void DrawRotFrame(ref Vec2f Center, double angle, double Scale, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
-        void DrawRotAxis(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
-        void DrawRotAxisFrame(ref Vec2f Position, double angle, double Scale, ref Vec2f Axis, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
+        void DrawRotAxis(ref Vec2f position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
+        void DrawRotAxisFrame(ref Vec2f position, double angle, double Scale, ref Vec2f Axis, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void LoadFromFile(byte ARegister, string AFilename, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
         void LoadFromStream(byte ARegister, IntPtr AStream, int AStreamSize, int APatternWidth = 0, int APatternHeight = 0, int AColorKey = -1);
         void LoadFromRAW(byte ARegister, IntPtr AData, int AWidth, int AHeight, TRAWDataFormat ASourceFormat = TRAWDataFormat.rdfARGB8);
@@ -387,35 +388,35 @@ namespace QuadEngine
         [PreserveSig] bool GetIsLoaded();
         [PreserveSig] float GetKerning();
         /// <summary>Set kerning for this font.</summary>
-        /// <param name="AValue">Value to be set. 0.0f is default</param>
-        void SetKerning(float AValue);
+        /// <param name="value">Value to be set. 0.0f is default</param>
+        void SetKerning(float value);
         [PreserveSig] float GetSpacing();
-        void SetSpacing(float AValue);
+        void SetSpacing(float value);
         /// <summary>Load font data from file.</summary>
-        /// <param name="ATextureFilename">Filename of texture file.</param>
-        /// <param name="AUVFilename">Filename of additional font data file.</param>
-        void LoadFromFile(string ATextureFilename, string AUVFilename);
-        void SetSmartColor(string AColorChar, UInt32 AColor);
-        void SetDistanceFieldParams(ref TDistanceFieldParams ADistanceFieldParam);
-        void SetIsSmartColoring(bool Value);
+        /// <param name="textureFilename">Filename of texture file.</param>
+        /// <param name="UVFilename">Filename of additional font data file.</param>
+        void LoadFromFile(string textureFilename, string UVFilename);
+        void SetSmartColor(string colorChar, UInt32 color);
+        void SetDistanceFieldParams(ref TDistanceFieldParams distanceFieldParam);
+        void SetIsSmartColoring(bool value);
         /// <summary>Get current font height.</summary>
-        /// <param name="AText">Text to be measured.</param>
-        /// <param name="AScale">Scale of the measured text.</param>
+        /// <param name="text">Text to be measured.</param>
+        /// <param name="scale">Scale of the measured text.</param>
         /// <returns>Height in texels.</returns>
-        [PreserveSig] float TextHeight(string AText, float AScale = 1.0F);
+        [PreserveSig] float TextHeight(string text, float scale = 1.0F);
         /// <summary>Get current font width.</summary>
-        /// <param name="AText">Text to be measured.</param>
-        /// <param name="AScale">Scale of the measured text.</param>
+        /// <param name="text">Text to be measured.</param>
+        /// <param name="scale">Scale of the measured text.</param>
         /// <returns>Width in texels.</returns>
-        [PreserveSig] float TextWidth(string AText, float AScale = 1.0F);
+        [PreserveSig] float TextWidth(string text, float scale = 1.0F);
         /// <summary>Draw text.</summary>
-        /// <param name="Position">Position of text to be drawn.</param>
-        /// <param name="AScale">Scale of rendered text. Default is 1.0</param>
-        /// <param name="AText">Text to be drawn. #13 char is allowed.</param>
-        /// <param name="Color">Color of text to be drawn.</param>
-        /// <param name="AAlign">Text alignment.</param>
+        /// <param name="position">Position of text to be drawn.</param>
+        /// <param name="scale">Scale of rendered text. Default is 1.0</param>
+        /// <param name="text">Text to be drawn. #13 char is allowed.</param>
+        /// <param name="color">Color of text to be drawn.</param>
+        /// <param name="align">Text alignment.</param>
         /// <remarks>Note that distancefield fonts will render with Y as baseline of the font instead top pixel in common fonts.</remarks>
-        void TextOut(ref Vec2f Position, float AScale, string AText, UInt32 AColor = 0xFFFFFFFF, TqfAlign AAlign = TqfAlign.qfaLeft);
+        void TextOut(ref Vec2f position, float scale, string text, UInt32 color = 0xFFFFFFFF, TqfAlign align = TqfAlign.qfaLeft);
     }
 
     /* Quad Log */
@@ -460,24 +461,24 @@ namespace QuadEngine
         [PreserveSig] double GetWholeTime();
         [PreserveSig] UInt32 GetTimerID();
         void ResetWholeTimeCounter();
-        void SetCallBack(IntPtr AProc);
-        void SetInterval(UInt16 AInterval);
-        void SetState(bool AIsEnabled);
+        void SetCallBack(IntPtr proc);
+        void SetInterval(UInt16 interval);
+        void SetState(bool isEnabled);
     }
 
     /* Quad Window */
 
-    public enum TMouseButtons
+    public enum MouseButtons
     {
-        mbLeft = 0,
-        mbRight = 1,
-        mbMiddle = 2,
-        mbX1 = 3,
-        mbX2 = 4
+        Left = 0,
+        Right = 1,
+        Middle = 2,
+        X1 = 3,
+        X2 = 4
     };
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct TPressedMouseButtons 
+    public struct PressedMouseButtons 
     {
         Boolean Left;
         Boolean Right; 
@@ -486,22 +487,22 @@ namespace QuadEngine
         Boolean X2;
     }
 
-    public enum TKeyButtons
+    public enum KeyButtons
     {
-        kbNone = 0,
-        kbShift = 1,
-        kbLShift = 2,
-        kbRShift = 3,
-        kbCtrl = 4,
-        kbLCtrl = 5,
-        kbRCtrl = 6,
-        kbAlt = 7,
-        kbLAlt = 8,
-        kbRAlt = 9        
+        None = 0,
+        Shift = 1,
+        LShift = 2,
+        RShift = 3,
+        Ctrl = 4,
+        LCtrl = 5,
+        RCtrl = 6,
+        Alt = 7,
+        LAlt = 8,
+        RAlt = 9        
     };
     
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct TPressedKeyButtons
+    public struct PressedKeyButtons
     {
         Boolean None;
         Boolean Shift;
@@ -515,55 +516,67 @@ namespace QuadEngine
         Boolean RAlt;
     }
 
-    public delegate void TOnKeyPress(ushort Key, TPressedKeyButtons APressedButtons);
-    public delegate void TOnKeyChar(int ACharCode, TPressedKeyButtons APressedButtons);
-    public delegate void TOnCreate();
-    public delegate void TOnMouseMoveEvent(Vec2i APosition, TPressedMouseButtons APressedButtons); 
-    public delegate void TOnMouseEvent(Vec2i APosition, TMouseButtons AButtons, TPressedMouseButtons APressedButtons);
-    public delegate void TOnMouseWheelEvent(Vec2i APosition, Vec2i AVector, TPressedMouseButtons APressedButtons);
-    public delegate void TOnEvent();
-    public delegate void TOnWindowMove(int Xpos, int Ypos); 
-
-
+    public delegate void OnKeyPress(ushort key, PressedKeyButtons pressedButtons);
+    public delegate void OnKeyChar(int ACharCode, PressedKeyButtons pressedButtons);
+    public delegate void OnCreate();
+    public delegate void OnMouseMoveEvent(Vec2i position, PressedMouseButtons pressedButtons); 
+    public delegate void OnMouseEvent(Vec2i position, MouseButtons buttons, PressedMouseButtons pressedButtons);
+    public delegate void OnMouseWheelEvent(Vec2i position, Vec2i vector, PressedMouseButtons pressedButtons);
+    public delegate void OnEvent();
+    public delegate void OnWindowMove(int xPos, int yPos);
+    
     [ComImport]
     [Guid("AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadInput
     {
-      [PreserveSig] bool IsKeyDown(ref byte AKey);
-      [PreserveSig] bool IsKeyPress(ref byte AKey);      
-      [PreserveSig] Vec2f GetMousePosition(); 
+      [PreserveSig] bool IsKeyDown(byte key);
+      [PreserveSig] bool IsKeyPress(byte key);
+      [PreserveSig] bool IsMouseDown(MouseButtons button);
+      [PreserveSig] bool IsMouseClick(MouseButtons button);
+      [PreserveSig] void GetMousePosition(out Vec2f vector);
       [PreserveSig] Vec2f GetMouseVector();
-      [PreserveSig] bool IsMouseDown(ref TMouseButtons AButton);
-      [PreserveSig] bool IsMouseClick(ref TMouseButtons AButton);
       [PreserveSig] Vec2f GetMouseWheel();
-      void Update(); 
+      void Update();
     }
 
+    /*
+    function IsKeyDown(const AKey: Byte): Boolean; stdcall;
+    function IsKeyPress(const AKey: Byte): Boolean; stdcall;
+    function GetMousePosition: TVec2f; stdcall;
+    function GetMouseVector: TVec2f; stdcall;
+    function IsMouseDown(const AButton: TMouseButtons): Boolean; stdcall;
+    function IsMouseClick(const AButton: TMouseButtons): Boolean; stdcall;
+    function GetMouseWheel: TVec2f; stdcall;
+    procedure Update; stdcall;
+    */
     [ComImport]
     [Guid("8EB98692-67B1-4E64-9090-B6A0F47054BA")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IQuadWindow 
+    public interface IQuadWindow
     {
+        /// <summary>Return a QuadInput object.</summary>
+        /// <param name="QuadInput">IQuadInput variable to recieve object.</param>
+        uint CreateInput(out IQuadInput IQuadInput);
         void Start(); 
-        void SetCaption(string ACaption);
-        void SetSize(int AWidth, int AHeight); 
-        void SetPosition(int AXpos, int AYPos);
+        void SetCaption(string caption);
+        void SetSize(int width, int height); 
+        void SetPosition(int xPos, int yPos);
         [PreserveSig] UIntPtr GetHandle();
 
-        void SetOnKeyDown(TOnKeyPress OnKeyDown); 
-        void SetOnKeyUp(TOnKeyPress OnKeyUp); 
-        void SetOnKeyChar(TOnKeyChar OnKeyChar); 
-        void SetOnCreate(TOnCreate OnCreate); 
-        void SetOnClose(TOnEvent OnClose);
-        void SetOnActivate(TOnEvent OnActivate);
-        void SetOnDeactivate(TOnEvent OnDeactivate);
-        void SetOnMouseMove(TOnMouseMoveEvent OnMouseMove); 
-        void SetOnMouseDown(TOnMouseEvent OnMouseDown); 
-        void SetOnMouseUp(TOnMouseEvent OnMouseUp); 
-        void SetOnMouseDblClick(TOnMouseEvent OnMouseDblClick); 
-        void SetOnMouseWheel(TOnMouseWheelEvent OnMouseWheel); 
-        void SetOnWindowMove(TOnWindowMove OnWindowMove); 
+        void SetOnKeyDown(OnKeyPress onKeyDown); 
+        void SetOnKeyUp(OnKeyPress onKeyUp); 
+        void SetOnKeyChar(OnKeyChar onKeyChar); 
+        void SetOnCreate(OnCreate onCreate); 
+        void SetOnClose(OnEvent onClose);
+        void SetOnActivate(OnEvent onActivate);
+        void SetOnDeactivate(OnEvent onDeactivate);
+        void SetOnMouseMove(OnMouseMoveEvent onMouseMove); 
+        void SetOnMouseDown(OnMouseEvent onMouseDown); 
+        void SetOnMouseUp(OnMouseEvent onMouseUp); 
+        void SetOnMouseDblClick(OnMouseEvent onMouseDblClick); 
+        void SetOnMouseWheel(OnMouseWheelEvent onMouseWheel); 
+        void SetOnWindowMove(OnWindowMove onWindowMove); 
     }
 
     /* Quad Camera */
@@ -573,9 +586,9 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadCamera
     {
-        void Scale(float AScale);
-        void Rotate(float AAngle);
-        void Translate(ref Vec2f ADistance);
+        void Scale(float scale);
+        void Rotate(float angle);
+        void Translate(ref Vec2f distance);
         void Reset();
         void Enable();
         void Disable();
@@ -583,9 +596,9 @@ namespace QuadEngine
         [PreserveSig] Vec2f GetAngle();
         [PreserveSig] TMatrix4x4 GetMatrix();
         [PreserveSig] Vec2f GetScale();
-        void SetAngle(float AAngle);
-        void SetPosition(ref Vec2f APosition);
-        [PreserveSig] Vec2f GetTransformed(ref Vec2f AVec); 
+        void SetAngle(float angle);
+        void SetPosition(ref Vec2f position);
+        [PreserveSig] Vec2f GetTransformed(ref Vec2f vec); 
     }
 
     /* Quad GBuffer */
