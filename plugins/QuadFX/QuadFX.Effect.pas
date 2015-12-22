@@ -40,7 +40,7 @@ type
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
-    function GetPosition: TVec2f; stdcall;
+    procedure GetPosition(out APosition: TVec2f); stdcall;
     function GetSpawnWithLerp: Boolean; stdcall;
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
@@ -205,9 +205,9 @@ begin
   Result := FCount;
 end;
 
-function TQuadFXEffect.GetPosition: TVec2f; stdcall;
+procedure TQuadFXEffect.GetPosition(out APosition: TVec2f); stdcall;
 begin
-  Result := FEffectEmitterProxy.Position;
+  APosition := FEffectEmitterProxy.Position;
 end;
 
 function TQuadFXEffect.GetLife: Single; stdcall;

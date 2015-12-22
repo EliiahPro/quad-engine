@@ -28,7 +28,7 @@ type
     function GetEffectCount: Integer; stdcall;
     function GetParticleCount: Integer; stdcall;
     function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
-    function GetGravitation: TVec2f; stdcall;
+    procedure GetGravitation(out AGravitation: TVec2f); stdcall;
   end;
 
 implementation
@@ -160,9 +160,9 @@ begin
   TLayerEffectProxy(FLayerEffectProxy).Gravitation := AVector;
 end;
 
-function TQuadFXLayer.GetGravitation: TVec2f; stdcall;
+procedure TQuadFXLayer.GetGravitation(out AGravitation: TVec2f); stdcall;
 begin
-  Result := FLayerEffectProxy.GetGravitation;
+  AGravitation := FLayerEffectProxy.GetGravitation;
 end;
 
 end.
