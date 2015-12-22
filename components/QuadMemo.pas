@@ -137,16 +137,9 @@ type
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
   end;
 
-procedure Register;
-
 implementation
 
 uses DateUtils, Math, ClipBrd;
-
-procedure Register;
-begin
-  RegisterComponents('Quad', [TQuadMemo]);
-end;
 
 { TQuadMemo }
 
@@ -888,7 +881,7 @@ begin
         cd := TColorDialog.Create(Self);
         cd.Options := [cdFullOpen];
 
-        {$IF CompilerVersion >= 27}
+        {$IF CompilerVersion >= 22}
         DecimalChar := FormatSettings.DecimalSeparator;
         FormatSettings.DecimalSeparator := '.';
         {$ELSE}
@@ -898,7 +891,7 @@ begin
         if cd.Execute then
           InsertText(Format('(%f, %f, %f, 1.0)', [GetRValue(cd.Color) / 255, GetGValue(cd.Color) / 255, GetBValue(cd.Color) / 255]));
 
-        {$IF CompilerVersion >= 27}
+        {$IF CompilerVersion >= 22}
         FormatSettings.DecimalSeparator := DecimalChar;
         {$ELSE}
         DecimalSeparator := DecimalChar;

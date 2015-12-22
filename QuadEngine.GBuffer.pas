@@ -100,7 +100,7 @@ var
   LightPos: TVec3f;
   LightUV: array[0..3] of Single;
   ScreenRatio: Single;
-  Position: TVec2f;
+  Position, CameraPosition: TVec2f;
 begin
   ScreenRatio := FBuffer.GetTextureWidth / FBuffer.GetTextureHeight;
 
@@ -109,7 +109,7 @@ begin
   if Assigned(FCamera) then
   begin
     Aradius := Aradius * FCamera.GetScale;
-    Position := FCamera.GetTransformed(Position);
+    FCamera.Project(Position, CameraPosition);
   end;
 
   TQuadShader.DeferredShading.BindVariableToPS(5, @LightUV[0], 1);
@@ -117,17 +117,17 @@ begin
 
   Device.Render.SetBlendMode(qbmSrcAlphaAdd);
 
-  lightUV[0] := Position.X / FBuffer.GetTextureWidth;
-  lightUV[1] := Position.Y / FBuffer.GetTextureHeight;
+  lightUV[0] := CameraPosition.X / FBuffer.GetTextureWidth;
+  lightUV[1] := CameraPosition.Y / FBuffer.GetTextureHeight;
   lightUV[2] := AHeight / 100;
   lightUV[3] := Aradius / FBuffer.GetTextureWidth;
 
   TQuadShader.DeferredShading.SetShaderState(True);
 
-  FBuffer.DrawMap(TVec2f.Create(Position.X - Aradius, Position.Y - Aradius),
-                  TVec2f.Create(Position.X + Aradius, Position.Y + Aradius),
-                  TVec2f.Create((Position.X - Aradius) / FBuffer.GetTextureWidth, (Position.Y - Aradius) / FBuffer.GetTextureHeight),
-                  TVec2f.Create((Position.X + Aradius) / FBuffer.GetTextureWidth, (Position.Y + Aradius) / FBuffer.GetTextureHeight),
+  FBuffer.DrawMap(TVec2f.Create(CameraPosition.X - Aradius, CameraPosition.Y - Aradius),
+                  TVec2f.Create(CameraPosition.X + Aradius, CameraPosition.Y + Aradius),
+                  TVec2f.Create((CameraPosition.X - Aradius) / FBuffer.GetTextureWidth, (CameraPosition.Y - Aradius) / FBuffer.GetTextureHeight),
+                  TVec2f.Create((CameraPosition.X + Aradius) / FBuffer.GetTextureWidth, (CameraPosition.Y + Aradius) / FBuffer.GetTextureHeight),
                   AColor);
 
   TQuadShader.DeferredShading.SetShaderState(False);

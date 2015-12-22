@@ -530,8 +530,8 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadInput
     {
-      [PreserveSig] bool IsKeyDown(byte key);
-      [PreserveSig] bool IsKeyPress(byte key);
+      [PreserveSig] bool IsKeyDown(byte AKey);
+      [PreserveSig] bool IsKeyPress(byte AKey);      
       [PreserveSig] bool IsMouseDown(MouseButtons button);
       [PreserveSig] bool IsMouseClick(MouseButtons button);
       [PreserveSig] void GetMousePosition(out Vec2f vector);

@@ -95,17 +95,10 @@ type
     property OnItemChange: TQuadGradientColorItemChangeEvent read FOnItemChange write FOnItemChange;
   end;
 
-procedure Register;
-
 implementation
 
 uses
   Math;
-
-procedure Register;
-begin
-  RegisterComponents('Quad', [TQuadGradientEdit]);
-end;
 
 { TQuadGradientColorItem }
 

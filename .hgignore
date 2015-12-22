@@ -9,3 +9,7 @@ dll/qei.map
 *.~*
 *.dsk
 *.map
+bin/*.exe
+dll/qei.dll
+bin/qei.dll
+bin/log.txt

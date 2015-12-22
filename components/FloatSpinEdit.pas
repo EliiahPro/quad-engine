@@ -18,7 +18,7 @@ type
 
     procedure SetValue(const AValue: Extended);
     procedure UpDownChangingEx(Sender: TObject; var AllowChange: Boolean;
-      NewValue: Integer; Direction: TUpDownDirection);
+      NewValue: {$IF CompilerVersion>=26}Integer{$ELSE}SmallInt{$IFEND}; Direction: TUpDownDirection);
   protected
     procedure KeyPress(var Key: Char); override;
     procedure Change; override;
@@ -34,14 +34,7 @@ type
     property Increment: Extended read FIncrement write FIncrement;// default 0.05;
   end;
 
-procedure Register;
-
 implementation
-
-procedure Register;
-begin
-  RegisterComponents('Quad', [TFloatSpinEdit]);
-end;
 
 { TFloatSpinEdit }
 
@@ -70,7 +63,7 @@ begin
 end;
 
 procedure TFloatSpinEdit.UpDownChangingEx(Sender: TObject; var AllowChange: Boolean;
-  NewValue: Integer; Direction: TUpDownDirection);
+  NewValue: {$IF CompilerVersion>=26}Integer{$ELSE}SmallInt{$IFEND}; Direction: TUpDownDirection);
 var
   Sel: Integer;
 begin

@@ -56,8 +56,6 @@ type
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
   end;
 
-procedure Register;
-
 implementation
 
 uses Math;
@@ -311,11 +309,6 @@ begin
   FNR := GetRValue(Value);
   FNG := GetGValue(Value);
   FNB := GetBValue(Value);
-end;
-
-procedure Register;
-begin
-  RegisterComponents('Quad', [TQuadIcon]);
 end;
 
 end.
