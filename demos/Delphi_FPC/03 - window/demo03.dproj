@@ -81,6 +81,7 @@
         <DCC_DebugInformation>False</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_DcuOutput>dcu</DCC_DcuOutput>
         <DCC_ExeOutput>../../../bin</DCC_ExeOutput>
         <DCC_UnitSearchPath>..\..\..\headers;..;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>

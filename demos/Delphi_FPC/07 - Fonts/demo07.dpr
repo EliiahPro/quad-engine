@@ -14,7 +14,6 @@ var
   QuadTimer: IQuadTimer;
   QuadFont: IQuadFont;
 
-
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
 var
   df: TDistanceFieldParams;

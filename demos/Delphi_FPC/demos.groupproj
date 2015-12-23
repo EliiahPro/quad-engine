@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{C95DEE12-AF46-4152-8627-F18F179F3994}</ProjectGuid>
+        <ProjectGuid>{DC19FD48-5105-49E4-AA76-BEE966D5A709}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
         <Projects Include="01 - initialization\demo01.dproj">
@@ -22,6 +22,9 @@
             <Dependencies/>
         </Projects>
         <Projects Include="07 - Fonts\demo07.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="08 - QuadFX plugin\demo08.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -95,14 +98,23 @@
     <Target Name="demo07:Make">
         <MSBuild Projects="07 - Fonts\demo07.dproj" Targets="Make"/>
     </Target>
+    <Target Name="demo08">
+        <MSBuild Projects="08 - QuadFX plugin\demo08.dproj"/>
+    </Target>
+    <Target Name="demo08:Clean">
+        <MSBuild Projects="08 - QuadFX plugin\demo08.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="demo08:Make">
+        <MSBuild Projects="08 - QuadFX plugin\demo08.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="demo01;demo02;demo03;demo04;demo05;demo06;demo07"/>
+        <CallTarget Targets="demo01;demo02;demo03;demo04;demo05;demo06;demo07;demo08"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean;demo05:Clean;demo06:Clean;demo07:Clean"/>
+        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean;demo05:Clean;demo06:Clean;demo07:Clean;demo08:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make;demo05:Make;demo06:Make;demo07:Make"/>
+        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make;demo05:Make;demo06:Make;demo07:Make;demo08:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

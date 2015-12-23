@@ -78,40 +78,40 @@ namespace QuadEngine
     // Vector record declaration
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TVector{
-        float x;
-        float y;
-        float z;
+        public float x;
+        public float y;
+        public float z;
     }
 
      // vertex record declaration
      [StructLayout(LayoutKind.Sequential, Pack = 1)]
      public struct TVertex{
-        float x; float y; float z;  /* X, Y of vertex. Z not used */
-        TVector Normal;             /* Normal vector */
-        UInt32 color;               /* Color */
-        float u; float v;           /* Texture UV coord */
-        TVector tangent;            /* Tangent vector */
-        TVector binormal;           /* Binormal vector */
+        public float x; public float y; public float z;  /* X, Y of vertex. Z not used */
+        public TVector Normal;             /* Normal vector */
+        public UInt32 color;               /* Color */
+        public float u; float v;           /* Texture UV coord */
+        public TVector tangent;            /* Tangent vector */
+        public TVector binormal;           /* Binormal vector */
     }
 
     public struct TCoord {
-        ushort X;
-        ushort Y;
+        public ushort X;
+        public ushort Y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct TRect {
-        int Left;
-        int Top;
-        int Right;
-        int Bootom;
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bootom;
     }
 
     public struct TMatrix4x4 {
-        float _11; float _12; float _13; float _14;
-        float _21; float _22; float _23; float _24;
-        float _31; float _32; float _33; float _34;
-        float _41; float _42; float _43; float _44;
+        public float _11; public float _12; public float _13; public float _14;
+        public float _21; public float _22; public float _23; public float _24;
+        public float _31; public float _32; public float _33; public float _34;
+        public float _41; public float _42; public float _43; public float _44;
     }
 
     /* Quad Device */
@@ -190,16 +190,16 @@ namespace QuadEngine
     // Initialization record
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TRenderInit {
-        UInt32 Handle;
-        int Width;
-        int Height;
-        int BackBufferCount;
-        int RefreshRate;
-        bool Fullscreen;
-        bool SoftwareVertexProcessing;
-        bool MultiThreaded;
-        bool VerticalSync;
-        TQuadShaderModel ShaderModel;
+        public UInt32 Handle;
+        public int Width;
+        public int Height;
+        public int BackBufferCount;
+        public int RefreshRate;
+        public bool Fullscreen;
+        public bool SoftwareVertexProcessing;
+        public bool MultiThreaded;
+        public bool VerticalSync;
+        public TQuadShaderModel ShaderModel;
     }
 
     [ComImport]
@@ -480,11 +480,11 @@ namespace QuadEngine
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct PressedMouseButtons 
     {
-        Boolean Left;
-        Boolean Right; 
-        Boolean Middle;
-        Boolean X1;
-        Boolean X2;
+        public bool Left;
+        public bool Right;
+        public bool Middle;
+        public bool X1;
+        public bool X2;
     }
 
     public enum KeyButtons
@@ -504,16 +504,16 @@ namespace QuadEngine
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct PressedKeyButtons
     {
-        Boolean None;
-        Boolean Shift;
-        Boolean LShift;
-        Boolean RShift;
-        Boolean Ctrl;
-        Boolean LCtrl;
-        Boolean RCtrl;
-        Boolean Alt;
-        Boolean LAlt;
-        Boolean RAlt;
+        public bool None;
+        public bool Shift;
+        public bool LShift;
+        public bool RShift;
+        public bool Ctrl;
+        public bool LCtrl;
+        public bool RCtrl;
+        public bool Alt;
+        public bool LAlt;
+        public bool RAlt;
     }
 
     public delegate void OnKeyPress(ushort key, PressedKeyButtons pressedButtons);
@@ -534,9 +534,9 @@ namespace QuadEngine
       [PreserveSig] bool IsKeyPress(byte AKey);      
       [PreserveSig] bool IsMouseDown(MouseButtons button);
       [PreserveSig] bool IsMouseClick(MouseButtons button);
-      [PreserveSig] void GetMousePosition(out Vec2f vector);
-      [PreserveSig] Vec2f GetMouseVector();
-      [PreserveSig] Vec2f GetMouseWheel();
+      [PreserveSig] void GetMousePosition(out Vec2f position);
+      [PreserveSig] void GetMouseVector(out Vec2f vector);
+      [PreserveSig] void GetMouseWheel(out Vec2f vector);
       void Update();
     }
 
@@ -564,19 +564,19 @@ namespace QuadEngine
         void SetPosition(int xPos, int yPos);
         [PreserveSig] UIntPtr GetHandle();
 
-        void SetOnKeyDown(OnKeyPress onKeyDown); 
-        void SetOnKeyUp(OnKeyPress onKeyUp); 
-        void SetOnKeyChar(OnKeyChar onKeyChar); 
-        void SetOnCreate(OnCreate onCreate); 
-        void SetOnClose(OnEvent onClose);
-        void SetOnActivate(OnEvent onActivate);
-        void SetOnDeactivate(OnEvent onDeactivate);
-        void SetOnMouseMove(OnMouseMoveEvent onMouseMove); 
-        void SetOnMouseDown(OnMouseEvent onMouseDown); 
-        void SetOnMouseUp(OnMouseEvent onMouseUp); 
-        void SetOnMouseDblClick(OnMouseEvent onMouseDblClick); 
-        void SetOnMouseWheel(OnMouseWheelEvent onMouseWheel); 
-        void SetOnWindowMove(OnWindowMove onWindowMove); 
+        void SetOnKeyDown(IntPtr onKeyDown); 
+        void SetOnKeyUp(IntPtr onKeyUp); 
+        void SetOnKeyChar(IntPtr onKeyChar); 
+        void SetOnCreate(IntPtr onCreate); 
+        void SetOnClose(IntPtr onClose);
+        void SetOnActivate(IntPtr onActivate);
+        void SetOnDeactivate(IntPtr onDeactivate);
+        void SetOnMouseMove(IntPtr onMouseMove); 
+        void SetOnMouseDown(IntPtr onMouseDown); 
+        void SetOnMouseUp(IntPtr onMouseUp); 
+        void SetOnMouseDblClick(IntPtr onMouseDblClick); 
+        void SetOnMouseWheel(IntPtr onMouseWheel); 
+        void SetOnWindowMove(IntPtr onWindowMove); 
     }
 
     /* Quad Camera */
@@ -592,10 +592,10 @@ namespace QuadEngine
         void Reset();
         void Enable();
         void Disable();
-        [PreserveSig] Vec2f GetPosition();
-        [PreserveSig] Vec2f GetAngle();
-        [PreserveSig] TMatrix4x4 GetMatrix();
-        [PreserveSig] Vec2f GetScale();
+        [PreserveSig] void GetPosition(out Vec2f position);
+        [PreserveSig] float GetAngle();
+        [PreserveSig] void GetMatrix(out TMatrix4x4 matrix4x4);
+        [PreserveSig] float GetScale();
         void SetAngle(float angle);
         void SetPosition(ref Vec2f position);
         [PreserveSig] Vec2f GetTransformed(ref Vec2f vec); 

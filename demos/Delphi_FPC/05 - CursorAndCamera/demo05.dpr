@@ -8,22 +8,22 @@ uses
   QuadEngine, Windows, Vec2f, Math;
 
 const
-  WINDOW_WIDTH = 300;
-  WINDOW_HEIGHT = 240;
+  WINDOW_WIDTH = 800;
+  WINDOW_HEIGHT = 600;
 
 var
   QuadDevice: IQuadDevice;
   QuadWindow: IQuadWindow;
   QuadRender: IQuadRender;
   QuadTimer: IQuadTimer;
+  QuadInput: IQuadInput;
+  Camera: IQuadCamera;
 
   QuadLogoTexture: IQuadTexture;
 
   CursorTexture: IQuadTexture;
   IsCursorMove: Boolean;
-  CursorMove: TVec2i;
 
-  Camera: IQuadCamera;
 
 procedure ResetCursor;
 var
@@ -34,16 +34,27 @@ begin
 
   CursorPosition.X := WINDOW_WIDTH div 2;
   CursorPosition.Y := WINDOW_HEIGHT div 2;
-  CursorMove.Create(CursorPosition.X, CursorPosition.Y);
   ClientToScreen(QuadWindow.GetHandle, CursorPosition);
   QuadDevice.SetCursorPosition(CursorPosition.X, CursorPosition.Y);
 end;
 
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
+var
+  MousePosition: TVec2f;
+  MouseVector: TVec2f;
+  MouseWheel: TVec2f;
 begin
-  Camera.Translate(CursorMove - TVec2i.Create(WINDOW_WIDTH div 2, WINDOW_HEIGHT div 2));
+  QuadInput.Update;
 
-  ResetCursor;
+  QuadInput.GetMousePosition(MousePosition);
+  QuadInput.GetMouseVector(MouseVector);
+  QuadInput.GetMouseWheel(MouseWheel);
+
+  //Camera.Scale(max(0.1, min(3, Camera.GetScale + TVec2f(AVector).Normalize.Y / 10)));
+
+  Camera.Translate(MouseVector);
+
+  //ResetCursor;
   QuadRender.BeginRender;
   QuadRender.Clear($FF000000);
 
@@ -55,7 +66,7 @@ begin
 
   QuadRender.DrawQuadLine(
     TVec2f.Create(WINDOW_WIDTH div 2, WINDOW_HEIGHT div 2),
-    CursorMove,
+    MousePosition,
     5, 1, $FFFF0000, $FF00FF00
   );
 
@@ -73,16 +84,6 @@ begin
   IsCursorMove := False;
 end;
 
-procedure OnMouseMove(const APosition: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  CursorMove := APosition;
-end;
-
-procedure OnMouseWheel(const APosition: TVec2i; const AVector: TVec2i; const APressedButtons: TPressedMouseButtons); stdcall;
-begin
-  Camera.Scale(max(0.1, min(3, Camera.GetScale + TVec2f(AVector).Normalize.Y / 10)));
-end;
-
 begin
   IsCursorMove := True;
   QuadDevice := CreateQuadDevice;
@@ -92,8 +93,8 @@ begin
   QuadWindow.SetSize(WINDOW_WIDTH, WINDOW_HEIGHT);
   QuadWindow.SetOnActivate(OnActivate);
   QuadWindow.SetOnDeactivate(OnDeactivate);
-  QuadWindow.SetOnMouseMove(OnMouseMove);
-  QuadWindow.SetOnMouseWheel(OnMouseWheel);
+
+  QuadWindow.CreateInput(QuadInput);
 
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, WINDOW_WIDTH, WINDOW_HEIGHT, false);
@@ -106,6 +107,7 @@ begin
   QuadDevice.SetCursorProperties(0, 0, CursorTexture);
 
   QuadDevice.CreateCamera(Camera);
+  Camera.SetPosition(-TVec2f.Create(WINDOW_WIDTH, WINDOW_HEIGHT));
 
   QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
   QuadWindow.Start;

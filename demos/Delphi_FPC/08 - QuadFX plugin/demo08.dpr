@@ -5,7 +5,7 @@ program demo08;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, QuadFX, Vec2f, QuadFX.Manager, System.SysUtils, Math;
+  QuadEngine, QuadFX, Vec2f, System.SysUtils, Math;
 
 const
   WIN_SIZE: TVec2i = (X: 1024; Y: 768);
@@ -42,14 +42,17 @@ end;
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
 var
   i: Integer;
+  MousePosition: TVec2f;
 begin
   QuadInput.Update;
 
+  QuadInput.GetMousePosition(MousePosition);
+
   if QuadInput.IsMouseClick(mbLeft) then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams, QuadInput.GetMousePosition, 0, 1.5);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams, MousePosition, 0, 1.5);
 
   if QuadInput.IsMouseClick(mbRight) then
-    QuadFXLayer.CreateEffect(QuadFXEffectParams2, QuadInput.GetMousePosition, DegToRad(45), 1);
+    QuadFXLayer.CreateEffect(QuadFXEffectParams2, MousePosition, DegToRad(45), 1);
 
   QuadFXLayer.Update(delta);
 
@@ -94,25 +97,19 @@ begin
 
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, RENDER_SIZE.X, RENDER_SIZE.Y, False);
- // QuadDevice.ShowCursor(False);
 
   QuadDevice.CreateAndLoadTexture(0, 'data\Background.png', Background);
 
-  Manager := TQuadFXManager.Create(QuadDevice); QuadFXManager := Manager;
-  //QuadFXManager := CreateQuadFXManager(QuadDevice);
+  QuadFXManager := CreateQuadFXManager(QuadDevice);
 
   QuadFXManager.CreateLayer(QuadFXLayer);
   QuadFXLayer.SetGravitation(TVec2f.Create(10, 10));
-
-  // QuadFXManager.CreateAtlas(QuadFXAtlas);
-  // QuadFXAtlas.LoadFromFile('Atlas', 'data\QuadFX_Effect.json');
 
   QuadFXManager.CreateEffectParams(QuadFXEffectParams);
   QuadFXEffectParams.LoadFromFile('Effect1', 'data\QuadFX_Effect.json');
 
   QuadFXManager.CreateEffectParams(QuadFXEffectParams2);
   QuadFXEffectParams2.LoadFromFile('Effect2', 'data\QuadFX_Effect.json');
-  //QuadFXEffectParams.CreateEmitterParams;
 
   QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
 

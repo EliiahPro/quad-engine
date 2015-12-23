@@ -24,6 +24,10 @@ procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
       QuadRender.Rectangle(APosition * 15, APosition * 15 + TVec2f.Create(10, 10), $FFFFFFFF);
   end;
 
+var
+  MousePosition: TVec2f;
+  MouseVector: TVec2f;
+  MouseWheel: TVec2f;
 begin
   QuadInput.Update;
 
@@ -52,10 +56,14 @@ begin
   DrawRect(TVec2f.Create(9, 4), QuadInput.IsMouseClick(mbX1));
   DrawRect(TVec2f.Create(10, 4), QuadInput.IsMouseClick(mbX2));
 
-  QuadRender.DrawCircle(QuadInput.GetMousePosition, 20, 18 );
+  QuadInput.GetMousePosition(MousePosition);
+  QuadRender.DrawCircle(MousePosition, 20, 18);
 
-  QuadRender.DrawQuadLine(TVec2f.Create(400, 300), TVec2f.Create(400, 300) + QuadInput.GetMouseVector, 3, 1, $FFFFFFFF, $FFFFFFFF);
-  QuadRender.DrawQuadLine(TVec2f.Create(100, 300), TVec2f.Create(100, 300) + QuadInput.GetMouseWheel, 7, 1, $FFFFFFFF, $FF00FF00);
+  QuadInput.GetMouseVector(MouseVector);
+  QuadRender.DrawQuadLine(TVec2f.Create(400, 300), TVec2f.Create(400, 300) + MouseVector, 3, 1, $FFFFFFFF, $FFFFFFFF);
+
+  QuadInput.GetMouseWheel(MouseWheel);
+  QuadRender.DrawQuadLine(TVec2f.Create(100, 300), TVec2f.Create(100, 300) + MouseWheel, 7, 1, $FFFFFFFF, $FF00FF00);
 
   QuadRender.EndRender;
 end;
