@@ -1,0 +1,51 @@
+{"Type":"QuadFX","PackName":"TestPack","Textures":{"Atlases":[{"Name":"Atlas","Width":256,"Height":256,"Sprites":[{"ID":0,"Name":"003.png","Left":56,"Top":0,"Width":25,"Height":25,"AxisLeft":12,"AxisTop":12},{"ID":1,"Name":"001.png","Left":81,"Top":0,"Width":4,"Height":19,"AxisLeft":2,"AxisTop":9},{"ID":2,"Name":"002.png","Left":0,"Top":0,"Width":31,"Height":31,"AxisLeft":15,"AxisTop":15},{"ID":3,"Name":"005.png","Left":31,"Top":0,"Width":25,"Height":25,"AxisLeft":12,"AxisTop":12}],"Data":"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
+QmCC"}]},
+"Effects":[
+	{"Name":"Effect1","Emitters":[
+		{"Name":"Вспышка","BlendMode":4,"BeginTime":0,"EndTime":0.589843732958806,"Loop":false,"MaxParticles":100,"PositionX":{"Type":0,"Value":0},"PositionY":{"Type":0,"Value":0},"Direction":{"Type":0,"Value":0},"Spread":{"Type":0,"Value":6.28318531032711},"Textures":[0],"Shape":{"Shape":0,"Type":0,"Value0":0,"Value1":0,"Value2":0},"FromCenter":false,"Color":[{"Life":0,"Color":"$FF6D2A09"},{"Life":0.999999984306749,"Color":"$FF000000"}],"Emission":{"Type":2,"Curve":[{"Life":0.287564776479916,"Value":132.173907682656},{"Life":0.999999984306749,"Value":23.4782600529445}]},"ParticleLifeTime":{"Type":0,"Value":0.499999992153375},"ParticleStartVelocity":{"Type":0,"Value":9.99999984306749},"ParticleVelocity":{"Type":2,"Curve":[{"Life":0,"Value":1.02898551599661},{"Life":0.595854969186288,"Value":-0.0144925115828666}]},"ParticleOpacity":{"Type":2,"Curve":[{"Life":0,"Value":0.99999998430675},{"Life":0.39378239290658,"Value":0.99999998430675},{"Life":0.999999984306749,"Value":0}]},"ParticleScale":{"Type":2,"Curve":[{"Life":0,"Value":4.99999992153375},{"Life":0.40155439392673,"Value":5.01449285917737}]},"ParticleStartAngle":{"Type":1,"ValueMin":-360.000001222377,"ValueMax":360.000001222377},"ParticleSpin":{"Type":0,"Value":0.99999998430675}},
+		{"Name":"Хрень","BlendMode":4,"BeginTime":0.0585937511742702,"EndTime":0.258593744599646,"Loop":false,"MaxParticles":100,"PositionX":{"Type":0,"Value":0},"PositionY":{"Type":0,"Value":0},"Direction":{"Type":0,"Value":0},"Spread":{"Type":0,"Value":6.28318531032711},"Textures":[1],"Shape":{"Shape":0,"Type":0,"Value0":0,"Value1":0,"Value2":0},"FromCenter":false,"Color":[{"Life":0,"Color":"$FFFF0000"},{"Life":0.999999984306749,"Color":"$FFFFFF00"}],"Emission":{"Type":0,"Value":99.9999984306749},"ParticleLifeTime":{"Type":0,"Value":0.499999992153375},"ParticleStartVelocity":{"Type":0,"Value":149.999997646012},"ParticleVelocity":{"Type":2,"Curve":[{"Life":0,"Value":0.99999998430675},{"Life":0.292746104766726,"Value":1.37681146677821},{"Life":0.5388600659736,"Value":0.333333476994449}]},"ParticleOpacity":{"Type":2,"Curve":[{"Life":0.318652832100123,"Value":0.99999998430675},{"Life":0.696891222966403,"Value":0.73913040525643},{"Life":0.999999984306749,"Value":0}]},"ParticleScale":{"Type":0,"Value":0.99999998430675},"ParticleStartAngle":{"Type":0,"Value":270.0000020235813},"ParticleSpin":{"Type":0,"Value":0.99999998430675}},
+		{"Name":"Искры","BlendMode":4,"BeginTime":0,"EndTime":0.398437484620415,"Loop":false,"MaxParticles":100,"PositionX":{"Type":0,"Value":0},"PositionY":{"Type":0,"Value":0},"Direction":{"Type":0,"Value":0},"Spread":{"Type":0,"Value":6.28318531032711},"Textures":[2],"Shape":{"Shape":2,"Type":0,"Value0":39.99999937227,"Value1":0,"Value2":0},"FromCenter":true,"Color":[{"Life":0,"Color":"$FFFF0000"},{"Life":0.999999984306749,"Color":"$FFFF8C00"}],"Emission":{"Type":0,"Value":299.999995292025},"ParticleLifeTime":{"Type":1,"ValueMin":1.9999999686135,"ValueMax":2.99999995292025},"ParticleStartVelocity":{"Type":1,"ValueMin":0,"ValueMax":19.999999686135},"ParticleVelocity":{"Type":2,"Curve":[{"Life":0,"Value":0.99999998430675},{"Life":0.59067358935987,"Value":0.217391487673958}]},"ParticleOpacity":{"Type":0,"Value":0.99999998430675},"ParticleScale":{"Type":0,"Value":0.19999999686135},"ParticleStartAngle":{"Type":1,"ValueMin":-360.000001222377,"ValueMax":360.000001222377},"ParticleSpin":{"Type":0,"Value":0.99999998430675}},
+		{"Name":"Дым","BlendMode":4,"BeginTime":0.242187502104871,"EndTime":0.320312510542512,"Loop":false,"MaxParticles":100,"PositionX":{"Type":0,"Value":0},"PositionY":{"Type":0,"Value":0},"Direction":{"Type":0,"Value":0},"Spread":{"Type":0,"Value":6.28318531032711},"Textures":[3],"Shape":{"Shape":0,"Type":0,"Value0":0,"Value1":0,"Value2":0},"FromCenter":false,"Color":[{"Life":0,"Color":"$FF484848"}],"Emission":{"Type":0,"Value":49.9999992153375},"ParticleLifeTime":{"Type":0,"Value":5.9999999058405},"ParticleStartVelocity":{"Type":0,"Value":4.99999992153375},"ParticleVelocity":{"Type":2,"Curve":[{"Life":0,"Value":0.99999998430675}]},"ParticleOpacity":{"Type":2,"Curve":[{"Life":0.310880831079973,"Value":0.527536264438612},{"Life":0.999999984306749,"Value":0}]},"ParticleScale":{"Type":2,"Curve":[{"Life":0,"Value":4.99493632689046},{"Life":0.999999984306749,"Value":7.00807133628727}]},"ParticleStartAngle":{"Type":1,"ValueMin":-360.000001222377,"ValueMax":360.000001222377},"ParticleSpin":{"Type":0,"Value":0.99999998430675}}
+	]},
+	{"Name":"Effect2","Emitters":[
+		{"Name":"Хрень","BlendMode":4,"BeginTime":0,"EndTime":1,"Loop":true,"MaxParticles":1000,"PositionX":{"Type":0,"Value":32},"PositionY":{"Type":0,"Value":16},"Direction":{"Type":0,"Value":0},"Spread":{"Type":0,"Value":0.53},"Textures":[1],"Shape":{"Shape":0,"Type":0,"Value0":0,"Value1":0,"Value2":0},"FromCenter":false,"Color":[{"Life":0,"Color":"$FFFF0000"},{"Life":1,"Color":"$FFFFFF00"}],"Emission":{"Type":0,"Value":10},"ParticleLifeTime":{"Type":0,"Value":1},"ParticleStartVelocity":{"Type":0,"Value":30},"ParticleVelocity":{"Type":2,"Curve":[{"Life":0,"Value":10},{"Life":0.3,"Value":1.38},{"Life":0.54,"Value":0.34}]},"ParticleOpacity":{"Type":2,"Curve":[{"Life":0.32,"Value":1},{"Life":0.7,"Value":0.74},{"Life":1,"Value":0}]},"ParticleScale":{"Type":0,"Value":1},"ParticleStartAngle":{"Type":0,"Value":270},"ParticleSpin":{"Type":0,"Value":1}}
+	]}
+]}
