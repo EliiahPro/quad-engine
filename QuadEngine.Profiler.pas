@@ -14,22 +14,10 @@ unit QuadEngine.Profiler;
 interface
 
 uses
-  Windows;
+  Winapi.Windows, System.SysUtils, System.SyncObjs, TypInfo, QuadEngine.Socket, IniFiles, QuadEngine,
+  System.Generics.collections;
 
 type
-  TAPIType = (
-              atInvalid = 0,
-              atBeginScene = 1,
-              atEndScene = 2,
-              atClear = 3,
-              atDraw = 4,
-              atFlushBuffer = 6,
-              atSetBlendMode = 7,
-              atCalculateTBN = 8,
-              atSwitchRenderTarget = 9,
-              atSwitchTexture = 10
-              );
-
   TAPICall = packed record
     Calls: Cardinal;
     Time: Double;
@@ -37,25 +25,33 @@ type
     TimeSlowest: Double;
   end;
 
-  TAPICalls = array[TAPIType] of TAPICall;
-
-  TQuadProfiler = class
-  strict private
-    class var FInstance: TQuadProfiler;
-    procedure Initialize;
+  TQuadProfilerTag = class(TInterfacedObject, IQuadProfilerTag)
   private
-    FCurrentAPICalls: TAPICalls;
-    FCurrentAPICallsStartTime: array[TAPIType] of Int64;
-    FCurrentTickStartTime: Int64;
-    FPerformanceFrequency: Int64;
+    class var FPerformanceFrequency: Int64;
+    class procedure Init;
+  private
+    FName: WideString;
+    FCurrentAPICallStartTime: Int64;
+    FCurrentAPICall: TAPICall;
   public
-    procedure BeginCount(APItype: TAPIType);
-    procedure EndCount(APItype: TAPIType);
-    procedure BeginTick;
-    procedure EndTick;
+    constructor Create(const AName: PWideChar);
+    procedure BeginCount; stdcall;
+    procedure EndCount; stdcall;
+    procedure Refresh;
+    property Name: WideString read FName;
+  end;
 
-    class function Create: TQuadProfiler;
-    procedure FreeInstance; override;
+  TQuadProfiler = class(TInterfacedObject, IQuadProfiler)
+  private
+    FTags: TList<TQuadProfilerTag>;
+    //FSocket: TQuadSocket;
+    //FSocketAddress: PQuadSocketAddressItem;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
+    procedure BeginTick; stdcall;
+    procedure EndTick; stdcall;
   end;
 
 implementation
@@ -63,56 +59,90 @@ implementation
 uses
   Math;
 
-{ TQuadProfiler }
+{ TQuadProfilerTag }
 
-class function TQuadProfiler.Create: TQuadProfiler;
+class procedure TQuadProfilerTag.Init;
 begin
-  if not Assigned(FInstance) then
-  begin
-    FInstance := inherited NewInstance as Self;
-    FInstance.Initialize;
-  end;
-
-  Result := FInstance;
+  QueryPerformanceFrequency(FPerformanceFrequency);
 end;
 
-procedure TQuadProfiler.BeginCount(APItype: TAPIType);
+constructor TQuadProfilerTag.Create(const AName: PWideChar);
 begin
-  QueryPerformanceCounter(FCurrentAPICallsStartTime[APItype]);
+  inherited Create;
+  FName := AName;
+  Refresh;
 end;
 
-procedure TQuadProfiler.EndCount(APItype: TAPIType);
+procedure TQuadProfilerTag.BeginCount; stdcall;
+begin
+  QueryPerformanceCounter(FCurrentAPICallStartTime);
+end;
+
+procedure TQuadProfilerTag.EndCount; stdcall;
 var
   Counter: Int64;
   Time: Double;
 begin
-  Inc(FCurrentAPICalls[APItype].Calls);
+  Inc(FCurrentAPICall.Calls);
 
   QueryPerformanceCounter(Counter);
-  Time := (Counter - FCurrentAPICallsStartTime[APItype]) / FPerformanceFrequency;
+  Time := (Counter - FCurrentAPICallStartTime) / FPerformanceFrequency;
 
-  FCurrentAPICalls[APItype].Time := FCurrentAPICalls[APItype].Time + Time;
+  FCurrentAPICall.Time := FCurrentAPICall.Time + Time;
 
-  if FCurrentAPICalls[APItype].TimeFastest > Time then
-    FCurrentAPICalls[APItype].TimeFastest := Time;
+  if FCurrentAPICall.TimeFastest > Time then
+    FCurrentAPICall.TimeFastest := Time;
 
-  if FCurrentAPICalls[APItype].TimeSlowest < Time then
-    FCurrentAPICalls[APItype].TimeSlowest := Time;
+  if FCurrentAPICall.TimeSlowest < Time then
+    FCurrentAPICall.TimeSlowest := Time;
+end;
+
+procedure TQuadProfilerTag.Refresh;
+begin
+  FCurrentAPICall.Calls := 0;
+  FCurrentAPICall.Time := 0.0;
+  FCurrentAPICall.TimeFastest := MaxDouble;
+  FCurrentAPICall.TimeSlowest := 0.0;
+end;
+
+{ TQuadProfiler }
+
+function TQuadProfiler.CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
+var
+  Tag: TQuadProfilerTag;
+begin
+  Tag := TQuadProfilerTag.Create(AName);
+  FTags.Add(Tag);
+  ATag := Tag;
+  if Assigned(ATag) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
+end;
+
+constructor TQuadProfiler.Create;
+begin
+  inherited Create;
+  FTags := TList<TQuadProfilerTag>.Create;
+
+  //FSocket := TQuadSocket.Create;
+  //FSocket.InitSocket;
+  //FSocketAddress := FSocket.CreateAddress('127.0.0.1', 17788);
+end;
+
+destructor TQuadProfiler.Destroy;
+begin
+  FTags.Free;
+  inherited;
 end;
 
 procedure TQuadProfiler.BeginTick;
 var
-  i: TAPIType;
+  Tag: TQuadProfilerTag;
 begin
-  QueryPerformanceCounter(FCurrentTickStartTime);
+  for Tag in FTags do
+    Tag.Refresh;
 
-  for i := Low(TAPIType) to High(TAPIType) do
-  begin
-    FCurrentAPICalls[i].Calls := 0;
-    FCurrentAPICalls[i].Time := 0.0;
-    FCurrentAPICalls[i].TimeFastest := MaxDouble;
-    FCurrentAPICalls[i].TimeSlowest := 0.0;
-  end;
 end;
 
 procedure TQuadProfiler.EndTick;
@@ -120,20 +150,7 @@ begin
 
 end;
 
-procedure TQuadProfiler.FreeInstance;
-begin
-  if Assigned(FInstance) then
-    FInstance := nil;
-
-  inherited FreeInstance;
-end;
-
-
-procedure TQuadProfiler.Initialize;
-begin
-  QueryPerformanceFrequency(FPerformanceFrequency);
-
-  FillChar(FCurrentAPICalls, SizeOf(FCurrentAPICalls), 0);
-end;
+initialization
+  TQuadProfilerTag.Init;
 
 end.

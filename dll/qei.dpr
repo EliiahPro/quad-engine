@@ -20,7 +20,7 @@ library qei;
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 
-{$INCLUDE QUADENGINE.INC}
+{$INCLUDE QuadEngine.inc}
 
 {$R 'Shaders.res' 'Shaders.rc'}
 
@@ -45,7 +45,8 @@ uses
   Vec2f in '..\headers\Vec2f.pas',
   BeRoDDS in '..\BeRoDDS.pas'
   {$IFDEF DEBUG}
-, QuadEngine.Profiler in '..\QuadEngine.Profiler.pas'
+, QuadEngine.Profiler in '..\QuadEngine.Profiler.pas',
+  QuadEngine.Socket in '..\QuadEngine.Socket.pas'
   {$ENDIF};
 
 {$R *.res}

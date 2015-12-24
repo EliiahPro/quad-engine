@@ -8,7 +8,7 @@
         <FrameworkType>None</FrameworkType>
         <ProjectVersion>16.0</ProjectVersion>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Library</AppType>
@@ -480,6 +480,10 @@
         <DCCReference Include="..\headers\Vec2f.pas"/>
         <DCCReference Include="..\BeRoDDS.pas">
             <Form>$IFDEF DEBUG</Form>
+        </DCCReference>
+        <DCCReference Include="..\QuadEngine.Profiler.pas"/>
+        <DCCReference Include="..\QuadEngine.Socket.pas">
+            <Form>$ENDIF</Form>
         </DCCReference>
         <None Include="..\QuadEngine.inc"/>
         <BuildConfiguration Include="Debug">
