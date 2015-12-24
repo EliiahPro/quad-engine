@@ -18,6 +18,12 @@ uses
   System.Generics.collections;
 
 type
+  TProfilerInfo = packed record
+    GUID: TGUID;
+    DateTime: Double;
+    TagsCount: Byte;
+  end;
+
   TAPICall = packed record
     Calls: Cardinal;
     Time: Double;
@@ -37,21 +43,32 @@ type
     constructor Create(const AName: PWideChar);
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
+    function GetName: PWideChar; stdcall;
     procedure Refresh;
     property Name: WideString read FName;
+    property Call: TAPICall read FCurrentAPICall;
   end;
 
   TQuadProfiler = class(TInterfacedObject, IQuadProfiler)
   private
+    FName: WideString;
+    FIsSend: Boolean;
+    FServerAdress: AnsiString;
+    FServerPort: Word;
+
+    FInfo: TProfilerInfo;
     FTags: TList<TQuadProfilerTag>;
-    //FSocket: TQuadSocket;
-    //FSocketAddress: PQuadSocketAddressItem;
+    FSocket: TQuadSocket;
+    FSocketAddress: PQuadSocketAddressItem;
+    procedure LoadFromIniFile;
   public
     constructor Create;
     destructor Destroy; override;
     function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
     procedure BeginTick; stdcall;
     procedure EndTick; stdcall;
+    procedure SetAdress(AAdress: PAnsiChar; APort: Word = 17788); stdcall;
+    procedure SetGUID(const AGUID: TGUID); stdcall;
   end;
 
 implementation
@@ -105,6 +122,11 @@ begin
   FCurrentAPICall.TimeSlowest := 0.0;
 end;
 
+function TQuadProfilerTag.GetName: PWideChar; stdcall;
+begin
+  Result := PWideChar(FName);
+end;
+
 { TQuadProfiler }
 
 function TQuadProfiler.CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
@@ -120,14 +142,46 @@ begin
     Result := E_FAIL;
 end;
 
+procedure TQuadProfiler.LoadFromIniFile;
+var
+  ini: TIniFile;
+begin
+  if not FileExists('QuadConfig.ini') then
+    Exit;
+
+  ini := TIniFile.Create('QuadConfig.ini');
+  try
+    FServerAdress := ini.ReadString('Profiler', 'Adress', '127.0.0.1');
+    FServerPort := ini.ReadInteger('Profiler', 'Port', 17788);
+    FIsSend := True;
+  finally
+    ini.Free;
+  end;
+
+end;
+
 constructor TQuadProfiler.Create;
 begin
   inherited Create;
   FTags := TList<TQuadProfilerTag>.Create;
+  FIsSend := False;
+  CreateGUID(FInfo.GUID);
 
-  //FSocket := TQuadSocket.Create;
-  //FSocket.InitSocket;
-  //FSocketAddress := FSocket.CreateAddress('127.0.0.1', 17788);
+  LoadFromIniFile;
+  if FIsSend then
+    SetAdress(PAnsiChar(FServerAdress), FServerPort);
+end;
+
+procedure TQuadProfiler.SetAdress(AAdress: PAnsiChar; APort: Word = 17788); stdcall;
+begin
+  if not Assigned(FSocket) then
+    FSocket := TQuadSocket.Create;
+
+  FIsSend := True;
+  FServerAdress := AAdress;
+  FServerPort := APort;
+  FSocket.InitSocket;
+  FSocketAddress := FSocket.CreateAddress(PAnsiChar(FServerAdress), FServerPort);
 end;
 
 destructor TQuadProfiler.Destroy;
@@ -142,12 +196,28 @@ var
 begin
   for Tag in FTags do
     Tag.Refresh;
-
 end;
 
 procedure TQuadProfiler.EndTick;
+var
+  Tag: TQuadProfilerTag;
 begin
+  if FIsSend and Assigned(FSocket) then
+  begin
+    FSocket.Clear;
+    FInfo.TagsCount := FTags.Count;
+    FSocket.Write(@FInfo, SizeOf(FInfo));
 
+    for Tag in FTags do
+      FSocket.Write(@Tag.Call, SizeOf(Tag.Call));
+
+    FSocket.Send(FSocketAddress);
+  end;
+end;
+
+procedure TQuadProfiler.SetGUID(const AGUID: TGUID);
+begin
+  FInfo.GUID := AGUID;
 end;
 
 initialization

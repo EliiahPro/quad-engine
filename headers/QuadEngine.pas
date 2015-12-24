@@ -573,6 +573,7 @@ type
   ['{0CBAA03E-B54B-4351-B9EF-EEC46D99FCFB}']
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
+    function GetName: PWideChar; stdcall;
   end;
 
   IQuadProfiler = interface(IUnknown)
@@ -580,6 +581,7 @@ type
     function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
     procedure BeginTick; stdcall;
     procedure EndTick; stdcall;
+    procedure SetGUID(const AGUID: TGUID); stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

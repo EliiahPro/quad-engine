@@ -9,6 +9,11 @@ const
   BUFFER_SIZE = 1024;
 
 type
+  TQuadSocketType = (
+    qstServer = 0,
+    qstClient = 1
+  );
+
   TQuadSocketPackedType = (
     qsptNone = 0,
     qsptConnect = 1,
@@ -36,6 +41,7 @@ type
     FSendBuf: PByteArray;
     FSendBufLen: integer;
     FtmpBuf: PByteArray;
+    FType: TQuadSocketType;
 
     class procedure Connect;
     class procedure Disconnect;
@@ -49,6 +55,7 @@ type
     destructor Destroy; override;
     function CreateAddress(const AIP: PAnsiChar; APort: Word): PQuadSocketAddressItem;
     procedure InitSocket(APort: Word = 0);
+    procedure Close;
     procedure Clear;
     function Write(ABuf: Pointer; ACount: Integer): Boolean;
     function Send(AAddress: PQuadSocketAddressItem): Integer;
@@ -127,6 +134,11 @@ begin
   i := 1;
   flag := 1;
 
+  if APort = 0 then
+    FType := qstServer
+  else
+    FType := qstClient;
+
   if FSocket > 0 then
     CloseSocket(FSocket);
 
@@ -148,6 +160,12 @@ begin
     CloseSocket(FSocket);
     FSocket := -1;
   end;
+end;
+
+procedure TQuadSocket.Close;
+begin
+  if FSocket > 0 then
+    CloseSocket(FSocket);
 end;
 
 function TQuadSocket.Write(ABuf: Pointer; ACount: Integer): Boolean;
