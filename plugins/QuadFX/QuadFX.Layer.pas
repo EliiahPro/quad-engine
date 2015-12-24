@@ -28,13 +28,13 @@ type
     function GetEffectCount: Integer; stdcall;
     function GetParticleCount: Integer; stdcall;
     function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
-    function GetGravitation: TVec2f; stdcall;
+    procedure GetGravitation(out AGravitation: TVec2f); stdcall;
   end;
 
 implementation
 
 uses
-  QuadFX.Manager, QuadFX.Profiler;
+  QuadFX.Manager{, QuadFX.Profiler};
 
 procedure TQuadFXLayer.SetOnDraw(AOnDraw: TQuadFXEmitterDrawEvent);
 begin
@@ -120,8 +120,8 @@ procedure TQuadFXLayer.Update(const ADelta: Double); stdcall;
 var
   i: Integer;
 begin
-  Profiler.BeginTick(ADelta);
-  Profiler.BeginCount(ptUpdate);
+  //Profiler.BeginTick(ADelta);
+  //Profiler.BeginCount(ptUpdate);
   FParticleCount := 0;
   for i := FEffects.Count - 1 downto 0 do
     if TQuadFXEffect(FEffects[i]).IsNeedToKill then
@@ -135,7 +135,7 @@ begin
       FParticleCount := FParticleCount + FEffects[i].GetParticleCount;
     end;
 
-  Profiler.EndCount(ptUpdate);
+  //Profiler.EndCount(ptUpdate);
 end;
 
 procedure TQuadFXLayer.Draw; stdcall;
@@ -147,7 +147,7 @@ begin
     FEffects[i].Draw;
 
 //  Profiler.EndCount(ptDraw);
-  Profiler.EndTick;
+  //Profiler.EndTick;
 end;
 
 procedure TQuadFXLayer.EffectAdd(AEffect: TQuadFXEffect);
@@ -160,9 +160,9 @@ begin
   TLayerEffectProxy(FLayerEffectProxy).Gravitation := AVector;
 end;
 
-function TQuadFXLayer.GetGravitation: TVec2f; stdcall;
+procedure TQuadFXLayer.GetGravitation(out AGravitation: TVec2f); stdcall;
 begin
-  Result := FLayerEffectProxy.GetGravitation;
+  AGravitation := FLayerEffectProxy.GetGravitation;
 end;
 
 end.

@@ -189,12 +189,15 @@ end;
 { TQuadFXSpriteHelper }
 
 procedure TQuadFXSpriteHelper.Recalculate(AAtlas: IQuadFXAtlas);
+var
+  AtlasSize: TVec2f;
 begin
   if Assigned(AAtlas) then
   begin
+    AAtlas.GetSize(AtlasSize);
     Texture := TQuadFXAtlas(AAtlas).Texture;
-    UVA := Position / AAtlas.GetSize;
-    UVB := (Position + Size) / AAtlas.GetSize;
+    UVA := Position / AtlasSize;
+    UVB := (Position + Size) / AtlasSize;
   end
   else
   begin

@@ -125,7 +125,7 @@ type
     UVA, UVB: TVec2f;
   end;
 
-  TQuadFXEmitterParams = record
+  TQuadFXEmitterParams = packed record
     Name: WideString;
 
     Textures: array of PQuadFXSprite;
@@ -171,9 +171,12 @@ type
   ['{5277308B-9D5E-4B5A-B554-97D19552B899}']
     function GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     function GetSpriteCount: Integer; stdcall;
-    function GetSize: TVec2f; stdcall;
+    procedure GetSize(out ASize: TVec2f); stdcall;
+    function GetWidth: Integer; stdcall;
+    function GetHeight: Integer; stdcall;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    procedure GetGUID(out AGUID: TGUID); stdcall;
     function SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     procedure LoadFromFile(AEffectName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AEffectName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
@@ -188,7 +191,12 @@ type
     procedure Draw; stdcall;
     function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetParticleCount: integer; stdcall;
-    function GetActive: Boolean; stdcall;
+    function GetEnabled: Boolean; stdcall;
+    function GetEmissionEnabled: Boolean; stdcall;
+    function GetVisible: Boolean; stdcall;
+    procedure SetEnabled(AState: Boolean); stdcall;
+    procedure SetEmissionEnabled(AState: Boolean); stdcall;
+    procedure SetVisible(AState: Boolean); stdcall;
   end;
 
   IQuadFXEffectParams = interface(IUnknown)
@@ -211,11 +219,17 @@ type
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
-    function GetPosition: TVec2f; stdcall;
+    procedure GetPosition(out APosition: TVec2f); stdcall;
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
     function GetSpawnWithLerp: Boolean; stdcall;
+    function GetEnabled: Boolean; stdcall;
+    function GetEmissionEnabled: Boolean; stdcall;
+    function GetVisible: Boolean; stdcall;
+    procedure SetEmissionEnabled(AState: Boolean); stdcall;
+    procedure SetEnabled(AState: Boolean); stdcall;
+    procedure SetVisible(AState: Boolean); stdcall;
 
     procedure SetPosition(APosition: TVec2f); stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
@@ -236,7 +250,7 @@ type
     function GetEffectCount: Integer; stdcall;
     function GetEffect(AIndex: Integer; out AEffect: IQuadFXEffect): HResult; stdcall;
     function GetParticleCount: Integer; stdcall;
-    function GetGravitation: TVec2f; stdcall;
+    procedure GetGravitation(out AGravitation: TVec2f); stdcall;
   end;
 
   IQuadFXManager = interface(IUnknown)

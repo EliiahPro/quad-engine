@@ -40,11 +40,17 @@ type
     function GetEmitterCount: integer; stdcall;
     function GetParticleCount: integer; stdcall;
     function GetEffectParams(out AEffectParams: IQuadFXEffectParams): HResult; stdcall;
-    function GetPosition: TVec2f; stdcall;
+    procedure GetPosition(out APosition: TVec2f); stdcall;
     function GetSpawnWithLerp: Boolean; stdcall;
     function GetLife: Single; stdcall;
     function GetAngle: Single; stdcall;
     function GetScale: Single; stdcall;
+    function GetEnabled: Boolean; stdcall;
+    function GetEmissionEnabled: Boolean; stdcall;
+    function GetVisible: Boolean; stdcall;
+    procedure SetEnabled(AState: Boolean); stdcall;
+    procedure SetEmissionEnabled(AState: Boolean); stdcall;
+    procedure SetVisible(AState: Boolean); stdcall;
 
     procedure GetLerp(ADist: Single; out APosition: TVec2f; out AAngle, AScale: Single);
 
@@ -65,7 +71,7 @@ type
 implementation
 
 uses
-  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils, QuadFX.Profiler;
+  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils{, QuadFX.Profiler};
 
 constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
 var
@@ -154,10 +160,10 @@ var
   i: Integer;
   Ac: Boolean;
 begin
-  if FIsNeedToKill then
+  if FIsNeedToKill or not FEffectEmitterProxy.Enabled then
     Exit;
 
-  Profiler.BeginCount(ptEffects);
+  //Profiler.BeginCount(ptEffects);
 
   FLife := FLife + ADelta;
 
@@ -168,7 +174,7 @@ begin
     begin
       FEmmiters[i].Update(ADelta);
       FCount := FCount + FEmmiters[i].GetParticleCount;
-      if FEmmiters[i].GetActive then
+      if not TQuadFXEmitter(FEmmiters[i]).IsNeedToKill then
         Ac := True;
     end;
 
@@ -177,13 +183,16 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
-  Profiler.EndCount(ptEffects);
+  //Profiler.EndCount(ptEffects);
 end;
 
 procedure TQuadFXEffect.Draw; stdcall;
 var
   i: Integer;
 begin
+  if not FEffectEmitterProxy.Visible then
+    Exit;
+
   for i := 0 to FEmmiters.Count - 1 do
     if Assigned(FEffectEmitterProxy.OnDraw) then
       FEffectEmitterProxy.OnDraw(FEmmiters[i], TQuadFXEmitter(FEmmiters[i]).Particle, FEmmiters[i].GetParticleCount)
@@ -196,9 +205,9 @@ begin
   Result := FCount;
 end;
 
-function TQuadFXEffect.GetPosition: TVec2f; stdcall;
+procedure TQuadFXEffect.GetPosition(out APosition: TVec2f); stdcall;
 begin
-  Result := FEffectEmitterProxy.Position;
+  APosition := FEffectEmitterProxy.Position;
 end;
 
 function TQuadFXEffect.GetLife: Single; stdcall;
@@ -239,6 +248,36 @@ end;
 procedure TQuadFXEffect.GetLerp(ADist: Single; out APosition: TVec2f; out AAngle, AScale: Single);
 begin
 
+end;
+
+function TQuadFXEffect.GetEnabled: Boolean; stdcall;
+begin
+  Result := FEffectEmitterProxy.Enabled;
+end;
+
+function TQuadFXEffect.GetEmissionEnabled: Boolean; stdcall;
+begin
+  Result := FEffectEmitterProxy.EmissionEnabled;
+end;
+
+function TQuadFXEffect.GetVisible: Boolean; stdcall;
+begin
+  Result := FEffectEmitterProxy.Visible;
+end;
+
+procedure TQuadFXEffect.SetEnabled(AState: Boolean); stdcall;
+begin
+  FEffectEmitterProxy.Enabled := AState;
+end;
+
+procedure TQuadFXEffect.SetEmissionEnabled(AState: Boolean); stdcall;
+begin
+  FEffectEmitterProxy.EmissionEnabled := AState;
+end;
+
+procedure TQuadFXEffect.SetVisible(AState: Boolean); stdcall;
+begin
+  FEffectEmitterProxy.Visible := AState;
 end;
 
 function TQuadFXEffect.GetSpawnWithLerp: Boolean; stdcall;

@@ -12,19 +12,12 @@ type
     FRect: record
       LeftTop, RightBottom: TVec2f;
     end;
-    FActive: Boolean;
+    FIsNeedToKill: Boolean;
     FParams: PQuadFXEmitterParams;
 
-    FVertexes: PVertexes;
-    FVertexesLastRecord: PVertexes;
-    FVertexeSize: Cardinal;
-    FVertexesSize: Cardinal;
-
-    FParticles: PQuadFXParticle;
+    FVertexes: array of TVertexes;
+    FParticles: array of  TQuadFXParticle;
     FParticlesCount: Cardinal;
-    FParticlesLastRecord: PQuadFXParticle;
-    FParticleSize: Cardinal;
-    FParticlesSize: Cardinal;
 
     FPosition: record
       X: TQuadFXParticleValue;
@@ -47,18 +40,28 @@ type
 
     FEffectEmitterProxy: IEffectEmitterProxy;
 
+    FEnabled: Boolean;
+    FVisible: Boolean;
+    FEmissionEnabled: Boolean;
     function Add: PQuadFXParticle; inline;
     procedure ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
     function GetEmitterParams(out AEmitterParams: PQuadFXEmitterParams): HResult; stdcall;
     function GetValue(Index: Integer): Single; inline;
     function GetEmission: Single; inline;
-    function GetActive: Boolean; stdcall;
     procedure UpdateParams; inline;
+    function GetVertexes: PVertexes;
+    function GetParticles: PQuadFXParticle;
     function GetPosition: TVec2f; inline;
     function GetDirection: Single; inline;
     function GetSpread: Single; inline;
     function GetStartVelocity: Single; inline;
     function GetStartAngle: Single; inline;
+    function GetEnabled: Boolean; stdcall;
+    function GetEmissionEnabled: Boolean; stdcall;
+    function GetVisible: Boolean; stdcall;
+    procedure SetEnabled(AState: Boolean); stdcall;
+    procedure SetVisible(AState: Boolean); stdcall;
+    procedure SetEmissionEnabled(AState: Boolean); stdcall;
   public
     FValuesIndex: array[0..2] of Integer;
     constructor Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
@@ -73,9 +76,10 @@ type
     property Position: TVec2f read GetPosition;
     property IsDebug: Boolean read FIsDebug write FIsDebug;
 
-    property Vertexes: PVertexes read FVertexes;
-    property Particle: PQuadFXParticle read FParticles;
+    property Vertexes: PVertexes read GetVertexes;
+    property Particle: PQuadFXParticle read GetParticles;
     property ParticleCount: Cardinal read FParticlesCount;
+    property IsNeedToKill: Boolean read FIsNeedToKill;
 
     property Life: Double read FLife;
     property Time: Double read FTime;
@@ -93,7 +97,7 @@ type
 implementation
 
 uses
-  QuadFX.Effect, QuadFX.Manager, QuadFX.Profiler;
+  QuadFX.Effect, QuadFX.Manager{, QuadFX.Profiler};
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 var
@@ -117,13 +121,23 @@ begin
   Result := FSpread.Value;
 end;
 
+function TQuadFXEmitter.GetVertexes: PVertexes;
+begin
+  Result := @FVertexes[0];
+end;
+
+function TQuadFXEmitter.GetParticles: PQuadFXParticle;
+begin
+  Result := @FParticles[0];
+end;
+
 procedure TQuadFXEmitter.RestartParams;
 var
   i: Integer;
 begin
   FTime := FTime - (FParams.EndTime - FParams.BeginTime);
   FLife := 0;
-  FActive := True;
+  FIsNeedToKill := False;
 
   for i := 0 to 2 do
     FValuesIndex[i] := 0;
@@ -140,13 +154,15 @@ begin
 end;
 
 procedure TQuadFXEmitter.Restart;
-var
+{var
   P: PQuadFXParticle;
-  V: PVertexes;
+  V: PVertexes;  }
 begin
   RestartParams;
   FTime := 0;
 
+  FParticlesCount := 0;
+             {
   P := FParticles;
   while Cardinal(P) < Cardinal(FParticlesLastRecord) do
   begin
@@ -157,7 +173,7 @@ begin
     V^ := FParticlesLastRecord.Vertexes^;
     P.Vertexes := V;
     Dec(FParticlesCount);
-  end;
+  end;  }
 end;
 
 function TQuadFXEmitter.GetStartVelocity: Single;
@@ -168,11 +184,6 @@ end;
 function TQuadFXEmitter.GetStartAngle: Single;
 begin
   Result := FStartAngle.Value;
-end;
-
-function TQuadFXEmitter.GetActive: Boolean;
-begin
-  Result := FActive;
 end;
 
 function TQuadFXEmitter.GetEmission: Single;
@@ -204,12 +215,19 @@ constructor TQuadFXEmitter.Create(AEffectEmitterProxy: IEffectEmitterProxy; APar
 //  i: Integer;
 begin
   FEffectEmitterProxy := AEffectEmitterProxy;
-  FActive := True;
+  FIsNeedToKill := False;
   FIsDebug := False;
+  FEnabled := True;
+  FVisible := True;
+  FEmissionEnabled := True;
   FTime := 0;
   FLife := 0;
   FLastTime := 0;
   FParticlesCount := 0;
+
+  SetLength(FParticles, AParams.MaxParticles);
+  SetLength(FVertexes, AParams.MaxParticles);
+            {
   FParticleSize := SizeOf(TQuadFXParticle);
   FParticlesSize := FParticleSize * AParams.MaxParticles;
   GetMem(FParticles, FParticlesSize);
@@ -220,7 +238,7 @@ begin
 
   FVertexesLastRecord := FVertexes;
   FParticlesLastRecord := FParticles;
-
+                                 }
   FParams := AParams;
   RestartParams;
   FTime := 0;
@@ -275,8 +293,10 @@ end;
 
 destructor TQuadFXEmitter.Destroy;
 begin
-  FreeMem(FParticles);
-  FreeMem(FVertexes);
+  SetLength(FParticles, 0);
+  SetLength(FVertexes, 0);
+  //FreeMem(FParticles);
+  //FreeMem(FVertexes);
   FEffectEmitterProxy := nil;
   inherited;
 end;
@@ -286,15 +306,16 @@ var
   P: PQuadFXParticle;
   EmissionTime: Double;
   LifePos: Single;
-  V: PVertexes;
+  //V: PVertexes;
+  i: Integer;
 begin
-  if not Assigned(FParams) then
+  if not Assigned(FParams) and FEnabled and FEffectEmitterProxy.GetEnabled then
     Exit;
 
-  Profiler.BeginCount(ptEmitters);
+  //Profiler.BeginCount(ptEmitters);
 
-  Profiler.BeginCount(ptParticles);
-  P := FParticles;
+  //Profiler.BeginCount(ptParticles);
+  //P := FParticles;
 
   if FIsDebug then
   begin
@@ -302,25 +323,31 @@ begin
     FRect.RightBottom := FRect.LeftTop;
   end;
 
-  while Cardinal(P) < Cardinal(FParticlesLastRecord) do
+ // while Cardinal(P) < Cardinal(FParticlesLastRecord) do
+  for i := FParticlesCount - 1 downto 0 do
   begin
+    P := @FParticles[i];
     if (P.Time + ADelta <= P.LifeTime) then
     begin
       ParticleUpdate(P, ADelta);
-      Inc(P);
+   //   Inc(P);
     end
     else
     begin
+      Dec(FParticlesCount);
+      FParticles[i] := FParticles[FParticlesCount];
+      FVertexes[i] := FVertexes[FParticlesCount];
+      FParticles[i].Vertexes := @FVertexes[i];
+      {
       Dec(FParticlesLastRecord);
       Dec(FVertexesLastRecord);
       V := P.Vertexes;
       P^ := FParticlesLastRecord^;
       V^ := FParticlesLastRecord.Vertexes^;
-      P.Vertexes := V;
-      Dec(FParticlesCount);
+      P.Vertexes := V;      }
     end;
   end;
-  Profiler.EndCount(ptParticles);
+  //Profiler.EndCount(ptParticles);
 
   FTime := FTime + ADelta;
 
@@ -331,21 +358,21 @@ begin
   begin
     if not FParams.IsLoop then
     begin
-      FActive := False;
+      FIsNeedToKill := False;
       Exit;
     end
     else
       RestartParams;
   end;
 
-  Profiler.BeginCount(ptParticlesParams);
-  FLife := (FTime - FParams.BeginTime) / (FParams.EndTime - FParams.BeginTime);
-  UpdateParams;
-  Profiler.EndCount(ptParticlesParams);
-
-  Profiler.BeginCount(ptParticlesAdd);
-  if FEmission.Value > 0 then
+  if (FEmission.Value > 0) and FEmissionEnabled and FEffectEmitterProxy.GetEmissionEnabled then
   begin
+    //Profiler.BeginCount(ptParticlesParams);
+    FLife := (FTime - FParams.BeginTime) / (FParams.EndTime - FParams.BeginTime);
+    UpdateParams;
+    //Profiler.EndCount(ptParticlesParams);
+
+    //Profiler.BeginCount(ptParticlesAdd);
     LifePos := FLife + FLastTime;
     EmissionTime := 1 / FEmission.Value;
     FLastTime := FLastTime + ADelta;
@@ -359,10 +386,10 @@ begin
       FLastTime := FLastTime - EmissionTime;
       ParticleUpdate(Add, FLastTime);
     end;
+    //Profiler.EndCount(ptParticlesAdd);
   end;
-  Profiler.EndCount(ptParticlesAdd);
 
-  Profiler.EndCount(ptEmitters);
+  //Profiler.EndCount(ptEmitters);
 end;
 
 procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
@@ -379,7 +406,7 @@ var
   p1, p2: TVec2f;
   //ProfilerCounter: Int64;
 begin
-  Profiler.BeginCount(ptParticlesUpdate);
+  //Profiler.BeginCount(ptParticlesUpdate);
   AParticle.Time := AParticle.Time + ADelta;
   AParticle.Life := AParticle.Time / AParticle.LifeTime;
 
@@ -433,12 +460,12 @@ begin
   AParticle.Opacity.Update(AParticle.Life);
   AParticle.Color.A := AParticle.Opacity.Value;
 
-  Profiler.EndCount(ptParticlesUpdate);
+  //Profiler.EndCount(ptParticlesUpdate);
 
   //Profiler.EndPerformanceCounter('  Opacity', ProfilerCounter);
   //ProfilerCounter := Profiler.StartPerformanceCounter;
 
-  Profiler.BeginCount(ptParticlesVertexes);
+  //Profiler.BeginCount(ptParticlesVertexes);
   if AParticle.Angle <> 0 then
   begin
     FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
@@ -517,7 +544,7 @@ begin
   AParticle.Vertexes[3] := AParticle.Vertexes[2];
   AParticle.Vertexes[4] := AParticle.Vertexes[1];
 
-  Profiler.EndCount(ptParticlesVertexes);
+  //Profiler.EndCount(ptParticlesVertexes);
   //Profiler.EndPerformanceCounter('  Vertexes', ProfilerCounter);
   {
   if FIsDebug then
@@ -539,10 +566,10 @@ var
   SinRad, CosRad: Single;
   P: TVec2f;
 begin
-  Result := FParticlesLastRecord;
-  Result.Vertexes := FVertexesLastRecord;
-  Inc(FParticlesLastRecord);
-  Inc(FVertexesLastRecord);
+  Result := @FParticles[FParticlesCount];
+  Result.Vertexes := @FVertexes[FParticlesCount];
+ { Inc(FParticlesLastRecord);
+  Inc(FVertexesLastRecord);}
   Inc(FParticlesCount);
 
   Result.TextureIndex := Random(FParams.TextureCount);
@@ -620,6 +647,9 @@ procedure TQuadFXEmitter.Draw; stdcall;
 var
   i: Integer;
 begin
+  if not FVisible or not FEffectEmitterProxy.GetVisible or (FParticlesCount = 0) then
+    Exit;
+
   Manager.QuadRender.SetBlendMode(FParams.BlendMode);
   Manager.QuadRender.FlushBuffer;
   if FParams.TextureCount > 0 then
@@ -634,10 +664,40 @@ begin
       Manager.QuadRender.SetTexture(i, nil);
   end;
 
-  Profiler.BeginCount(ptDraw);
-  Manager.QuadRender.AddTrianglesToBuffer(FVertexes^, 6 * FParticlesCount);
-  Profiler.EndCount(ptDraw);
+  //Profiler.BeginCount(ptDraw);
+  Manager.QuadRender.AddTrianglesToBuffer(FVertexes[0], 6 * FParticlesCount);
+  //Profiler.EndCount(ptDraw);
   Manager.QuadRender.FlushBuffer;
+end;
+
+function TQuadFXEmitter.GetEnabled: Boolean; stdcall;
+begin
+  Result := FEnabled;
+end;
+
+function TQuadFXEmitter.GetEmissionEnabled: Boolean; stdcall;
+begin
+  Result := FEmissionEnabled;
+end;
+
+function TQuadFXEmitter.GetVisible: Boolean; stdcall;
+begin
+  Result := FVisible;
+end;
+
+procedure TQuadFXEmitter.SetEnabled(AState: Boolean); stdcall;
+begin
+  FEnabled := AState;
+end;
+
+procedure TQuadFXEmitter.SetEmissionEnabled(AState: Boolean); stdcall;
+begin
+  FEmissionEnabled := AState;
+end;
+
+procedure TQuadFXEmitter.SetVisible(AState: Boolean); stdcall;
+begin
+  FVisible := AState;
 end;
 
 end.

@@ -229,7 +229,7 @@ type
     /// <summary>Retrieves the available texture memory.
     /// This will return all available texture memory including AGP aperture.</summary>
     /// <returns>Available memory size in bytes</returns>
-    function GetClipRect: TRect; stdcall;
+    procedure GetClipRect(out ARect: TRect); stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
@@ -494,13 +494,13 @@ type
 
   IQuadInput = interface(IUnknown)
   ['{AA8C8463-89EC-4A2B-BF84-47C3DCA6CB98}']
-    function IsKeyDown(const AKey: Byte): Boolean; stdcall;
-    function IsKeyPress(const AKey: Byte): Boolean; stdcall;
-    function GetMousePosition: TVec2f; stdcall;
-    function GetMouseVector: TVec2f; stdcall;
+    function IsKeyDown(AKey: Byte): Boolean; stdcall;
+    function IsKeyPress(AKey: Byte): Boolean; stdcall;
     function IsMouseDown(const AButton: TMouseButtons): Boolean; stdcall;
     function IsMouseClick(const AButton: TMouseButtons): Boolean; stdcall;
-    function GetMouseWheel: TVec2f; stdcall;
+    procedure GetMousePosition(out AMousePosition: TVec2f); stdcall;
+    procedure GetMouseVector(out AMouseVector: TVec2f); stdcall;
+    procedure GetMouseWheel(out AMouseWheel: TVec2f); stdcall;
     procedure Update; stdcall;
   end;
 
@@ -540,12 +540,13 @@ type
     procedure Reset; stdcall;
     procedure Enable; stdcall;
     procedure Disable; stdcall;
-    function GetPosition: TVec2f; stdcall;
+    procedure GetPosition(out APosition: TVec2f); stdcall;
     function GetAngle: Single; stdcall;
-    function GetMatrix: TMatrix4x4; stdcall;
+    procedure GetMatrix(out AMatrix: TMatrix4x4); stdcall;
     function GetScale: Single; stdcall;
     procedure SetAngle(AAngle: Single); stdcall;
-    procedure SetPosition(APosition: TVec2f); stdcall;
+    procedure SetPosition(const APosition: TVec2f); stdcall;
+    procedure Project(const AVec: TVec2f; out AProjectedVec: TVec2f);  stdcall;
   end;
 
   {Quad GBuffer}
@@ -556,8 +557,14 @@ type
     function SpecularMap: IQuadTexture; stdcall;
     function HeightMap: IQuadTexture; stdcall;
     function Buffer: IQuadTexture; stdcall;
-    procedure DrawLight(const APos: TVec3f; ARadius: Single; AColor: Cardinal); stdcall;
-  end;  
+    /// <summary>Draw light using GBuffer data</summary>
+    /// <param name="APos">Position in world space</param>
+    /// <param name="AHeight">Height of light. Lower is closer to plain.</param>
+    /// <param name="ARadius">Radius of light</param>
+    /// <param name="AColor">Light Color</param>
+    /// <remarks>DrawLight must be used without using camera. GBuffer stores camera used to create it.</remarks>
+    procedure DrawLight(const APos: TVec2f; AHeight: Single; ARadius: Single; AColor: Cardinal); stdcall;
+  end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;
   TSecretMagicFunction = function: PWideChar;

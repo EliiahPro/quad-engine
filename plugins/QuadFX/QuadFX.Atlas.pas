@@ -11,6 +11,7 @@ type
   private
     FName: WideString;
     FPackName: WideString;
+    FGUID: TGUID;
     FSprites: TList<PQuadFXSprite>;
     FTexture: IQuadTexture;
     FLoadFromFile: Boolean;
@@ -19,9 +20,12 @@ type
     destructor Destroy; override;
     function GetName: PWideChar; stdcall;
     function GetPackName: PWideChar; stdcall;
+    procedure GetGUID(out AGUID: TGUID); stdcall;
     function GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     function GetSpriteCount: Integer; stdcall;
-    function GetSize: TVec2f; stdcall;
+    procedure GetSize(out ASize: TVec2f); stdcall;
+    function GetWidth: Integer; stdcall;
+    function GetHeight: Integer; stdcall;
     function SpriteByID(const AID: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
     procedure LoadFromFile(AAtlasName, AFileName: PWideChar); stdcall;
     procedure LoadFromStream(AAtlasName: PWideChar; AStream: Pointer; AStreamSize: Integer); stdcall;
@@ -32,6 +36,7 @@ type
     property Texture: IQuadTexture read FTexture write SetTexture;
     property Name: WideString read FName write FName;
     property PackName: WideString read FPackName write FPackName;
+    property GUID: TGUID read FGUID write FGUID;
   end;
 
 implementation
@@ -60,12 +65,22 @@ begin
   FTexture := ATexture;
 end;
 
-function TQuadFXAtlas.GetSize: TVec2f;
+procedure TQuadFXAtlas.GetSize(out ASize: TVec2f); stdcall;
 begin
   if Assigned(FTexture) then
-    Result := TVec2f.Create(FTexture.GetTextureWidth, FTexture.GetTextureHeight)
+    ASize := TVec2f.Create(FTexture.GetTextureWidth, FTexture.GetTextureHeight)
   else
-    Result := TVec2f.Zero;
+    ASize := TVec2f.Zero;
+end;
+
+function TQuadFXAtlas.GetWidth: Integer; stdcall;
+begin
+  Result := FTexture.GetTextureWidth;
+end;
+
+function TQuadFXAtlas.GetHeight: Integer; stdcall;
+begin
+  Result := FTexture.GetTextureHeight;
 end;
 
 function TQuadFXAtlas.GetSprite(Index: Integer; out ASprite: PQuadFXSprite): HResult; stdcall;
@@ -106,14 +121,19 @@ begin
   Result := PWideChar(FPackName);
 end;
 
+procedure TQuadFXAtlas.GetGUID(out AGUID: TGUID); stdcall;
+begin
+  AGUID := FGUID;
+end;
+
 function TQuadFXAtlas.CreateSprite(out ASprite: PQuadFXSprite): HResult; stdcall;
 begin
   new(ASprite);
   FSprites.Add(ASprite);
   ASprite.Texture := FTexture;
   ASprite.Position := TVec2f.Zero;
-  ASprite.Size := GetSize;
-  ASprite.Axis := GetSize / 2;
+  GetSize(ASprite.Size);
+  ASprite.Axis := ASprite.Size / 2;
   ASprite.Recalculate(nil);
   Result := S_OK
 end;

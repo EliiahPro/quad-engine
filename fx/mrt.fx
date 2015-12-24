@@ -3,6 +3,7 @@ float4x4 VPM : register(c0);
 struct appdata {
   float4 Position : POSITION;
   float2 UV       : TEXCOORD0;
+  float4 Color    : COLOR0;
   float3 Normal   : NORMAL;
   float3 Tangent  : TANGENT;
   float3 Binormal : BINORMAL;
@@ -15,18 +16,22 @@ struct vertexOutput
   float3 N        : TEXCOORD1;
   float3 T        : TEXCOORD2;
   float3 B        : TEXCOORD3;
+  float4 Color    : COLOR0;
 };
 
 vertexOutput std_VS(appdata Input)
 {
     vertexOutput Output = (vertexOutput)0;
 
+Input.Binormal.y = -Input.Binormal.y;
     Output.Position = mul(VPM, Input.Position);
     Output.TexCoord = Input.UV;
 
-    Output.T = Input.Tangent;
-    Output.B = Input.Binormal;
-    Output.N = Input.Normal;
+    Output.T = normalize(mul(VPM, Input.Tangent));
+    Output.B = normalize(mul(VPM, Input.Binormal));
+    Output.N = normalize(mul(VPM, Input.Normal));
+
+	Output.Color = Input.Color;
     
     return Output;
 }
@@ -48,13 +53,16 @@ PixelOutput std_PS(vertexOutput Input)
 {         
     PixelOutput Output;   
 
-    Output.Diffuse = tex2D(DiffuseMap, Input.TexCoord);  
+    Output.Diffuse = tex2D(DiffuseMap, Input.TexCoord) * Input.Color;  
 
     float4 nn = tex2D(NormalMap, Input.TexCoord) * 2.0 - 1.0; 
-    Output.Normal = (float4(normalize(nn.x * Input.T + nn.y * Input.B + nn.z * Input.N), nn.a) + 1.0) / 2.0;    
+    Output.Normal = float4(normalize(nn.x * Input.T + nn.y * Input.B + nn.z * Input.N), Output.Diffuse.a);
+	Output.Normal.rgb = (Output.Normal.rgb + 1.0) / 2.0;
 
-    Output.Specular = tex2D(SpecularMap, Input.TexCoord); 
-    Output.Height = tex2D(HeightMap, Input.TexCoord);   
+    Output.Specular = tex2D(SpecularMap, Input.TexCoord);
+    Output.Height = tex2D(HeightMap, Input.TexCoord);
+	Output.Specular.a = Output.Diffuse.a;
+	Output.Height.a = Output.Diffuse.a;
 
     return Output;
 }

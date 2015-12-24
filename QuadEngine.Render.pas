@@ -79,13 +79,13 @@ type
     procedure InitializeVolatileResources;
     procedure ReleaseVolatileResources;
     procedure CreateOrthoMatrix;
-    procedure SetViewMatrix(AViewMatrix: TD3DMatrix);
+    procedure SetViewMatrix(const AViewMatrix: TD3DMatrix);
     function GetIsSupportedNonPow2: Boolean;
     function GetNumSimultaneousRTs: Cardinal;
     function GetIsSeparateAlphaBlend: Boolean;
   public
     constructor Create;
-    function GetClipRect: TRect; stdcall;
+    procedure GetClipRect(out ARect: TRect); stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
@@ -168,7 +168,7 @@ implementation
 
 uses
   QuadEngine.Texture, QuadEngine.Shader, QuadEngine.Font, QuadEngine.Timer,
-  QuadEngine.Device;
+  QuadEngine.Device, QuadEngine.GBuffer, QuadEngine.Camera;
 
 { TQuadRender }
 
@@ -241,9 +241,9 @@ begin
   normalize(n);
 end;
 
-function TQuadRender.GetClipRect: TRect;
+procedure TQuadRender.GetClipRect(out ARect: TRect); stdcall;
 begin
-  Result := FViewport;
+  ARect := FViewport;
 end;
 
 //=============================================================================
@@ -314,7 +314,7 @@ begin
 end;
 
 //=============================================================================
-// Clears render target with color
+//
 //=============================================================================
 procedure TQuadRender.ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True);
 begin
@@ -337,14 +337,14 @@ begin
 end;
 
 //=============================================================================
-//
+// Clears render target with color
 //=============================================================================
 procedure TQuadRender.Clear(AColor: Cardinal);
 begin
   {$IFDEF DEBUG}
   FProfiler.BeginCount(atClear);
   {$ENDIF}
-  Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET or D3DCLEAR_ZBUFFER, AColor, 1.0, 0);
+  Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0)
   {$IFDEF DEBUG}
   FProfiler.EndCount(atClear);
   {$ENDIF}
@@ -746,6 +746,7 @@ end;
 //=============================================================================
 procedure TQuadRender.Finalize;
 begin
+  ReleaseVolatileResources;
   FD3DVD := nil;
   FD3DVB := nil
 end;
@@ -1181,6 +1182,8 @@ end;
 // Enable/disable rendering into GBuffer
 //=============================================================================
 procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
+var
+  Obj: TQuadGBuffer;
 begin
   if FIsDeviceLost then
     Exit;
@@ -1191,6 +1194,9 @@ begin
     RenderToTexture(True, AQuadGBuffer.Buffer, 1, 1, AIsCropScreen);
     RenderToTexture(True, AQuadGBuffer.Buffer, 2, 2, AIsCropScreen);
     RenderToTexture(True, AQuadGBuffer.Buffer, 3, 3, AIsCropScreen);
+
+    Obj := AQuadGBuffer as TQuadGBuffer;
+    Obj.Camera := TQuadCamera.CurrentCamera;
 
     TQuadShader.MRTShader.SetShaderState(True);
   end
@@ -1739,7 +1745,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.SetViewMatrix(AViewMatrix: TD3DMatrix);
+procedure TQuadRender.SetViewMatrix(const AViewMatrix: TD3DMatrix);
 begin
   FViewMatrix := AViewMatrix;
 end;

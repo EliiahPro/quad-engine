@@ -16,6 +16,7 @@ type
     FAtlas: IQuadFXAtlas;
   protected
     FPackName: WideString;
+    FGUID: TGUID;
     property EffectParams: IQuadFXEffectParams read FEffectParams;
   public
     class function CheckSignature(ASignature: TEffectSignature): Boolean; virtual; abstract;
