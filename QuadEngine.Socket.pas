@@ -3,7 +3,9 @@ unit QuadEngine.Socket;
 interface
 
 uses
-  Winapi.Windows, winapi.WinSock, System.Classes, System.SysUtils, System.Generics.Collections, System.DateUtils;
+  Winapi.Windows, System.SyncObjs, winapi.WinSock, System.Classes, System.SysUtils, System.Generics.Collections, System.DateUtils;
+
+
 
 const
   BUFFER_SIZE = 1024;
@@ -19,7 +21,8 @@ type
     qsptConnect = 1,
     qsptDisconnect = 2,
     qsptPing = 3,
-    qsptData = 4
+    qsptOutPing = 4,
+    qsptData = 5
   );
 
   PByteArray = ^TByteArray;
@@ -38,8 +41,7 @@ type
     FAddressList: TList<PQuadSocketAddressItem>;
 
     FSocket: Integer;
-    FSendBuf: PByteArray;
-    FSendBufLen: integer;
+    FMemory: TMemoryStream;
     FtmpBuf: PByteArray;
     FType: TQuadSocketType;
 
@@ -50,6 +52,7 @@ type
     procedure SetPackedType(AType: TQuadSocketPackedType);
     function GetAddress(Index: Integer): PQuadSocketAddressItem;
     function GetAddressCount: Integer;
+    procedure SendConnect(AAddress: PQuadSocketAddressItem);
   public
     constructor Create;
     destructor Destroy; override;
@@ -57,9 +60,9 @@ type
     procedure InitSocket(APort: Word = 0);
     procedure Close;
     procedure Clear;
-    function Write(ABuf: Pointer; ACount: Integer): Boolean;
+    function Write(const ABuf; ACount: Integer): Boolean;
     function Send(AAddress: PQuadSocketAddressItem): Integer;
-    function Recv(out AAddress: PQuadSocketAddressItem; ABuffer: Pointer; var ALength: Integer): Boolean;
+    function Recv(out AAddress: PQuadSocketAddressItem; AMemory: TMemoryStream): Boolean;
 
     property Address[Index: integer]: PQuadSocketAddressItem read GetAddress;
     property AddressCount: Integer read GetAddressCount;
@@ -74,9 +77,7 @@ begin
 
   FAddressList := TList<PQuadSocketAddressItem>.Create;
 
-  if FSendBuf = nil then
-    GetMem(FSendBuf, BUFFER_SIZE);
-
+  FMemory := TMemoryStream.Create;
   if FtmpBuf = nil then
     GetMem(FtmpBuf, BUFFER_SIZE);
 end;
@@ -87,20 +88,17 @@ begin
     CloseSocket(FSocket);
   FAddressList.Free;
   FSocket := -1;
-  FreeMem(FSendBuf);
-  FSendBuf := nil;
-  FSendBufLen := 0;
   FreeMem(FtmpBuf);
   FtmpBuf := nil;
-
+  FMemory.Free;
   Disconnect;
   inherited;
 end;
 
 procedure TQuadSocket.Clear;
 begin
+  FMemory.Clear;
   SetPackedType(qsptData);
-  FSendBufLen := 1;
 end;
 
 class procedure TQuadSocket.Connect;
@@ -134,7 +132,7 @@ begin
   i := 1;
   flag := 1;
 
-  if APort = 0 then
+  if APort > 0 then
     FType := qstServer
   else
     FType := qstClient;
@@ -168,7 +166,7 @@ begin
     CloseSocket(FSocket);
 end;
 
-function TQuadSocket.Write(ABuf: Pointer; ACount: Integer): Boolean;
+function TQuadSocket.Write(const ABuf; ACount: Integer): Boolean;
 var
   i: integer;
 begin
@@ -176,42 +174,53 @@ begin
   if not FActive or (FSocket <= 0) or (ACount <= 0) then
     Exit;
 
-  if FSendBufLen + ACount < BUFFER_SIZE then
-  begin
-    for i := FSendBufLen to FSendBufLen + ACount - 1 do
-      FSendBuf[i] := PByteArray(ABuf)[i - FSendBufLen];
-    FSendBufLen := FSendBufLen + ACount;
-    Result := True;
-  end;
+  if FMemory.Size + ACount < BUFFER_SIZE then
+    Result := FMemory.Write(ABuf, ACount) > 0;
 end;
 
-function TQuadSocket.Recv(out AAddress: PQuadSocketAddressItem; ABuffer: Pointer; var ALength: Integer): Boolean;
+function TQuadSocket.Recv(out AAddress: PQuadSocketAddressItem; AMemory: TMemoryStream): Boolean;
 var
   Addr: TSockAddrIn;
   i: integer;
   GUID: TGUID;
   PackedType: TQuadSocketPackedType;
+  Length: Integer;
 begin
+  if not Assigned(AMemory) then
+    Exit;
+
+  AMemory.Clear;
   Result := False;
   if not FActive or (FSocket <= 0) then
     Exit;
 
   repeat
     i := SizeOf(Addr);
-    ALength := recvfrom(FSocket, FtmpBuf[0], BUFFER_SIZE, 0, Addr, i);
-
-    if ALength <= 0 then
+    Length := recvfrom(FSocket, FtmpBuf[0], BUFFER_SIZE, 0, Addr, i);
+    if Length <= 0 then
       Exit;
 
     PackedType := TQuadSocketPackedType(FtmpBuf[0]);
     if FindAddress(Addr, AAddress) then
     begin
       case PackedType of
+        qsptConnect:
+          if FType = qstClient then
+            SendConnect(AAddress);
         qsptDisconnect: FAddressList.Remove(AAddress);
-        qsptPing: ;
+        qsptPing:
+          begin
+            Clear;
+            SetPackedType(qsptOutPing);
+            Send(AAddress);
+          end;
+        qsptOutPing:
+          begin
+          end;
         qsptData:
           begin
-            Move(FtmpBuf[1], PByteArray(ABuffer)[0], ALength - 1);
+            AMemory.Write(FtmpBuf[1], Length - 1);
+            AMemory.Position := 0;
             Result := True;
           end;
       end;
@@ -221,19 +230,25 @@ begin
       begin
         Move(FtmpBuf[1], PByteArray(@GUID)[0], SizeOf(GUID));
         if IsEqualGUID(FGlobalGUID, GUID) then
-          AddressAdd(Addr);
-      end;
+        begin
+          Clear;
+          SetPackedType(qsptConnect);
+          Send(AddressAdd(Addr));
+        end;
+      end
+      else
+        if FType = qstServer then
+          SendConnect(AAddress);
 
   until Result;
-  AAddress := nil;
 end;
 
 function TQuadSocket.Send(AAddress: PQuadSocketAddressItem): Integer;
 begin
   Result := 0;
-  if not FActive or (FSocket <= 0) or (FSendBufLen <= 0) then
+  if not FActive or (FSocket <= 0) or (FMemory.Size <= 0) then
     Exit;
-  Result := SendTo(FSocket, FSendBuf[0], FSendBufLen, 0, AAddress.Addr, SizeOf(AAddress.Addr));
+  Result := SendTo(FSocket, PByteArray(FMemory.Memory)[0], FMemory.Size, 0, AAddress.Addr, SizeOf(AAddress.Addr));
 end;
 
 function TQuadSocket.FindAddress(const AAddr: TSockAddrIn; out AAddress: PQuadSocketAddressItem): Boolean;
@@ -247,10 +262,10 @@ begin
     begin
       AAddress.Time := Now;
       Exit(True);
-    end; {
+    end
     else
       if IncSecond(AAddress.Time, 30) < Now then
-        FAddressList.Delete(i); }
+        FAddressList.Delete(i);
   end;
   Result := False;
   AAddress := nil;
@@ -271,7 +286,8 @@ end;
 
 procedure TQuadSocket.SetPackedType(AType: TQuadSocketPackedType);
 begin
-  FSendBuf[0] := Byte(AType);
+  FMemory.Position := 0;
+  FMemory.Write(Byte(AType), SizeOf(Byte));
 end;
 
 function TQuadSocket.CreateAddress(const AIP: PAnsiChar; APort: Word): PQuadSocketAddressItem;
@@ -281,10 +297,16 @@ begin
   Addr.sin_addr.S_addr := inet_addr(AIP);
   Addr.sin_port := htons(APort);
   Result := AddressAdd(Addr);
+  FAddressList.Add(Result);
+  SendConnect(Result);
+end;
+
+procedure TQuadSocket.SendConnect(AAddress: PQuadSocketAddressItem);
+begin
   Clear;
   SetPackedType(qsptConnect);
-  Write(PByteArray(@FGlobalGUID), SizeOf(FGlobalGUID));
-  Send(Result);
+  Write(FGlobalGUID, SizeOf(FGlobalGUID));
+  Send(AAddress);
 end;
 
 function TQuadSocket.GetAddress(Index: Integer): PQuadSocketAddressItem;

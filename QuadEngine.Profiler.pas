@@ -15,7 +15,7 @@ interface
 
 uses
   Winapi.Windows, System.SysUtils, System.SyncObjs, TypInfo, QuadEngine.Socket, IniFiles, QuadEngine,
-  System.Generics.collections;
+  System.Generics.collections, System.Classes;
 
 type
   TProfilerInfo = packed record
@@ -25,6 +25,7 @@ type
   end;
 
   TAPICall = packed record
+    ID: Word;
     Calls: Cardinal;
     Time: Double;
     TimeFastest: Double;
@@ -34,6 +35,7 @@ type
   TQuadProfilerTag = class(TInterfacedObject, IQuadProfilerTag)
   private
     class var FPerformanceFrequency: Int64;
+    class var FNextID: Word;
     class procedure Init;
   private
     FName: WideString;
@@ -58,9 +60,12 @@ type
 
     FInfo: TProfilerInfo;
     FTags: TList<TQuadProfilerTag>;
+
+    FMemory: TMemoryStream;
     FSocket: TQuadSocket;
     FSocketAddress: PQuadSocketAddressItem;
     procedure LoadFromIniFile;
+    procedure Recv;
   public
     constructor Create;
     destructor Destroy; override;
@@ -81,11 +86,14 @@ uses
 class procedure TQuadProfilerTag.Init;
 begin
   QueryPerformanceFrequency(FPerformanceFrequency);
+  FNextID := 0;
 end;
 
 constructor TQuadProfilerTag.Create(const AName: PWideChar);
 begin
   inherited Create;
+  Inc(FNextID);
+  FCurrentAPICall.ID := FNextID;
   FName := AName;
   Refresh;
 end;
@@ -100,7 +108,7 @@ var
   Counter: Int64;
   Time: Double;
 begin
-  Inc(FCurrentAPICall.Calls);
+{  Inc(FCurrentAPICall.Calls);
 
   QueryPerformanceCounter(Counter);
   Time := (Counter - FCurrentAPICallStartTime) / FPerformanceFrequency;
@@ -111,7 +119,7 @@ begin
     FCurrentAPICall.TimeFastest := Time;
 
   if FCurrentAPICall.TimeSlowest < Time then
-    FCurrentAPICall.TimeSlowest := Time;
+    FCurrentAPICall.TimeSlowest := Time;   }
 end;
 
 procedure TQuadProfilerTag.Refresh;
@@ -166,6 +174,7 @@ begin
   FTags := TList<TQuadProfilerTag>.Create;
   FIsSend := False;
   CreateGUID(FInfo.GUID);
+  FMemory := TMemoryStream.Create;
 
   LoadFromIniFile;
   if FIsSend then
@@ -186,6 +195,7 @@ end;
 
 destructor TQuadProfiler.Destroy;
 begin
+  FMemory.Free;
   FTags.Free;
   inherited;
 end;
@@ -198,18 +208,56 @@ begin
     Tag.Refresh;
 end;
 
+procedure TQuadProfiler.Recv;
+var
+  Address: PQuadSocketAddressItem;
+  Code, ID: Word;
+  StrLength: Byte;
+  Tag: TQuadProfilerTag;
+begin
+  while FSocket.Recv(Address, FMemory) do
+    if FMemory.Size > 0 then
+    begin
+
+      FMemory.Read(Code, SizeOf(Code));
+      case Code of
+        2: // return tag name
+          begin
+            FMemory.Read(ID, SizeOf(ID));
+            for Tag in FTags do
+              if Tag.Call.ID = ID then
+              begin
+                FSocket.Clear;
+                FSocket.Write(Code, SizeOf(Code));
+                FSocket.Write(ID, SizeOf(ID));
+                StrLength := Length(Tag.Name);
+                FSocket.Write(StrLength, SizeOf(StrLength));
+                FSocket.Write(Tag.Name[1], StrLength * 2);
+                FSocket.Send(Address);
+                Break;
+              end;
+          end;
+      end;
+    end;
+end;
+
 procedure TQuadProfiler.EndTick;
 var
   Tag: TQuadProfilerTag;
+  Code: Word;
 begin
   if FIsSend and Assigned(FSocket) then
   begin
+    Recv;
+
     FSocket.Clear;
     FInfo.TagsCount := FTags.Count;
-    FSocket.Write(@FInfo, SizeOf(FInfo));
+    Code := 1;
+    FSocket.Write(Code, SizeOf(Code));
+    FSocket.Write(FInfo, SizeOf(FInfo));
 
     for Tag in FTags do
-      FSocket.Write(@Tag.Call, SizeOf(Tag.Call));
+      FSocket.Write(Tag.Call, SizeOf(Tag.Call));
 
     FSocket.Send(FSocketAddress);
   end;
