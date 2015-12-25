@@ -1,4 +1,4 @@
-object mainform: Tmainform
+object MainForm: TMainForm
   Left = 0
   Top = 0
   Caption = 'Scene'
@@ -22,7 +22,7 @@ object mainform: Tmainform
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    object Panel5: TPanel
+    object TimeLinePanel: TPanel
       Left = 0
       Top = 508
       Width = 665
@@ -35,6 +35,7 @@ object mainform: Tmainform
       Top = 0
       Width = 665
       Height = 508
+      Cursor = crCross
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
@@ -120,8 +121,8 @@ object mainform: Tmainform
       object Additem1: TMenuItem
         Caption = '&Add'
         object Texture1: TMenuItem
+          Action = Action1
           Caption = 'Texture...'
-          OnClick = Texture1Click
         end
         object Animation1: TMenuItem
           Caption = 'Animation...'
@@ -147,9 +148,21 @@ object mainform: Tmainform
       end
     end
   end
-  object OpenDialog1: TOpenDialog
-    Filter = 'QuadEngine Textures|*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.dds'
+  object OpenTextureDialog: TOpenDialog
+    Filter = 
+      'QuadEngine Textures (BMP,JPEG, PNG, TGA, DDS)|*.bmp;*.jpg;*.jpeg' +
+      ';*.png;*.tga;*.dds'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Left = 152
     Top = 118
+  end
+  object ActionManager1: TActionManager
+    Left = 132
+    Top = 260
+    StyleName = 'Platform Default'
+    object Action1: TAction
+      Caption = 'Action1'
+      OnExecute = Action1Execute
+    end
   end
 end

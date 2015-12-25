@@ -15,19 +15,20 @@ type
     QuadScene: TCustomScene;
     Cursor: IQuadTexture;
     Textures: TList<IQuadTexture>;
-  class procedure AddTexture(Filename: string);
+  class procedure AddTexture(const AFilename: string);
   end;
 
 implementation
 
 { TGlobals }
 
-class procedure TGlobals.AddTexture(Filename: string);
+class procedure TGlobals.AddTexture(const AFilename: string);
 var
-  tex: IQuadTexture;
+  Texture: IQuadTexture;
 begin
-  QuadDevice.CreateAndLoadTexture(0, PWideChar(Filename), tex);
-  Textures.Add(tex);
+  QuadDevice.CreateTexture(Texture);
+  Texture.LoadFromFile(0, PWideChar(AFileName));
+  Self.Textures.Add(Texture);
 end;
 
 initialization

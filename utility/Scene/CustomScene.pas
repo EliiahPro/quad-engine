@@ -72,14 +72,12 @@ begin
     TGlobals.QuadRender.RectangleEx(TVec2f.Create(FProperties.Width, FProperties.Height), TVec2f.Create(FProperties.Width + FADESIZE, FProperties.Height + FADESIZE), FProperties.Background, FProperties.Foreground, FProperties.Foreground, FProperties.Foreground);
 
     for i := 0 to FProperties.Width div 10 do
-      TGlobals.QuadRender.DrawLine(TVec2f.Create(i * 10, 0), TVec2f.Create(i * 10, FProperties.Height), FProperties.GridColor);
+      TGlobals.QuadRender.DrawQuadLine(TVec2f.Create(i * 10, 0), TVec2f.Create(i * 10, FProperties.Height), 1, 1, FProperties.GridColor, FProperties.GridColor);
 
     for i := 0 to FProperties.Height div 10 do
-      TGlobals.QuadRender.DrawLine(TVec2f.Create(0, i * 10), TVec2f.Create(FProperties.Width, i * 10), FProperties.GridColor);
+      TGlobals.QuadRender.DrawQuadLine(TVec2f.Create(0, i * 10), TVec2f.Create(FProperties.Width, i * 10), 1, 1, FProperties.GridColor, FProperties.GridColor);
   end;
   {$ENDREGION}
-
-
 end;
 
 procedure TCustomScene.Process(ADelta: Double);

@@ -5,10 +5,11 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, QuadEngine, Quadengine.Color, Vec2f,
-  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Menus, Resources, Vcl.ComCtrls;
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Menus, Resources, Vcl.ComCtrls,
+  System.Actions, Vcl.ActnList, Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnMan;
 
 type
-  Tmainform = class(TForm)
+  TMainForm = class(TForm)
     MainPanel: TPanel;
     ResizeTimer: TTimer;
     MainMenu: TMainMenu;
@@ -26,7 +27,7 @@ type
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
-    Panel5: TPanel;
+    TimeLinePanel: TPanel;
     RenderPanel: TPanel;
     New1: TMenuItem;
     Save1: TMenuItem;
@@ -35,7 +36,9 @@ type
     View1: TMenuItem;
     About2: TMenuItem;
     TreeView1: TTreeView;
-    OpenDialog1: TOpenDialog;
+    OpenTextureDialog: TOpenDialog;
+    ActionManager1: TActionManager;
+    Action1: TAction;
     procedure ResizeTimerTimer(Sender: TObject);
     procedure RenderPanelMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -44,24 +47,17 @@ type
     procedure RenderPanelMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure RenderPanelResize(Sender: TObject);
-    procedure Texture1Click(Sender: TObject);
-  private
-    { Private declarations }
+    procedure Action1Execute(Sender: TObject);
   public
     procedure AfterConstruction; override;
-    { Public declarations }
   end;
 
 var
-  mainform: Tmainform;
+  MainForm: TMainForm;
   OldX: Integer;
   OldY: Integer;
   MouseDrag: Boolean = False;
-  tx: IQuadTexture;
-  res: TVec2f;
-  mat: TMatrix4x4;
   time: Single;
-  mymouse: TVec2f;
 
 implementation
 
@@ -79,23 +75,27 @@ begin
 
   TGlobals.QuadRender.BeginRender;
   TGlobals.QuadRender.Clear(0);
+
   TGlobals.QuadCamera.Enable;
-
   TGlobals.QuadScene.Draw;
-
-  TGlobals.QuadRender.SetBlendMode(qbmNone);
-  res.X := 1;
-  res.Y := 1;
-  TGlobals.QuadCamera.GetMatrix(mat);
-  mymouse.X := OldY / 600;
-  mymouse.Y := OldX / 600;
-
   TGlobals.QuadCamera.Disable;
 
   TGlobals.QuadRender.EndRender;
 end;
 
-procedure Tmainform.AfterConstruction;
+procedure TMainForm.Action1Execute(Sender: TObject);
+var
+  node: TTreeNode;
+begin
+  if OpenTextureDialog.Execute then
+  begin
+    TGlobals.AddTexture(OpenTextureDialog.FileName);
+    node := TreeView1.Items.AddChild(TreeView1.Items.GetFirstNode(), ExtractFileName(OpenTextureDialog.FileName));
+    node.Data := Pointer(TGlobals.Textures.Count - 1);
+  end;
+end;
+
+procedure TMainForm.AfterConstruction;
 begin
   inherited;
 
@@ -110,32 +110,17 @@ begin
 
   TGlobals.QuadDevice.CreateAndLoadTexture(0, 'data\cursor.png', TGlobals.Cursor);
 
-  TGlobals.QuadDevice.CreateAndLoadTexture(0, 'data\Bump.jpg', tx);
-  tx.LoadFromFile(1, 'data\Bump.jpg');
-
   TGlobals.QuadRender.SetAutoCalculateTBN(False);
   TGlobals.QuadDevice.CreateTimerEx(TGlobals.QuadTimer, OnTimer, 16, True);
 end;
 
-procedure Tmainform.Texture1Click(Sender: TObject);
-var
-  node: TTreeNode;
-begin
-  if OpenDialog1.Execute then
-  begin
-    TGlobals.AddTexture(OpenDialog1.FileName);
-    node := TreeView1.Items.AddChild(TreeView1.Items.GetFirstNode(), ExtractFileName(OpenDialog1.FileName));
-    node.Data := Pointer(TGlobals.Textures.Count - 1);
-  end;
-end;
-
-procedure Tmainform.RenderPanelMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TMainForm.RenderPanelMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  MouseDrag := True;
+  MouseDrag := (Button = TMouseButton.mbRight);
 end;
 
-procedure Tmainform.RenderPanelMouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TMainForm.RenderPanelMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
   if MouseDrag then
@@ -145,22 +130,22 @@ begin
   OldY := Y;
 end;
 
-procedure Tmainform.RenderPanelMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TMainForm.RenderPanelMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   MouseDrag := False;
 end;
 
-procedure Tmainform.RenderPanelResize(Sender: TObject);
+procedure TMainForm.RenderPanelResize(Sender: TObject);
 begin
   ResizeTimer.Enabled := True;
   ResizeTimer.Interval := 300;
 end;
 
-procedure Tmainform.ResizeTimerTimer(Sender: TObject);
+procedure TMainForm.ResizeTimerTimer(Sender: TObject);
 begin
   if Assigned(TGlobals.QuadTimer) then
-    TGlobals.QuadRender.ChangeResolution(mainform.RenderPanel.Width, mainform.RenderPanel.Height, False);
+    TGlobals.QuadRender.ChangeResolution(MainForm.RenderPanel.Width, MainForm.RenderPanel.Height, False);
   ResizeTimer.Enabled := False;
 end;
 
