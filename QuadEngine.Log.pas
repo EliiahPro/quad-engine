@@ -42,7 +42,7 @@ var
   f: TextFile;
 begin
   FSync := TCriticalSection.Create;
-  FFilename := aFilename;
+  FFilename := ExpandFileName(AFilename);
   if FileExists(FFilename) then
     DeleteFile(Pchar(FFilename));
 
