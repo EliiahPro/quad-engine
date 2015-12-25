@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using QuadEngine;
 
-namespace _01___initialization
+namespace _02___primitives
 {
     public partial class Form1 : Form
     {
@@ -19,15 +19,33 @@ namespace _01___initialization
         private IQuadTimer quadTimer;
 
         private TimerProcedure timer;
-        
+
+        private int xPos, yPos;
+
+
         private void OnTimer(ref double delta, UInt32 Id)
         {
             quadRender.BeginRender();
 
-            Random rand = new Random();            
-            quadRender.Clear((uint)rand.Next());
+            quadRender.Clear(0);
+
+            quadRender.Rectangle(new Vec2f(100, 100), new Vec2f(400, 400), QuadColor.Blue);
+            quadRender.Rectangle(new Vec2f(200, 200), new Vec2f(500, 500), QuadColor.Lime.Lerp(QuadColor.Red, xPos / 800));
+
+            quadRender.SetBlendMode(TQuadBlendMode.qbmSrcAlpha);
+            quadRender.DrawCircle(new Vec2f(400, 400), 100, 95, QuadColor.Blue);
+            quadRender.DrawCircle(new Vec2f(xPos, yPos), 30, 27, QuadColor.Aqua);
+
+            quadRender.DrawQuadLine(new Vec2f(400, 400), new Vec2f(xPos, yPos), 5, 5, QuadColor.Blue, QuadColor.Aqua);
+
 
             quadRender.EndRender();
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            xPos = e.X;
+            yPos = e.Y;
         }
 
         public Form1()
@@ -43,7 +61,7 @@ namespace _01___initialization
             quadDevice.CreateTimer(out quadTimer);
             timer = (TimerProcedure)OnTimer;
             quadTimer.SetCallBack(Marshal.GetFunctionPointerForDelegate(timer));
-            quadTimer.SetInterval(200);
+            quadTimer.SetInterval(16);
             quadTimer.SetState(true);
         }
     }

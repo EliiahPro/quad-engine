@@ -211,7 +211,7 @@ namespace QuadEngine
         /// <summary>Retrieves the available texture memory.
         /// This will return all available texture memory including AGP aperture.</summary>
         /// <returns>Available memory size in bytes</returns>
-        [PreserveSig] TRect GetClipRect();
+        [PreserveSig] void GetClipRect(out TRect rect);
         [PreserveSig] UInt32 GetAvailableTextureMemory();
         [PreserveSig] UInt32 GetMaxAnisotropy();
         [PreserveSig] UInt32 GetMaxTextureHeight();
@@ -592,13 +592,13 @@ namespace QuadEngine
         void Reset();
         void Enable();
         void Disable();
-        [PreserveSig] void GetPosition(out Vec2f position);
+        void GetPosition(out Vec2f position);
         [PreserveSig] float GetAngle();
-        [PreserveSig] void GetMatrix(out TMatrix4x4 matrix4x4);
+        void GetMatrix(out TMatrix4x4 matrix4x4);
         [PreserveSig] float GetScale();
         void SetAngle(float angle);
         void SetPosition(ref Vec2f position);
-        [PreserveSig] Vec2f GetTransformed(ref Vec2f vec); 
+        void Project(ref Vec2f vec, out Vec2f projectedVec);
     }
 
     /* Quad GBuffer */

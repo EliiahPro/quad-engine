@@ -156,6 +156,7 @@ begin
   FRender := AQuadRender;
   FScale := 1.0;
   FAngle := 0;
+  FTranslation := TVec2f.Zero;
 end;
 
 procedure TQuadCamera.Reset;

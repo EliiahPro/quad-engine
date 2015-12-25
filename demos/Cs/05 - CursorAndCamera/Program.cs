@@ -70,14 +70,17 @@ namespace _05___CursorAndCamera
             quadInput.GetMousePosition(out mousePosition);
             quadInput.GetMouseVector(out mouseVector);
             quadInput.GetMouseWheel(out mouseWheel);
+            Vec2f cameraPosition;
+            quadCamera.GetPosition(out cameraPosition);
             
             if (mouseWheel.Y != 0)
                 quadCamera.Scale(Math.Max(0.1f, Math.Min(3.0f, quadCamera.GetScale() + mouseWheel.Normalize().Y / 10)));
-            
-            quadCamera.Translate(mouseVector);
-            
-            //ResetCursor();
-           
+
+            quadCamera.SetPosition(cameraPosition + mouseVector);
+            //quadCamera.Translate(mouseVector);
+
+           // ResetCursor();
+
             quadRender.BeginRender();
             quadRender.Clear(0xFF000000);
 
@@ -86,12 +89,7 @@ namespace _05___CursorAndCamera
             quadCamera.Enable();
             quadLogoTexture.DrawRot(new Vec2f(0, 0), 0, 1);
             quadCamera.Disable();
-
-            Vec2f cameraPosition;
-            quadCamera.GetPosition(out cameraPosition);
-                     
-            quadWindow.SetCaption(mousePosition.X.ToString() + "x" + mousePosition.Y.ToString());
-
+            
             quadRender.DrawQuadLine(
               new Vec2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2),
                 mousePosition,
