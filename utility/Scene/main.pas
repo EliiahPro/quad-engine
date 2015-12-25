@@ -39,6 +39,7 @@ type
     OpenTextureDialog: TOpenDialog;
     ActionManager1: TActionManager;
     Action1: TAction;
+    Button1: TButton;
     procedure ResizeTimerTimer(Sender: TObject);
     procedure RenderPanelMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -48,6 +49,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure RenderPanelResize(Sender: TObject);
     procedure Action1Execute(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   public
     procedure AfterConstruction; override;
   end;
@@ -80,6 +82,9 @@ begin
   TGlobals.QuadScene.Draw;
   TGlobals.QuadCamera.Disable;
 
+  TGlobals.QuadRender.SetBlendMode(qbmSrcAlpha);
+  TGlobals.QuadFont.SetKerning(2);
+  TGlobals.QuadFont.TextOut(TVec2f.Create(2, 10), 0.25, 'DSFDSFDS', TQuadColor.Gray);
   TGlobals.QuadRender.EndRender;
 end;
 
@@ -109,9 +114,17 @@ begin
   TGlobals.QuadScene := TCustomScene.Create;
 
   TGlobals.QuadDevice.CreateAndLoadTexture(0, 'data\cursor.png', TGlobals.Cursor);
+  TGlobals.QuadDevice.CreateAndLoadFont('data\font.png', 'data\font.qef', TGlobals.QuadFont);
 
-  TGlobals.QuadRender.SetAutoCalculateTBN(False);
+
+  TGlobals.QuadRender.SetAutoCalculateTBN(True);
   TGlobals.QuadDevice.CreateTimerEx(TGlobals.QuadTimer, OnTimer, 16, True);
+end;
+
+procedure TMainForm.Button1Click(Sender: TObject);
+begin
+  TGlobals.AddTexture(OpenTextureDialog.FileName);
+  //TGlobals.QuadDevice.CreateAndLoadTexture(0, 'C:\Users\IProkhodtsev\Desktop\medal_steam.png', TGlobals.Cursor);
 end;
 
 procedure TMainForm.RenderPanelMouseDown(Sender: TObject; Button: TMouseButton;

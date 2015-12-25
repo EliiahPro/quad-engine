@@ -52,6 +52,15 @@ object MainForm: TMainForm
     Height = 613
     Align = alLeft
     TabOrder = 1
+    object Button1: TButton
+      Left = 92
+      Top = 412
+      Width = 75
+      Height = 25
+      Caption = 'Button1'
+      TabOrder = 0
+      OnClick = Button1Click
+    end
   end
   object Panel3: TPanel
     Left = 0
@@ -152,7 +161,7 @@ object MainForm: TMainForm
     Filter = 
       'QuadEngine Textures (BMP,JPEG, PNG, TGA, DDS)|*.bmp;*.jpg;*.jpeg' +
       ';*.png;*.tga;*.dds'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofNoTestFileCreate, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
     Left = 152
     Top = 118
   end
