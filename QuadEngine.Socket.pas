@@ -60,6 +60,7 @@ type
     procedure InitSocket(APort: Word = 0);
     procedure Close;
     procedure Clear;
+    procedure SetCode(ACode: Word);
     function Write(const ABuf; ACount: Integer): Boolean;
     function Send(AAddress: PQuadSocketAddressItem): Integer;
     function Recv(out AAddress: PQuadSocketAddressItem; AMemory: TMemoryStream): Boolean;
@@ -99,6 +100,11 @@ procedure TQuadSocket.Clear;
 begin
   FMemory.Clear;
   SetPackedType(qsptData);
+end;
+
+procedure TQuadSocket.SetCode(ACode: Word);
+begin
+  Write(ACode, SizeOf(ACode));
 end;
 
 class procedure TQuadSocket.Connect;

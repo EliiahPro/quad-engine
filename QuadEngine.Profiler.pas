@@ -18,18 +18,11 @@ uses
   System.Generics.collections, System.Classes;
 
 type
-  TProfilerInfo = packed record
-    GUID: TGUID;
-    DateTime: Double;
-    TagsCount: Byte;
-  end;
-
-  TAPICall = packed record
-    ID: Word;
-    Calls: Cardinal;
-    Time: Double;
-    TimeFastest: Double;
-    TimeSlowest: Double;
+  TAPICall = record
+    Value: Double;
+    Cound: Integer;
+    MaxValue: Double;
+    MinValue: Double;
   end;
 
   TQuadProfilerTag = class(TInterfacedObject, IQuadProfilerTag)
@@ -38,6 +31,7 @@ type
     class var FNextID: Word;
     class procedure Init;
   private
+    FID: Word;
     FName: WideString;
     FCurrentAPICallStartTime: Int64;
     FCurrentAPICall: TAPICall;
@@ -47,18 +41,20 @@ type
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
     procedure Refresh;
+
+    property ID: Word read FID;
     property Name: WideString read FName;
     property Call: TAPICall read FCurrentAPICall;
   end;
 
   TQuadProfiler = class(TInterfacedObject, IQuadProfiler)
   private
+    FGUID: TGUID;
     FName: WideString;
     FIsSend: Boolean;
     FServerAdress: AnsiString;
     FServerPort: Word;
 
-    FInfo: TProfilerInfo;
     FTags: TList<TQuadProfilerTag>;
 
     FMemory: TMemoryStream;
@@ -67,7 +63,7 @@ type
     procedure LoadFromIniFile;
     procedure Recv;
   public
-    constructor Create;
+    constructor Create(AName: PWideChar);
     destructor Destroy; override;
     function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
     procedure BeginTick; stdcall;
@@ -93,7 +89,7 @@ constructor TQuadProfilerTag.Create(const AName: PWideChar);
 begin
   inherited Create;
   Inc(FNextID);
-  FCurrentAPICall.ID := FNextID;
+  FID := FNextID;
   FName := AName;
   Refresh;
 end;
@@ -124,10 +120,10 @@ end;
 
 procedure TQuadProfilerTag.Refresh;
 begin
-  FCurrentAPICall.Calls := 0;
-  FCurrentAPICall.Time := 0.0;
-  FCurrentAPICall.TimeFastest := MaxDouble;
-  FCurrentAPICall.TimeSlowest := 0.0;
+  FCurrentAPICall.Cound := 0;
+  FCurrentAPICall.Value := 0.0;
+  FCurrentAPICall.MinValue := MaxDouble;
+  FCurrentAPICall.MaxValue := 0.0;
 end;
 
 function TQuadProfilerTag.GetName: PWideChar; stdcall;
@@ -168,12 +164,13 @@ begin
 
 end;
 
-constructor TQuadProfiler.Create;
+constructor TQuadProfiler.Create(AName: PWideChar);
 begin
   inherited Create;
+  FName := AName;
   FTags := TList<TQuadProfilerTag>.Create;
   FIsSend := False;
-  CreateGUID(FInfo.GUID);
+  CreateGUID(FGUID);
   FMemory := TMemoryStream.Create;
 
   LoadFromIniFile;
@@ -221,14 +218,25 @@ begin
 
       FMemory.Read(Code, SizeOf(Code));
       case Code of
-        2: // return tag name
+        2: // return profiler info
+          begin
+            FSocket.Clear;
+            FSocket.SetCode(Code);
+            FSocket.Write(FGUID, SizeOf(FGUID));
+            StrLength := Length(FName);
+            FSocket.Write(StrLength, SizeOf(StrLength));
+            FSocket.Write(FName[1], StrLength * 2);
+            FSocket.Send(Address);
+          end;
+        3: // return tag name
           begin
             FMemory.Read(ID, SizeOf(ID));
             for Tag in FTags do
-              if Tag.Call.ID = ID then
+              if Tag.ID = ID then
               begin
                 FSocket.Clear;
-                FSocket.Write(Code, SizeOf(Code));
+                FSocket.SetCode(Code);
+                FSocket.Write(FGUID, SizeOf(FGUID));
                 FSocket.Write(ID, SizeOf(ID));
                 StrLength := Length(Tag.Name);
                 FSocket.Write(StrLength, SizeOf(StrLength));
@@ -245,19 +253,27 @@ procedure TQuadProfiler.EndTick;
 var
   Tag: TQuadProfilerTag;
   Code: Word;
+
+  Time: Double;
+  TagsCount: Word;
 begin
   if FIsSend and Assigned(FSocket) then
   begin
     Recv;
 
     FSocket.Clear;
-    FInfo.TagsCount := FTags.Count;
     Code := 1;
     FSocket.Write(Code, SizeOf(Code));
-    FSocket.Write(FInfo, SizeOf(FInfo));
+    FSocket.Write(FGUID, SizeOf(FGUID));
+    FSocket.Write(Time, SizeOf(Time));
+    TagsCount := FTags.Count;
+    FSocket.Write(TagsCount, SizeOf(TagsCount));
 
     for Tag in FTags do
+    begin
+      FSocket.Write(Tag.ID, SizeOf(Tag.ID));
       FSocket.Write(Tag.Call, SizeOf(Tag.Call));
+    end;
 
     FSocket.Send(FSocketAddress);
   end;
@@ -265,7 +281,7 @@ end;
 
 procedure TQuadProfiler.SetGUID(const AGUID: TGUID);
 begin
-  FInfo.GUID := AGUID;
+  FGUID := AGUID;
 end;
 
 initialization

@@ -18,7 +18,7 @@ interface
 {$INCLUDE QUADENGINE.INC}
 
 uses
-  Winapi.Windows, Winapi.Direct3D9, Winapi.DXTypes, Graphics, VCL.Imaging.pngimage,
+  Winapi.Windows, Winapi.Direct3D9, Winapi.DXTypes, VCL.Graphics, VCL.Imaging.pngimage,
   QuadEngine.Utils, QuadEngine.Log, Vec2f, QuadEngine, IniFiles,
   System.SysUtils {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
 
@@ -384,7 +384,8 @@ begin
   FTextureMirroring := qtmNone;
 
   {$IFDEF DEBUG}
-  Device.CreateProfiler(FProfiler);
+  Device.CreateProfiler('Quad Render', FProfiler);
+  FProfiler.SetGUID(StringToGUID('{66D6B378-3AD8-476F-AB5E-B77B04D664A3}'));
   FProfiler.CreateTag('Invalid', FProfilerTags.Invalid);
   FProfiler.CreateTag('BeginScene', FProfilerTags.BeginScene);
   FProfiler.CreateTag('EndScene', FProfilerTags.EndScene);

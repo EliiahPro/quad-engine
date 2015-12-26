@@ -63,7 +63,7 @@ type
 implementation
 
 uses
-  QuadEngine.Device, graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, QuadEngine.Utils, TGAReader, BeRoDDS, Math;
+  QuadEngine.Device, VCL.Graphics, VCL.Imaging.pngimage, VCL.Imaging.JPEG, QuadEngine.Utils, TGAReader, BeRoDDS, Math;
 
 { TQuadJPGTextureFormat }
 
