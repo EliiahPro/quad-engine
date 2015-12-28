@@ -19,6 +19,7 @@ uses
 
 type
   TAPICall = record
+    Time: TDateTime;
     Value: Double;
     Cound: Integer;
     MaxValue: Double;
@@ -41,6 +42,7 @@ type
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
     procedure Refresh;
+    procedure SetTime(ATime: TDateTime);
 
     property ID: Word read FID;
     property Name: WideString read FName;
@@ -129,6 +131,11 @@ end;
 function TQuadProfilerTag.GetName: PWideChar; stdcall;
 begin
   Result := PWideChar(FName);
+end;
+
+procedure TQuadProfilerTag.SetTime(ATime: TDateTime);
+begin
+  FCurrentAPICall.Time := ATime;
 end;
 
 { TQuadProfiler }
@@ -253,8 +260,6 @@ procedure TQuadProfiler.EndTick;
 var
   Tag: TQuadProfilerTag;
   Code: Word;
-
-  Time: Double;
   TagsCount: Word;
 begin
   if FIsSend and Assigned(FSocket) then
@@ -265,12 +270,12 @@ begin
     Code := 1;
     FSocket.Write(Code, SizeOf(Code));
     FSocket.Write(FGUID, SizeOf(FGUID));
-    FSocket.Write(Time, SizeOf(Time));
     TagsCount := FTags.Count;
     FSocket.Write(TagsCount, SizeOf(TagsCount));
 
     for Tag in FTags do
     begin
+      Tag.SetTime(Now);
       FSocket.Write(Tag.ID, SizeOf(Tag.ID));
       FSocket.Write(Tag.Call, SizeOf(Tag.Call));
     end;

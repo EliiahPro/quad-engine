@@ -1,0 +1,69 @@
+object fMain: TfMain
+  Left = 0
+  Top = 0
+  Caption = 'fMain'
+  ClientHeight = 329
+  ClientWidth = 474
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Panel1: TPanel
+    Left = 0
+    Top = 0
+    Width = 474
+    Height = 33
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 0
+    ExplicitWidth = 660
+    object Button1: TButton
+      Left = 392
+      Top = 5
+      Width = 75
+      Height = 25
+      Caption = 'Button1'
+      TabOrder = 0
+    end
+  end
+  object PanelGroup: TCategoryPanelGroup
+    Left = 0
+    Top = 33
+    Width = 474
+    Height = 215
+    VertScrollBar.Tracking = True
+    Align = alClient
+    HeaderFont.Charset = DEFAULT_CHARSET
+    HeaderFont.Color = clWindowText
+    HeaderFont.Height = -11
+    HeaderFont.Name = 'Tahoma'
+    HeaderFont.Style = []
+    TabOrder = 1
+    ExplicitWidth = 660
+    ExplicitHeight = 351
+  end
+  object ListBox1: TListBox
+    Left = 0
+    Top = 248
+    Width = 474
+    Height = 81
+    Align = alBottom
+    ItemHeight = 13
+    TabOrder = 2
+    ExplicitTop = 392
+    ExplicitWidth = 660
+  end
+  object Timer: TTimer
+    Interval = 16
+    OnTimer = TimerTimer
+    Left = 344
+    Top = 225
+  end
+end

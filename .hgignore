@@ -13,3 +13,4 @@ bin/*.exe
 dll/qei.dll
 bin/qei.dll
 bin/log.txt
+demos/bin/1

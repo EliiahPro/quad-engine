@@ -104,6 +104,7 @@ end;
 
 procedure TQuadSocket.SetCode(ACode: Word);
 begin
+  Clear;
   Write(ACode, SizeOf(ACode));
 end;
 
