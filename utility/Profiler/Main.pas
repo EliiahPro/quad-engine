@@ -95,6 +95,7 @@ begin
             end
             else
               PanelGroup.Panels.Add(TDiagramView.Create(PanelGroup, Address, GUID));
+            IsRefresh := True;
           end;
       end;
     end;

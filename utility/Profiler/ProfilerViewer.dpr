@@ -1,5 +1,9 @@
 program ProfilerViewer;
 
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$WEAKLINKRTTI ON}
+{$SETPEFLAGS 1}
+
 uses
   Vcl.Forms,
   Main in 'Main.pas' {fMain},

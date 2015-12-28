@@ -3,7 +3,7 @@ unit DiagramView;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, GDIPAPI, GDIPOBJ,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Generics.Collections, System.Math,
   QuadEngine.Socket, DiagramLine, DiagramFrame;
 
@@ -11,18 +11,6 @@ type
   TProfilerInfo = packed record
     DateTime: Double;
     TagsCount: Byte;
-  end;
-
-  TDiagram = class(TPanel)
-  private
-    FOnPaint: TNotifyEvent;
-  protected
-    procedure Paint; override;
-  public
-    property OnPaint: TNotifyEvent read FOnPaint write FOnPaint;
-    property Canvas;
-  published
-    property DoubleBuffered;
   end;
 
   TDiagramView = class(TCategoryPanel)
@@ -34,7 +22,6 @@ type
     FMaxValue: Double;
     FAddress: PQuadSocketAddressItem;
     FFrame: TfDiagramFrame;
-    //procedure DiagramPaint(Sender: TObject);
   public
     class procedure SetScale(AScale: Single);
     constructor Create(APanelGroup: TCategoryPanelGroup; AAddress: PQuadSocketAddressItem; const AGUID: TGUID);
@@ -53,11 +40,6 @@ implementation
 
 uses Main;
 
-procedure TDiagram.Paint;
-begin
-  inherited;
-end;
-
 { TDiagramView }
 
 class procedure TDiagramView.SetScale(AScale: Single);
@@ -72,22 +54,22 @@ begin
   FFrame.Parent := Self;
 
   PanelGroup := APanelGroup;
-  Height := 100;
+  Height := 150;
   FGUID := AGUID;
   Text := FGUID.ToString;
   FMaxValue := 0;
   FAddress := AAddress;
 
-  FDiagram := TDiagram.Create(Self);
-  FDiagram.Parent := FFrame.Panel;
-  FDiagram.Align := alClient;
+  FFrame.Diagram := TDiagram.Create(FFrame);
+  FFrame.Diagram.Parent := FFrame.Panel;
+  FFrame.Diagram.Align := alClient;
+  FFrame.Diagram.Caption := '11';
 
   fMain.Socket.Clear;
   fMain.Socket.SetCode(2);
   fMain.Socket.Send(FAddress);
   //FDiagram.DoubleBuffered := True;
   //FImg.Frequency := 16;
-  //FDiagram.OnPaint := DiagramPaint;
 end;
 
 procedure TDiagramView.Write(AMemory: TMemoryStream);
@@ -111,6 +93,7 @@ begin
     if not Assigned(Line) then
     begin
       Line := FFrame.List.Items.Add as TDiagramLine;
+      Line.Checked := True;
       Line.SetID(ID);
       fMain.Socket.Clear;
       fMain.Socket.SetCode(3);
@@ -159,7 +142,9 @@ end;
 
 procedure TDiagramView.Repaint;
 begin
-  FDiagram.Repaint;
+//  FFrame.Diagram.Repaint;
+  FFrame.Draw;
+ // FFrame.Draw(FFrame.Diagram);
 end;
 
 (*
