@@ -73,6 +73,7 @@ type
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
+    function CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult; stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
     function GetLastError: PWideChar; stdcall;
     function GetMonitorsCount: Byte; stdcall;
@@ -160,7 +161,7 @@ begin
   FRenderTargets := TList.Create;
   FIsHardwareCursor := False;
   {$IFDEF DEBUG}
-  FProfiler := TQuadProfiler.Create;
+  FProfiler := TQuadProfiler.Create('Quad Device');
   {$ENDIF}
 end;
 
@@ -382,6 +383,15 @@ begin
   pQuadWindow := TQuadWindow.Create;
 
   if Assigned(pQuadWindow) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
+end;
+
+function TQuadDevice.CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult; stdcall;
+begin
+  pQuadProfiler := TQuadProfiler.Create(AName);
+  if Assigned(pQuadProfiler) then
     Result := S_OK
   else
     Result := E_FAIL;

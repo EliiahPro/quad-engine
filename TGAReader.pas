@@ -3,7 +3,7 @@ unit TGAReader;
 interface
 
 uses 
-  Windows, classes, Graphics, QuadEngine.Utils, System.SysUtils;
+  Windows, classes, VCL.Graphics, QuadEngine.Utils, System.SysUtils;
 
 type
   TTGAHeader = packed record
