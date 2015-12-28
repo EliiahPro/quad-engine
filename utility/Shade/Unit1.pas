@@ -26,8 +26,8 @@ type
     SaveDialog1: TSaveDialog;
     Label1: TLabel;
     Label2: TLabel;
-    Memo1: TMemo;
-    QuadMemo1: TQuadMemo;
+    OutputMemo: TMemo;
+    QuadMemo: TQuadMemo;
     RenderPanel: TPanel;
     FPSLabel: TLabel;
     CPULabel: TLabel;
@@ -66,13 +66,13 @@ uses Unit2, Vec2f;
 
 procedure TForm1.QuadIcon1Click(Sender: TObject);
 begin
-  QuadMemo1.Clear;
+  QuadMemo.Clear;
 end;
 
 procedure TForm1.QuadIcon2Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
-    QuadMemo1.LoadFromFile(OpenDialog1.FileName);
+    QuadMemo.LoadFromFile(OpenDialog1.FileName);
 end;
 
 procedure TForm1.QuadIcon7Click(Sender: TObject);
@@ -82,22 +82,22 @@ end;
 
 procedure TForm1.QuadIcon4Click(Sender: TObject);
 begin
-  QuadMemo1.TextCut;  
+  QuadMemo.TextCut;
 end;
 
 procedure TForm1.QuadIcon5Click(Sender: TObject);
 begin
-  QuadMemo1.TextCopy;
+  QuadMemo.TextCopy;
 end;
 
 procedure TForm1.QuadIcon6Click(Sender: TObject);
 begin
-  QuadMemo1.TextPaste;
+  QuadMemo.TextPaste;
 end;
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  if QuadMemo1.IsChanged then
+  if QuadMemo.IsChanged then
   begin
     if TDialogForm.Execute('Quit', 'File not saved. Proceed to quit?', mtConfirmation) = mrCancel then
       CanClose := False;
@@ -107,7 +107,7 @@ end;
 procedure TForm1.QuadIcon3Click(Sender: TObject);
 begin
   if SaveDialog1.Execute then
-    QuadMemo1.Lines.SaveToFile(SaveDialog1.FileName);
+    QuadMemo.Lines.SaveToFile(SaveDialog1.FileName);
 end;
 
 function GetCUIText(lpCmdLine: String): String; stdcall;
@@ -207,8 +207,27 @@ var
   S: String;
   Aline, AChar: Integer;
 begin
-  Memo1.Clear;
-  QuadMemo1.Lines.SaveToFile('!temp.fx');
+  if not FileExists('fxc.exe') then
+  begin
+    TDialogForm.Execute('Compiler file is missing', '"fxc.exe" is needed in order to compile shader!', mtError);
+    Exit;
+  end;
+
+  if not FileExists('D3DCompiler_40.dll') then
+  begin
+    TDialogForm.Execute('Compiler file is missing', '"D3DCompiler_40.dll" is needed in order to compile shader!', mtError);
+    Exit;
+  end;
+
+  if not FileExists('D3DX9_40.dll') then
+  begin
+    TDialogForm.Execute('Compiler file is missing', '"D3DX9_40.dll" is needed in order to compile shader!', mtError);
+    Exit;
+  end;
+
+
+  OutputMemo.Clear;
+  QuadMemo.Lines.SaveToFile('!temp.fx');
   S := GetCUIText('fxc.exe /O1 /T vs_2_0 /E std_VS /nologo /Fo vs_temp.bin !temp.fx');
 
   if (Pos('error', S) > 0) and (Pos('!temp.fx', S) > 0) then
@@ -216,28 +235,25 @@ begin
     S := Copy(S, Pos('!temp.fx', S) + 8, Length(S));
     ALine := StrToIntDef(Copy(S, 2, Pos(',', S) - 2), -1) - 1;
     AChar := StrToIntDef(Copy(S, Pos(',', S) + 1, Pos(')', S) - Pos(',', S) - 1), -1) - 1;
-    QuadMemo1.SetErrorWarning(Aline, AChar);
+    QuadMemo.SetErrorWarning(Aline, AChar);
     TDialogForm.Execute('Compile error', S, mtError);
   end;
 
-  Memo1.Lines.Add(S);
+  OutputMemo.Lines.Add(S);
 
-
-
-
-  Memo1.Lines.Add(GetCUIText('fxc.exe /O1 /T ps_2_0 /E std_PS /nologo /Fo ps_temp.bin !temp.fx'));
+  OutputMemo.Lines.Add(GetCUIText('fxc.exe /O1 /T ps_2_0 /E std_PS /nologo /Fo ps_temp.bin !temp.fx'));
   if (Pos('error', S) > 0) and (Pos('!temp.fx', S) > 0) then
   begin
     S := Copy(S, Pos('!temp.fx', S) + 8, Length(S));
     ALine := StrToIntDef(Copy(S, 2, Pos(',', S) - 2), -1) - 1;
     AChar := StrToIntDef(Copy(S, Pos(',', S) + 1, Pos(')', S) - Pos(',', S) - 1), -1) - 1;
-    QuadMemo1.SetErrorWarning(Aline, AChar);
+    QuadMemo.SetErrorWarning(Aline, AChar);
   end;
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
 begin
-  QuadMemo1.SetFocus;
+  QuadMemo.SetFocus;
 end;
 
 procedure OnTimer(var delta: Double);

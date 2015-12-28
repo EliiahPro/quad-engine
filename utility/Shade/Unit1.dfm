@@ -785,7 +785,7 @@ object Form1: TForm1
       Font.Style = []
       ParentFont = False
     end
-    object Memo1: TMemo
+    object OutputMemo: TMemo
       Left = 54
       Top = 37
       Width = 1355
@@ -891,7 +891,7 @@ object Form1: TForm1
       OnResize = RenderPanelResize
     end
   end
-  object QuadMemo1: TQuadMemo
+  object QuadMemo: TQuadMemo
     Left = 194
     Top = 52
     Width = 811
