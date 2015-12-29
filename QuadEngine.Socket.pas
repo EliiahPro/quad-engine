@@ -53,6 +53,7 @@ type
     function GetAddress(Index: Integer): PQuadSocketAddressItem;
     function GetAddressCount: Integer;
     procedure SendConnect(AAddress: PQuadSocketAddressItem);
+    function Send(Addr: TSockAddrIn): Integer; overload;
   public
     constructor Create;
     destructor Destroy; override;
@@ -62,7 +63,7 @@ type
     procedure Clear;
     procedure SetCode(ACode: Word);
     function Write(const ABuf; ACount: Integer): Boolean;
-    function Send(AAddress: PQuadSocketAddressItem): Integer;
+    function Send(AAddress: PQuadSocketAddressItem): Integer; overload;
     function Recv(out AAddress: PQuadSocketAddressItem; AMemory: TMemoryStream): Boolean;
 
     property Address[Index: integer]: PQuadSocketAddressItem read GetAddress;
@@ -245,17 +246,27 @@ begin
       end
       else
         if FType = qstServer then
-          SendConnect(AAddress);
+        begin
+          Clear;
+          SetPackedType(qsptConnect);
+          Write(FGlobalGUID, SizeOf(FGlobalGUID));
+          Send(Addr);
+        end;
 
   until Result;
 end;
 
 function TQuadSocket.Send(AAddress: PQuadSocketAddressItem): Integer;
 begin
+  Result := Send(AAddress.Addr);
+end;
+
+function TQuadSocket.Send(Addr: TSockAddrIn): Integer;
+begin
   Result := 0;
   if not FActive or (FSocket <= 0) or (FMemory.Size <= 0) then
     Exit;
-  Result := SendTo(FSocket, PByteArray(FMemory.Memory)[0], FMemory.Size, 0, AAddress.Addr, SizeOf(AAddress.Addr));
+  Result := SendTo(FSocket, PByteArray(FMemory.Memory)[0], FMemory.Size, 0, Addr, SizeOf(Addr));
 end;
 
 function TQuadSocket.FindAddress(const AAddr: TSockAddrIn; out AAddress: PQuadSocketAddressItem): Boolean;
@@ -271,7 +282,7 @@ begin
       Exit(True);
     end
     else
-      if IncSecond(AAddress.Time, 30) < Now then
+      if IncSecond(AAddress.Time, 3) < Now then
         FAddressList.Delete(i);
   end;
   Result := False;

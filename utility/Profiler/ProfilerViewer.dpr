@@ -18,6 +18,7 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TfMain, fMain);
   Application.Run;
 end.

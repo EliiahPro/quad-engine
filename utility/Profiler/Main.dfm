@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 0
   Caption = 'fMain'
   ClientHeight = 329
-  ClientWidth = 474
+  ClientWidth = 794
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,12 +18,12 @@ object fMain: TfMain
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 474
+    Width = 794
     Height = 33
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 660
+    ExplicitWidth = 474
     object Button1: TButton
       Left = 392
       Top = 5
@@ -36,7 +36,7 @@ object fMain: TfMain
   object PanelGroup: TCategoryPanelGroup
     Left = 0
     Top = 33
-    Width = 474
+    Width = 794
     Height = 215
     VertScrollBar.Tracking = True
     Align = alClient
@@ -46,19 +46,17 @@ object fMain: TfMain
     HeaderFont.Name = 'Tahoma'
     HeaderFont.Style = []
     TabOrder = 1
-    ExplicitWidth = 660
-    ExplicitHeight = 351
+    ExplicitWidth = 474
   end
   object ListBox1: TListBox
     Left = 0
     Top = 248
-    Width = 474
+    Width = 794
     Height = 81
     Align = alBottom
     ItemHeight = 13
     TabOrder = 2
-    ExplicitTop = 392
-    ExplicitWidth = 660
+    ExplicitWidth = 474
   end
   object Timer: TTimer
     Interval = 16

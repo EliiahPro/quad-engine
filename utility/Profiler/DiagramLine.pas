@@ -5,23 +5,15 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, GDIPAPI, GDIPOBJ,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Generics.Collections, System.Math,
-  QuadEngine.Socket, Vcl.ComCtrls;
+  QuadEngine.Socket, Vcl.ComCtrls, QuadEngine.Profiler;
 
 type
   PAPICall = ^TAPICall;
-  TAPICall = record
-    Time: TDateTime;
-    Value: Double;
-    Cound: Integer;
-    MaxValue: Double;
-    MinValue: Double;
-  end;
 
   TDiagramLine = class(TListItem)
   private
     FID: Word;
     FValues: TList<TAPICall>;
-    FMinValue: Double;
     FMaxValue: Double;
     FBeginIndex: Integer;
     FEndIndex: Integer;
@@ -35,9 +27,8 @@ type
     procedure Add(const ACall: TAPICall);
 
     property ID: Word read FID;
-    property Values[Index: Integer]: TAPICall read GetValue;
+    property Values[Index: Integer]: TAPICall read GetValue; default;
     property ValueCount: Integer read GetValueCount;
-    property MinValue: Double read FMinValue;
     property MaxValue: Double read FMaxValue;
     property Time: TDateTime read GetTime;
     property BeginIndex: Integer read FBeginIndex;
@@ -52,7 +43,6 @@ begin
 
   FValues := TList<TAPICall>.Create;
   SubItems.Add('0');
-  FMinValue := MaxDouble;
   FMaxValue := 0;
   FBeginIndex := 0;
   FEndIndex := 0;
@@ -72,8 +62,10 @@ end;
 procedure TDiagramLine.Add(const ACall: TAPICall);
 begin
   FValues.Add(ACall);
-  FMaxValue := Max(FMaxValue, ACall.MaxValue);
-  FMinValue := Min(FMinValue, ACall.MinValue);
+
+  if FMaxValue < ACall.Value then
+    FMaxValue := ACall.Value;
+
   SubItems[0] := FValues.Count.ToString;
 end;
 

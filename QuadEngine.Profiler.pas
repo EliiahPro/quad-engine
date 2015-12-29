@@ -21,7 +21,7 @@ type
   TAPICall = record
     Time: TDateTime;
     Value: Double;
-    Cound: Integer;
+    Count: Integer;
     MaxValue: Double;
     MinValue: Double;
   end;
@@ -104,28 +104,28 @@ end;
 procedure TQuadProfilerTag.EndCount; stdcall;
 var
   Counter: Int64;
-  Time: Double;
+  Value: Double;
 begin
-{  Inc(FCurrentAPICall.Calls);
+  Inc(FCurrentAPICall.Count);
 
   QueryPerformanceCounter(Counter);
-  Time := (Counter - FCurrentAPICallStartTime) / FPerformanceFrequency;
+  Value := (Counter - FCurrentAPICallStartTime) / FPerformanceFrequency;
 
-  FCurrentAPICall.Time := FCurrentAPICall.Time + Time;
+  FCurrentAPICall.Value := FCurrentAPICall.Value + Value;
 
-  if FCurrentAPICall.TimeFastest > Time then
-    FCurrentAPICall.TimeFastest := Time;
+  if FCurrentAPICall.MinValue > Value then
+    FCurrentAPICall.MinValue := Value;
 
-  if FCurrentAPICall.TimeSlowest < Time then
-    FCurrentAPICall.TimeSlowest := Time;   }
+  if FCurrentAPICall.MaxValue < Value then
+    FCurrentAPICall.MaxValue := Value;
 end;
 
 procedure TQuadProfilerTag.Refresh;
 begin
-  FCurrentAPICall.Cound := 0;
+  FCurrentAPICall.Count := 0;
   FCurrentAPICall.Value := 0.0;
-  FCurrentAPICall.MinValue := MaxDouble;
   FCurrentAPICall.MaxValue := 0.0;
+  FCurrentAPICall.MinValue := MaxDouble;
 end;
 
 function TQuadProfilerTag.GetName: PWideChar; stdcall;

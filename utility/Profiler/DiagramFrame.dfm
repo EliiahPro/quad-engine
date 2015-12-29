@@ -1,37 +1,33 @@
 object fDiagramFrame: TfDiagramFrame
   Left = 0
   Top = 0
-  Width = 596
-  Height = 210
+  Width = 451
+  Height = 304
   Align = alClient
   TabOrder = 0
   object Panel: TPanel
     Left = 169
     Top = 0
-    Width = 427
-    Height = 210
+    Width = 282
+    Height = 304
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 175
-    ExplicitTop = -3
     object Scroll: TScrollBar
       Left = 0
-      Top = 193
-      Width = 427
+      Top = 287
+      Width = 282
       Height = 17
       Align = alBottom
       PageSize = 0
       TabOrder = 0
-      ExplicitTop = 176
-      ExplicitWidth = 419
     end
   end
   object pLeft: TPanel
     Left = 0
     Top = 0
     Width = 169
-    Height = 210
+    Height = 304
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
@@ -39,7 +35,7 @@ object fDiagramFrame: TfDiagramFrame
       Left = 0
       Top = 0
       Width = 169
-      Height = 188
+      Height = 304
       Align = alClient
       Checkboxes = True
       Columns = <
@@ -55,22 +51,7 @@ object fDiagramFrame: TfDiagramFrame
       TabOrder = 0
       ViewStyle = vsReport
       OnCreateItemClass = ListCreateItemClass
-      ExplicitLeft = 8
-      ExplicitWidth = 177
-      ExplicitHeight = 210
-    end
-    object tbScale: TTrackBar
-      Left = 0
-      Top = 188
-      Width = 169
-      Height = 22
-      Align = alBottom
-      Max = 100
-      Position = 10
-      TabOrder = 1
-      TickMarks = tmBoth
-      TickStyle = tsNone
-      ExplicitLeft = -6
+      ExplicitWidth = 163
     end
   end
 end
