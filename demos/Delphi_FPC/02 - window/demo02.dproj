@@ -1,9 +1,9 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{7DF1683B-A14D-4EF5-9FBB-0BC4C80B61A0}</ProjectGuid>
+        <ProjectGuid>{D897322D-DB20-411F-8B43-00C280C01093}</ProjectGuid>
         <ProjectVersion>15.4</ProjectVersion>
         <FrameworkType>None</FrameworkType>
-        <MainSource>demo04.dpr</MainSource>
+        <MainSource>demo02.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -41,7 +41,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <SanitizedProjectName>demo04</SanitizedProjectName>
+        <SanitizedProjectName>demo02</SanitizedProjectName>
         <DCC_UnitSearchPath>..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Manifest_File>None</Manifest_File>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -69,9 +69,9 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_UnitSearchPath>..\..\</DCC_UnitSearchPath>
         <DCC_ExeOutput>..\bin</DCC_ExeOutput>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <Manifest_File>None</Manifest_File>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -83,7 +83,7 @@
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <DCC_DcuOutput>dcu</DCC_DcuOutput>
         <DCC_ExeOutput>../../../bin</DCC_ExeOutput>
-        <DCC_UnitSearchPath>..\..\..\headers\Delphi_FPC;..</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\headers\Delphi_FPC;..;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <ItemGroup>
@@ -143,7 +143,7 @@
                     <VersionInfoKeys Name="CFBundleExecutable"/>
                 </VersionInfoKeys>
                 <Source>
-                    <Source Name="MainSource">demo04.dpr</Source>
+                    <Source Name="MainSource">demo02.dpr</Source>
                 </Source>
                 <Excluded_Packages/>
             </Delphi.Personality>

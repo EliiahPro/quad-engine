@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("02 - primitives")]
+[assembly: AssemblyTitle("03 - window")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("02 - primitives")]
+[assembly: AssemblyProduct("03 - window")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("bf633963-83b5-4f0d-abae-97717a912bab")]
+[assembly: Guid("db2992e9-96d1-4caf-ade3-b8da9a21b63b")]
 
 // Version information for an assembly consists of the following four values:
 //

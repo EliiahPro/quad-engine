@@ -477,7 +477,7 @@ namespace QuadEngine
         X2 = 4
     };
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct PressedMouseButtons 
     {
         public bool Left;
@@ -500,8 +500,8 @@ namespace QuadEngine
         LAlt = 8,
         RAlt = 9        
     };
-    
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct PressedKeyButtons
     {
         public bool None;
@@ -516,12 +516,12 @@ namespace QuadEngine
         public bool RAlt;
     }
 
-    public delegate void OnKeyPress(ushort key, PressedKeyButtons pressedButtons);
-    public delegate void OnKeyChar(int ACharCode, PressedKeyButtons pressedButtons);
+    public delegate void OnKeyPress(ref ushort key, ref PressedKeyButtons pressedButtons);
+    public delegate void OnKeyChar(ref int ACharCode, ref PressedKeyButtons pressedButtons);
     public delegate void OnCreate();
-    public delegate void OnMouseMoveEvent(Vec2i position, PressedMouseButtons pressedButtons); 
-    public delegate void OnMouseEvent(Vec2i position, MouseButtons buttons, PressedMouseButtons pressedButtons);
-    public delegate void OnMouseWheelEvent(Vec2i position, Vec2i vector, PressedMouseButtons pressedButtons);
+    public delegate void OnMouseMoveEvent(ref Vec2i position, ref PressedMouseButtons pressedButtons); 
+    public delegate void OnMouseEvent(ref Vec2i position, ref MouseButtons buttons, ref PressedMouseButtons pressedButtons);
+    public delegate void OnMouseWheelEvent(ref Vec2i position, ref Vec2i vector, ref PressedMouseButtons pressedButtons);
     public delegate void OnEvent();
     public delegate void OnWindowMove(int xPos, int yPos);
     

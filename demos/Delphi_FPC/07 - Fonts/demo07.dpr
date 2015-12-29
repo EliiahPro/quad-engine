@@ -131,7 +131,7 @@ begin
   QuadDevice := CreateQuadDevice;
 
   QuadDevice.CreateWindow(QuadWindow);
-  QuadWindow.SetCaption('Quad-engine fonts demo');
+  QuadWindow.SetCaption('QuadEngine - Demo07 - Fonts');
   QuadWindow.SetSize(1024, 768);
 
   QuadDevice.CreateRender(QuadRender);

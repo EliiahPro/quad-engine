@@ -90,7 +90,7 @@ begin
   Randomize;
   QuadDevice := CreateQuadDevice;
   QuadDevice.CreateWindow(QuadWindow);
-  QuadWindow.SetCaption('QuadFX plugin demo');
+  QuadWindow.SetCaption('QuadEngine - Demo08 - QuadFX plugin');
   QuadWindow.SetSize(WIN_SIZE.X, WIN_SIZE.Y);
   QuadWindow.CreateInput(QuadInput);
   QuadWindow.SetOnClose(OnClose);

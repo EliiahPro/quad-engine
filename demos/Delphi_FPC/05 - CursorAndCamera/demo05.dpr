@@ -22,21 +22,6 @@ var
   QuadLogoTexture: IQuadTexture;
 
   CursorTexture: IQuadTexture;
-  IsCursorMove: Boolean;
-
-
-procedure ResetCursor;
-var
-  CursorPosition: TPoint;
-begin
-  if not IsCursorMove then
-    Exit;
-
-  CursorPosition.X := WINDOW_WIDTH div 2;
-  CursorPosition.Y := WINDOW_HEIGHT div 2;
-  ClientToScreen(QuadWindow.GetHandle, CursorPosition);
-  QuadDevice.SetCursorPosition(CursorPosition.X, CursorPosition.Y);
-end;
 
 procedure OnTimer(out delta: Double; Id: Cardinal); stdcall;
 var
@@ -50,11 +35,10 @@ begin
   QuadInput.GetMouseVector(MouseVector);
   QuadInput.GetMouseWheel(MouseWheel);
 
-  //Camera.Scale(max(0.1, min(3, Camera.GetScale + TVec2f(AVector).Normalize.Y / 10)));
+  Camera.Scale(max(0.1, min(3, Camera.GetScale + TVec2f(MouseWheel).Normalize.Y / 10)));
 
   Camera.Translate(MouseVector);
 
-  //ResetCursor;
   QuadRender.BeginRender;
   QuadRender.Clear($FF000000);
 
@@ -73,26 +57,12 @@ begin
   QuadRender.EndRender;
 end;
 
-procedure OnActivate; stdcall;
 begin
-  IsCursorMove := True;
-  ResetCursor;
-end;
-
-procedure OnDeactivate; stdcall;
-begin
-  IsCursorMove := False;
-end;
-
-begin
-  IsCursorMove := True;
   QuadDevice := CreateQuadDevice;
 
   QuadDevice.CreateWindow(QuadWindow);
-  QuadWindow.SetCaption('Quad-engine cursor and camera demo');
+  QuadWindow.SetCaption('QuadEngine - Demo05 - Cursor and Camera');
   QuadWindow.SetSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-  QuadWindow.SetOnActivate(OnActivate);
-  QuadWindow.SetOnDeactivate(OnDeactivate);
 
   QuadWindow.CreateInput(QuadInput);
 
@@ -101,10 +71,10 @@ begin
 
   QuadDevice.CreateAndLoadTexture(0, 'data\quadlogo.png', QuadLogoTexture);
 
-  QuadDevice.ShowCursor(True);
   QuadDevice.CreateAndLoadTexture(0, 'data\cursor.png', CursorTexture);
 
-  QuadDevice.SetCursorProperties(0, 0, CursorTexture);
+  QuadDevice.ShowCursor(True);
+ // QuadDevice.SetCursorProperties(0, 0, CursorTexture);
 
   QuadDevice.CreateCamera(Camera);
   Camera.SetPosition(-TVec2f.Create(WINDOW_WIDTH, WINDOW_HEIGHT));

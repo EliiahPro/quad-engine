@@ -22,7 +22,7 @@ unit QuadEngine;
 
 interface
 
-{$INCLUDE QUADENGINE.INC}
+{$INCLUDE QuadEngine.inc}
 
 uses
   Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f, Classes;
@@ -157,6 +157,7 @@ type
   IQuadWindow  = interface;
   IQuadCamera  = interface;
   IQuadGBuffer = interface;
+  IQuadProfiler = interface;
 
   { Quad Render }
 
@@ -212,6 +213,7 @@ type
     /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
+    function CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult; stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
     function GetLastError: PWideChar; stdcall;
     function GetMonitorsCount: Byte; stdcall;
@@ -564,6 +566,22 @@ type
     /// <param name="AColor">Light Color</param>
     /// <remarks>DrawLight must be used without using camera. GBuffer stores camera used to create it.</remarks>
     procedure DrawLight(const APos: TVec2f; AHeight: Single; ARadius: Single; AColor: Cardinal); stdcall;
+  end;
+
+  { Quad Profiler }
+  IQuadProfilerTag = interface(IUnknown)
+  ['{0CBAA03E-B54B-4351-B9EF-EEC46D99FCFB}']
+    procedure BeginCount; stdcall;
+    procedure EndCount; stdcall;
+    function GetName: PWideChar; stdcall;
+  end;
+
+  IQuadProfiler = interface(IUnknown)
+  ['{06063E8F-A230-4920-BC28-A672F1B31529}']
+    function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
+    procedure BeginTick; stdcall;
+    procedure EndTick; stdcall;
+    procedure SetGUID(const AGUID: TGUID); stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

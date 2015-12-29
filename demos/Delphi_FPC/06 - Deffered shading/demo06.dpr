@@ -20,8 +20,8 @@ var
   Texture: IQuadTexture;
   Camera: IQuadCamera;
   diff: IQuadTexture;
-  lightpos: TVec3f;
-  LightUV: array[0..3] of Single;
+  //lightpos: TVec3f;
+  //LightUV: array[0..3] of Single;
   QuadGBuffer: IQuadGBuffer;
 
   mList: TList;
@@ -116,7 +116,7 @@ begin
   QuadDevice := CreateQuadDevice;
 
   QuadDevice.CreateWindow(QuadWindow);
-  QuadWindow.SetCaption('Quad-engine window demo');
+  QuadWindow.SetCaption('QuadEngine - Demo06 - Deffered shading');
   QuadWindow.SetSize(800, 600);
   QuadWindow.SetPosition(100, 100);
 

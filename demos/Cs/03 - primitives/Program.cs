@@ -1,32 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using QuadEngine;
+using System.Runtime.InteropServices;
 
-namespace _02___primitives
+namespace Demo03
 {
-    public partial class Form1 : Form
+    class Program
     {
-        private IQuadDevice quadDevice;
-        private IQuadRender quadRender;
-        private IQuadTimer quadTimer;
+        private static IQuadDevice quadDevice;
+        private static IQuadWindow quadWindow;
+        private static IQuadRender quadRender;
+        private static IQuadTimer quadTimer;
 
-        private TimerProcedure timer;
+        private static TimerProcedure timer;
+        private static OnMouseMoveEvent mouseMoveEvent;
 
-        private int xPos, yPos;
+        private static int xPos, yPos;
 
-
-        private void OnTimer(ref double delta, UInt32 Id)
+        private static void OnTimer(ref double delta, UInt32 Id)
         {
             quadRender.BeginRender();
-
             quadRender.Clear(0);
 
             quadRender.Rectangle(new Vec2f(100, 100), new Vec2f(400, 400), QuadColor.Blue);
@@ -38,31 +34,35 @@ namespace _02___primitives
 
             quadRender.DrawQuadLine(new Vec2f(400, 400), new Vec2f(xPos, yPos), 5, 5, QuadColor.Blue, QuadColor.Aqua);
 
-
             quadRender.EndRender();
         }
-
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        
+        private static void OnMouseMove(ref Vec2i position, ref PressedMouseButtons pressedButtons)
         {
-            xPos = e.X;
-            yPos = e.Y;
+            xPos = position.X;
+            yPos = position.Y;
         }
 
-        public Form1()
+        static void Main(string[] args)
         {
-            InitializeComponent();
-            this.SetClientSizeCore(800, 600);
             QuadEngine.QuadEngine.CreateQuadDevice(out quadDevice);
+            quadDevice.CreateWindow(out quadWindow);
+            quadWindow.SetCaption("QuadEngine - Demo03 - Primitives");
+            quadWindow.SetSize(800, 600);
+            mouseMoveEvent = (OnMouseMoveEvent)OnMouseMove;
+            quadWindow.SetOnMouseMove(Marshal.GetFunctionPointerForDelegate(mouseMoveEvent));
 
             quadDevice.CreateRender(out quadRender);
-
-            quadRender.Initialize(this.Handle, 800, 600, false);
+            quadRender.Initialize((IntPtr)(int)(uint)quadWindow.GetHandle(), 800, 600, false);
 
             quadDevice.CreateTimer(out quadTimer);
+
             timer = (TimerProcedure)OnTimer;
             quadTimer.SetCallBack(Marshal.GetFunctionPointerForDelegate(timer));
             quadTimer.SetInterval(16);
             quadTimer.SetState(true);
+
+            quadWindow.Start();
         }
     }
 }

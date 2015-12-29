@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using QuadEngine;
 
-namespace _04___Input
+namespace Demo04
 {
     class Program
     {
@@ -74,7 +74,7 @@ namespace _04___Input
             QuadEngine.QuadEngine.CreateQuadDevice(out quadDevice);
             quadDevice.CreateWindow(out quadWindow);
             quadWindow.CreateInput(out quadInput);
-            quadWindow.SetCaption("04 - Input");
+            quadWindow.SetCaption("QuadEngine - Demo04 - Input");
             quadWindow.SetSize(800, 600);
 
             quadDevice.CreateRender(out quadRender);
