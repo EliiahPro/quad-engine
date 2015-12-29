@@ -2,7 +2,7 @@ object fMain: TfMain
   Left = 0
   Top = 0
   Caption = 'fMain'
-  ClientHeight = 329
+  ClientHeight = 572
   ClientWidth = 794
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,7 +23,6 @@ object fMain: TfMain
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 474
     object Button1: TButton
       Left = 392
       Top = 5
@@ -37,7 +36,7 @@ object fMain: TfMain
     Left = 0
     Top = 33
     Width = 794
-    Height = 215
+    Height = 458
     VertScrollBar.Tracking = True
     Align = alClient
     HeaderFont.Charset = DEFAULT_CHARSET
@@ -46,17 +45,17 @@ object fMain: TfMain
     HeaderFont.Name = 'Tahoma'
     HeaderFont.Style = []
     TabOrder = 1
-    ExplicitWidth = 474
+    ExplicitHeight = 215
   end
   object ListBox1: TListBox
     Left = 0
-    Top = 248
+    Top = 491
     Width = 794
     Height = 81
     Align = alBottom
     ItemHeight = 13
     TabOrder = 2
-    ExplicitWidth = 474
+    ExplicitTop = 248
   end
   object Timer: TTimer
     Interval = 16

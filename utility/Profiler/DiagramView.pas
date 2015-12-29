@@ -54,7 +54,7 @@ begin
   FFrame.Parent := Self;
 
   PanelGroup := APanelGroup;
-  Height := 150;
+  Height := 256;
   FGUID := AGUID;
   Text := FGUID.ToString;
   FMaxValue := 0;
@@ -68,8 +68,6 @@ begin
   fMain.Socket.Clear;
   fMain.Socket.SetCode(2);
   fMain.Socket.Send(FAddress);
-  //FDiagram.DoubleBuffered := True;
-  //FImg.Frequency := 16;
 end;
 
 procedure TDiagramView.Write(AMemory: TMemoryStream);
@@ -142,83 +140,9 @@ end;
 
 procedure TDiagramView.Repaint;
 begin
-//  FFrame.Diagram.Repaint;
   FFrame.Draw;
- // FFrame.Draw(FFrame.Diagram);
 end;
 
-(*
-procedure TDiagramView.DiagramPaint(Sender: TObject);
-var
-  i, j: Integer;
-  Points: array of TGPPointF;
-  Count: Integer;
-  ScaleY: Double;
-  Time: Double;
-  Ruler: Single;
-  Graphics: TGPGraphics;
-  Pen: TGPPen;
-begin
-  Ruler := Max(Ceil(FMaxValue * 10) / 10, 0.1);
-  if FMaxValue > 0 then
-    ScaleY := (FDiagram.Height - 10) / Ruler
-  else
-    ScaleY := 0;
-         {
-  if FCells.Count > 0 then
-  begin
-    Graphics := TGPGraphics.Create(FDiagram.Canvas.Handle);
-    Graphics.SetSmoothingMode(SmoothingModeAntiAlias);
-
-    Graphics.Clear($FF333333);
-    Time := FCells[FCells.Count - 1].Time;
-    Count := 0;
-    for i := FCells.Count - 1 downto 0 do
-      if (Time - FCells[i].Time) * FScale > FDiagram.Width then
-      begin
-        Count := FCells.Count - i;
-        Break;
-      end;
-
-    if Count = 0 then
-      Count := FCells.Count;
-
-    SetLength(Points, Count);
-
-    j := FCells.Count - 1;
-    for i := 0 to Count - 1 do
-    begin
-      Points[i].X := FDiagram.Width - 32 - (Time - FCells[j].Time) * FScale;
-      Points[i].Y := FDiagram.Height - 5 - FCells[j].Time * ScaleY;
-      Dec(j);
-    end;
-
-    Pen := TGPPen.Create($FFAA4444, 2);
-    try
-      Graphics.DrawLines(Pen, PGPPointF(@Points[0]), Count);
-    finally
-      Pen.Free;
-    end;
-    Graphics.Free;
-    {
-    Canvas.Pen.Color := $00AA4444;
-    Canvas.Pen.Width := 2;
-    Canvas.Polyline(Points);    }
-   // Canvas.Polygon(Points);
-  end;
-             {
-  Rect.Width := 32;
-  Rect.Height := 16;
-  Rect.Left := FDiagram.Width - 30;
-  Rect.Top := 5;
-  Canvas.Fill.Color := TAlphaColorRec.Black;
-  Canvas.FillText(Rect, Format('%f', [Ruler]), True, 255, [], TTextAlign.taLeading,TTextAlign.Leading);
-
-  Rect.Top := FDiagram.Height - 21;
-  Canvas.FillText(Rect, '0', True, 255, [], TTextAlign.taLeading,TTextAlign.Leading);
-          }
-end;
-*)
 initialization
   TDiagramView.SetScale(100);
 
