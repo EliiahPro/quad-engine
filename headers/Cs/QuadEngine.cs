@@ -168,6 +168,7 @@ namespace QuadEngine
         /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
         void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister);
         uint CreateWindow(out IQuadWindow IQuadWindow);
+        uint CreateProfiler(string AName, out IQuadProfiler quadProfiler);
         [PreserveSig] bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);
         [PreserveSig] string GetLastError();
         [PreserveSig] byte GetMonitorsCount();
