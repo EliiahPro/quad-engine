@@ -77,7 +77,7 @@ type
       EndScene: IQuadProfilerTag;
       Clear: IQuadProfilerTag;
       Draw: IQuadProfilerTag;
-      FlushBuffer: IQuadProfilerTag;
+      DrawCall: IQuadProfilerTag;
       SetBlendMode: IQuadProfilerTag;
       CalculateTBN: IQuadProfilerTag;
       SwitchRenderTarget: IQuadProfilerTag;
@@ -391,7 +391,7 @@ begin
   FProfiler.CreateTag('EndScene', FProfilerTags.EndScene);
   FProfiler.CreateTag('Clear', FProfilerTags.Clear);
   FProfiler.CreateTag('Draw', FProfilerTags.Draw);
-  FProfiler.CreateTag('FlushBuffer', FProfilerTags.FlushBuffer);
+  FProfiler.CreateTag('DrawCall', FProfilerTags.DrawCall);
   FProfiler.CreateTag('SetBlendMode', FProfilerTags.SetBlendMode);
   FProfiler.CreateTag('CalculateTBN', FProfilerTags.CalculateTBN);
   FProfiler.CreateTag('SwitchRenderTarget', FProfilerTags.SwitchRenderTarget);
@@ -785,9 +785,6 @@ begin
   if FIsDeviceLost then
     Exit;
 
-  {$IFDEF DEBUG}
-  FProfilerTags.FlushBuffer.BeginCount;
-  {$ENDIF}
   PrimitiveCount := 0;
 
   case FRenderMode of
@@ -822,13 +819,16 @@ begin
     Exit;
   end;
 
+  {$IFDEF DEBUG}
+  FProfilerTags.DrawCall.BeginCount;
+  {$ENDIF}
   Device.LastResultCode := FD3DVB.Lock(0, 0, pver, D3DLOCK_DISCARD);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
   Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
   FCount := 0;
   {$IFDEF DEBUG}
-  FProfilerTags.FlushBuffer.EndCount;
+  FProfilerTags.DrawCall.EndCount;
   {$ENDIF}
 end;
 
