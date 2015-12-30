@@ -22,7 +22,7 @@ unit QuadEngine;
 
 interface
 
-{$INCLUDE QUADENGINE.INC}
+{$INCLUDE QuadEngine.inc}
 
 uses
   Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f, Classes;

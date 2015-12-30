@@ -77,6 +77,9 @@ type
     FOptions: TQuadMemoOptions;
     FReadOnly: Boolean;
     FErrorLine: Integer;
+    FIsHintShowed: Boolean;
+    FSelectedHintIndex: Integer;
+    FSelectedHint: string;
 //    FBookMarks: Array[0..9] of TBookMark;
     procedure ClearSelection;
     procedure CorrectCaretPos;
@@ -340,8 +343,11 @@ begin
     sl := TStringList.Create;
     sl.Text := FAutoComplete;
 
+    FIsHintShowed := False;
+
     if sl.Count > 0 then
     begin
+      FIsHintShowed := True;
       Brush.Color := FColors.Hint;
       FillRect(Rect(FServiceBarWidth + (FAutoCompleteStart - 1 + FCameraPos.X) * FCharWidth,
                     (CurrentLine + 1 + FCameraPos.Y) * FCharHeight,
@@ -349,7 +355,11 @@ begin
                     (CurrentLine + 2 + sl.Count + FCameraPos.Y) * FCharHeight));
       for i := 0 to sl.Count - 1 do
       begin
-        Font.Color := clSilver;
+        if FSelectedHintIndex = i then
+          Font.Color := clLime
+        else
+          Font.Color := clSilver;
+
         TextOut(FServiceBarWidth + (FAutoCompleteStart + FCameraPos.X) * FCharWidth, Trunc((CurrentLine + 1.5 + i + FCameraPos.Y) * FCharHeight), sl.Strings[i]);
         if FTokenAtCursor <> nil then
         begin
@@ -750,27 +760,37 @@ begin
   case Key of
     VK_DOWN:
       begin
-        if ssctrl in Shift then
-          FCameraPos.Y := FCameraPos.Y - 1
+        if FIsHintShowed then
+          Inc(FSelectedHintIndex)
         else
-        FCaretPos.Y := FCaretPos.Y + FCharHeight;
+        begin
+          if ssctrl in Shift then
+            FCameraPos.Y := FCameraPos.Y - 1
+          else
+          FCaretPos.Y := FCaretPos.Y + FCharHeight;
 
-        if ssshift in Shift then
-          FSelection.EndPos.Y := FSelection.EndPos.Y + 1
-        else
-          ClearSelection;
+          if ssshift in Shift then
+            FSelection.EndPos.Y := FSelection.EndPos.Y + 1
+          else
+            ClearSelection;
+        end;
       end;
     VK_UP:
       begin
-        if ssctrl in Shift then
-          FCameraPos.Y := FCameraPos.Y + 1
+        if FIsHintShowed then
+          Dec(FSelectedHintIndex)
         else
-        FCaretPos.Y := FCaretPos.Y - FCharHeight;
+        begin
+          if ssctrl in Shift then
+            FCameraPos.Y := FCameraPos.Y + 1
+          else
+          FCaretPos.Y := FCaretPos.Y - FCharHeight;
 
-        if ssshift in Shift then
-          FSelection.EndPos.Y := FSelection.EndPos.Y - 1
-        else
-          ClearSelection;
+          if ssshift in Shift then
+            FSelection.EndPos.Y := FSelection.EndPos.Y - 1
+          else
+            ClearSelection;
+        end;
       end;
     VK_LEFT:
       begin
@@ -852,20 +872,25 @@ begin
       end;
     VK_RETURN:
       begin
-        if not IsSelected then
-        begin
-          ClearSelection;
-        end;
-        if Length(Flines[CurrentLine]) > CurrentChar then
-          InsertText(#13#10)
+        if FIsHintShowed then
+          InsertText(FSelectedHint)
         else
-        begin // for thruth this is the bad code
-          InsertText(#13#10' ');
-          Flines[CurrentLine] := TrimRight(Flines[CurrentLine]);
-          FCaretPos.X := 0;
+        begin
+          if not IsSelected then
+          begin
+            ClearSelection;
+          end;
+          if Length(Flines[CurrentLine]) > CurrentChar then
+            InsertText(#13#10)
+          else
+          begin // for thruth this is the bad code
+            InsertText(#13#10' ');
+            Flines[CurrentLine] := TrimRight(Flines[CurrentLine]);
+            FCaretPos.X := 0;
 
-          if (CurrentLine > 0) and (Length(Flines[CurrentLine - 1]) > 0) then
-            InsertText(StringOfChar(' ', Length(Flines[CurrentLine - 1]) - Length(TrimLeft(Flines[CurrentLine - 1])) - 1));
+            if (CurrentLine > 0) and (Length(Flines[CurrentLine - 1]) > 0) then
+              InsertText(StringOfChar(' ', Length(Flines[CurrentLine - 1]) - Length(TrimLeft(Flines[CurrentLine - 1])) - 1));
+          end;
         end;
       end;
     VK_TAB:

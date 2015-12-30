@@ -73,7 +73,7 @@ begin
 
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.CreateInput(QuadInput);
-  QuadWindow.SetCaption('Quad-engine window demo');
+  QuadWindow.SetCaption('QuadEngine - Demo04 - Input');
   QuadWindow.SetSize(800, 600);
   QuadWindow.SetPosition(100, 100);
 

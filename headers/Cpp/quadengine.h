@@ -27,6 +27,7 @@
 
 static const char* QUAD_DLL = "qei.dll";
 static const char* CreateQuadDeviceProcName = "CreateQuadDevice";
+static const char* CheckLibraryVersionProcName = "IsSameVersion";
 static const char* SecretMagicFunctionProcName = "SecretMagicFunction";
 static const unsigned char QuadEngineMinorVersion = 0;
 static const unsigned char QuadEngineMajorVersion = 7;
@@ -179,7 +180,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 
 DECLARE_INTERFACE_(IQuadRender, IUnknown)
 {
-	virtual TRect CALLBACK GetClipRect() = 0;
+	virtual void CALLBACK GetClipRect(TRect ARect) = 0;
 	virtual unsigned int CALLBACK GetAvailableTextureMemory() = 0;
 	virtual unsigned int CALLBACK GetMaxAnisotropy() = 0;
 	virtual unsigned int CALLBACK GetMaxTextureHeight() = 0;
@@ -413,9 +414,9 @@ DECLARE_INTERFACE_(IQuadInput, IUnknown)
 	virtual bool CALLBACK IsKeyPress(unsigned char key) = 0;
 	virtual bool CALLBACK IsMouseDown(TMouseButtons button) = 0;
 	virtual bool CALLBACK IsMouseClick(TMouseButtons button) = 0;
-	virtual Vec2f CALLBACK GetMousePosition() = 0;
-	virtual Vec2f CALLBACK GetMouseVector() = 0;
-	virtual Vec2f CALLBACK GetMouseWheel() = 0;
+	virtual void CALLBACK GetMousePosition(Vec2f &AMousePosition) = 0;
+	virtual void CALLBACK GetMouseVector(Vec2f &AMouseVector) = 0;
+	virtual void CALLBACK GetMouseWheel(Vec2f &AMouseWheel) = 0;
 	virtual void CALLBACK Update() = 0;
 };
 
@@ -482,31 +483,25 @@ DECLARE_INTERFACE_(IQuadGBuffer, IUnknown)
 	virtual void CALLBACK DrawLight(const Vec2f& position, float height, float radius, unsigned int color) = 0;
 };
 
-template <class T> void CreateQuadInstance(T*& Object, const char* CreatorName)
-{
-	HMODULE hDLL = LoadLibraryA(QUAD_DLL);
-	
-	if (!hDLL)
-	{
-		Object = NULL;
-		return;
-	}
+typedef void (WINAPI *TCreateQuadDevice)(IQuadDevice* &QuadDevice);
+typedef bool (WINAPI *TCheckLibraryVersion)(unsigned char ARelease, unsigned char AMajor, unsigned char AMinor);
+typedef wchar_t* (WINAPI *TSecretMagicFunction)();
 
-	HRESULT (WINAPI *Creator)(void*& obj) = reinterpret_cast<HRESULT (WINAPI*)(void*&)>(GetProcAddress(hDLL, CreatorName));
-	
-	if (Creator)
-	{
-		void* pObj;
-		Creator(pObj);
-		Object = reinterpret_cast<T*>(pObj);
-	}
-	else
-		Object = NULL;
-}
+HMODULE quadHandle;
 
-inline void CreateQuadDevice(IQuadDevice* &QuadDevice)
+inline void CreateQuadDevice(IQuadDevice* &quadDevice)
 {
-	CreateQuadInstance(QuadDevice, "CreateQuadDevice");
+	quadHandle = LoadLibraryA(QUAD_DLL);
+	if (quadHandle > 0)
+	{
+		TCheckLibraryVersion checkLibrary = (TCheckLibraryVersion)GetProcAddress(quadHandle, CheckLibraryVersionProcName);
+		if (checkLibrary(QuadEngineReleaseVersion, QuadEngineMajorVersion, QuadEngineMinorVersion))
+		{
+			TCreateQuadDevice Creator = (TCreateQuadDevice)GetProcAddress(quadHandle, CreateQuadDeviceProcName);
+			if (Creator > 0)
+				Creator(quadDevice);
+		}
+	}
 }
 
 #endif

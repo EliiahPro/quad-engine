@@ -68,7 +68,7 @@ const
                                                           'struct',
                                                           'switch',
                                                           'technique',
-                                                          'tex2d',
+                                                          'tex2D',
                                                           'texture1d',
                                                           'texture2d',
                                                           'texture3d',
@@ -491,16 +491,30 @@ end;
 function Tparser.GetPossibleTokens(const AText: String): String;
 var
   i: Integer;
+  sl: TStringList;
 begin
   Result := '';
 
   for i := 0 to ReservedCount - 1 do
-    if Pos(AText, TokenReserved[i]) > 0 then
+    if Pos(UpperCase(AText), UpperCase(TokenReserved[i])) > 0 then
       Result := Result + TokenReserved[i] + #13#10;
 
   for i := 0 to FunctionsCount - 1 do
-    if Pos(AText, TokenFunctions[i]) > 0 then
+    if Pos(UpperCase(AText), UpperCase(TokenFunctions[i])) > 0 then
       Result := Result + TokenFunctions[i] + #13#10;
+
+  sl := TStringList.Create;
+  sl.Duplicates := dupIgnore;
+  sl.Sorted := True;
+  sl.CommaText := #13#10;
+
+  for i := 0 to tokens.Count - 1 do
+    if (TokenItems[i].TType = ttVariable) and (TokenItems[i].TLength > 2) then
+      if Pos(UpperCase(AText), UpperCase(TokenItems[i].TText)) > 0 then
+        sl.Add(TokenItems[i].TText);
+
+  Result := Result + #13#10 + sl.Text;
+  sl.Free;
 end;
 
 function Tparser.GetTokenAtPos(ALine, AChar: Integer): PToken;

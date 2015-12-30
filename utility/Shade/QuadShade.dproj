@@ -1,14 +1,14 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{7DF1683B-A14D-4EF5-9FBB-0BC4C80B61A0}</ProjectGuid>
-        <ProjectVersion>15.4</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
-        <MainSource>demo04.dpr</MainSource>
+        <ProjectGuid>{B2A0A3D8-5610-4CA9-B0A2-2AAD77A1D2D0}</ProjectGuid>
+        <MainSource>QuadShade.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>1</TargetedPlatforms>
-        <AppType>Console</AppType>
+        <AppType>Application</AppType>
+        <FrameworkType>VCL</FrameworkType>
+        <ProjectVersion>15.3</ProjectVersion>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -18,18 +18,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
         <Cfg_1>true</Cfg_1>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
-        <Cfg_1_Win32>true</Cfg_1_Win32>
-        <CfgParent>Cfg_1</CfgParent>
-        <Cfg_1>true</Cfg_1>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
@@ -41,63 +35,65 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <SanitizedProjectName>demo04</SanitizedProjectName>
-        <DCC_UnitSearchPath>..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-        <Manifest_File>None</Manifest_File>
-        <VerInfo_Locale>1049</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_ExeOutput>..\bin</DCC_ExeOutput>
-        <DCC_E>false</DCC_E>
-        <DCC_N>false</DCC_N>
-        <DCC_S>false</DCC_S>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_UsePackage>vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;D7XLR4_R;FR7;FRBDE7;FRADO7;FRIBX7;FRDBX7;kpSyntax;FRExportXLS7;dxGDIPlusD7;cxLibraryVCLD7;dxsbD7;dxComnD7;cxEditorsVCLD7;dxThemeD7;cxDataD7;cxExtEditorsVCLD7;cxPageControlVCLD7;cxBarEditItemD7;dxBarD7;dxBarDBNavD7;dxBarExtDBItemsD7;dxBarExtItemsD7;dxRibbonD7;cxGridD7;cxSchedulerVCLD7;cxTreeListVCLD7;cxVerticalGridVCLD7;cxPivotGridD7;cxSpreadSheetVCLD7;dxDockingD7;dxNavBarD7;dxLayoutControlD7;dxLayoutControlcxEditAdaptersD7;cxWebD7;cxWebPascalScriptD7;cxWebSnapD7;cxWebTeeChartD7;dxMasterViewD7;dxmdsD7;dxdbtrD7;dxtrmdD7;dxorgcD7;dxdborD7;dxFlowChartD7;dcldxSkinsCoreD7;dxSkinsCoreD7;dxSkinscxPCPainterD7;dxSkinscxSchedulerPainterD7;dxSkinsdxBarPainterD7;dxSkinsdxDLPainterD7;dxSkinsdxLCPainterD7;dxSkinsdxNavBarPainterD7;dxSkinsdxRibbonPainterD7;dxPSCoreD7;dxPSLnksD7;dxPScxCommonD7;dxPScxGrid6LnkD7;dxPScxPCProdD7;dxPScxPivotGridLnkD7;dxPScxScheduler2LnkD7;dxPScxSSLnkD7;dxPScxTLLnkD7;dxPScxVGridLnkD7;dxPSTeeChartD7;dxPSdxOCLnkD7;dxPSdxDBTVLnkD7;dxPSdxFCLnkD7;dxPSdxLCLnkD7;dxPSdxMVLnkD7;dxPSdxDBOCLnkD7;dxPScxExtCommonD7;dxPsPrVwAdvD7;dxPSDBTeeChartD7;D7OPack;dclOfficeXP;vclZipForged7;QuadComponents;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_F>false</DCC_F>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_Locale>1049</VerInfo_Locale>
+        <DCC_RangeChecking>true</DCC_RangeChecking>
+        <DCC_S>false</DCC_S>
+        <DCC_N>true</DCC_N>
+        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;DirectX;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_E>false</DCC_E>
+        <DCC_Optimize>false</DCC_Optimize>
         <DCC_K>false</DCC_K>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_UsePackage>QuadComponents;bindcompfmx;DBXSqliteDriver;vcldbx;fmx;rtl;dbrtl;DbxClientDriver;IndySystem;TeeDB;bindcomp;inetdb;inetdbbde;vclib;DBXInterBaseDriver;DataSnapClient;DataSnapCommon;DBXOdbcDriver;DataSnapServer;Tee;P3D;DataSnapProviderClient;xmlrtl;DBXSybaseASEDriver;ibxpress;DbxCommonDriver;svnui;vclimg;IndyProtocols;DBXMySQLDriver;dbxcds;MetropolisUILiveTile;bindengine;vclactnband;vcldb;bindcompdbx;FMXTee;vcldsnap;bindcompvcl;soaprtl;TeeUI;vclie;DBXDb2Driver;vcltouch;websnap;DBXOracleDriver;CustomIPTransport;vclribbon;VclSmp;dsnap;DBXInformixDriver;IndyIPServer;Intraweb;fmxase;vcl;DataSnapConnectors;IndyCore;DBXMSSQLDriver;CloudService;IndyIPCommon;DBXFirebirdDriver;FmxTeeUI;dsnapcon;inet;fmxobj;vclx;inetdbxpress;webdsnap;svn;DBXSybaseASADriver;fmxdae;bdertl;dbexpress;DataSnapIndy10ServerTransport;adortl;IndyIPClient;$(DCC_UsePackage)</DCC_UsePackage>
+        <Icon_MainIcon>Project1_Icon.ico</Icon_MainIcon>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
-        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-        <DCC_DebugDCUs>true</DCC_DebugDCUs>
-        <DCC_Optimize>false</DCC_Optimize>
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_UnitSearchPath>..\..\</DCC_UnitSearchPath>
-        <DCC_ExeOutput>..\bin</DCC_ExeOutput>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_RemoteDebug>false</DCC_RemoteDebug>
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
-        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-        <DCC_DebugInformation>False</DCC_DebugInformation>
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <DCC_DcuOutput>dcu</DCC_DcuOutput>
-        <DCC_ExeOutput>../../../bin</DCC_ExeOutput>
-        <DCC_UnitSearchPath>..\..\..\headers\Delphi_FPC;..</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\Headers;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <DCC_ExeOutput>..\..\bin</DCC_ExeOutput>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <DCC_DcuOutput>dcu</DCC_DcuOutput>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <BuildConfiguration Include="Release">
+        <DCCReference Include="Unit1.pas">
+            <Form>Form1</Form>
+        </DCCReference>
+        <DCCReference Include="Unit2.pas">
+            <Form>Form2</Form>
+        </DCCReference>
+        <DCCReference Include="QuadShadeProject.pas"/>
+        <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
-        <BuildConfiguration Include="Debug">
+        <BuildConfiguration Include="Release">
             <Key>Cfg_1</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
@@ -107,6 +103,9 @@
         <Borland.ProjectType/>
         <BorlandProject>
             <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">QuadShade.dpr</Source>
+                </Source>
                 <VersionInfo>
                     <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
                     <VersionInfo Name="AutoIncBuild">False</VersionInfo>
@@ -133,21 +132,8 @@
                     <VersionInfoKeys Name="ProductName"/>
                     <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
                     <VersionInfoKeys Name="Comments"/>
-                    <VersionInfoKeys Name="CFBundleName"/>
-                    <VersionInfoKeys Name="CFBundleDisplayName"/>
-                    <VersionInfoKeys Name="CFBundleIdentifier"/>
-                    <VersionInfoKeys Name="CFBundleVersion"/>
-                    <VersionInfoKeys Name="CFBundlePackageType"/>
-                    <VersionInfoKeys Name="CFBundleSignature"/>
-                    <VersionInfoKeys Name="CFBundleAllowMixedLocalizations"/>
-                    <VersionInfoKeys Name="CFBundleExecutable"/>
                 </VersionInfoKeys>
-                <Source>
-                    <Source Name="MainSource">demo04.dpr</Source>
-                </Source>
-                <Excluded_Packages/>
             </Delphi.Personality>
-            <Deployment/>
             <Platforms>
                 <Platform value="Win32">True</Platform>
             </Platforms>
@@ -157,3 +143,11 @@
     <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
 </Project>
+
+<!-- EurekaLog First Line
+[Exception Log]
+EurekaLog Version=7007
+Activate=0
+DeleteMapAfterCompile=0
+Encrypt Password=""
+EurekaLog Last Line -->
