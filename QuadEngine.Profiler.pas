@@ -231,6 +231,7 @@ end;
 
 destructor TQuadProfiler.Destroy;
 begin
+  FSocket.Free;
   FMessages.Free;
   FMemory.Free;
   FTags.Free;

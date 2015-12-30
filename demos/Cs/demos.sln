@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo05", "05 - CursorAndCam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo06", "06 - Deffered shading\Demo06.csproj", "{A2568FFA-5E11-4577-9964-52B0AC8B4A75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demo07", "07 - Fonts\demo07.csproj", "{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{A2568FFA-5E11-4577-9964-52B0AC8B4A75}.Release|x64.Build.0 = Release|Any CPU
 		{A2568FFA-5E11-4577-9964-52B0AC8B4A75}.Release|x86.ActiveCfg = Release|Any CPU
 		{A2568FFA-5E11-4577-9964-52B0AC8B4A75}.Release|x86.Build.0 = Release|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Debug|x64.Build.0 = Debug|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Debug|x86.Build.0 = Debug|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Release|x64.ActiveCfg = Release|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Release|x64.Build.0 = Release|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Release|x86.ActiveCfg = Release|Any CPU
+		{68FB6C68-DE1A-49F4-BFB0-DADA5606328C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

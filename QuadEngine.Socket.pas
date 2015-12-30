@@ -36,7 +36,7 @@ type
 
   TQuadSocket = class
   private
-    class var FActive: Boolean;
+    class var FActiveCount: Integer;
     class var FGlobalGUID: TGUID;
     FAddressList: TList<PQuadSocketAddressItem>;
 
@@ -114,21 +114,16 @@ var
   Data: WSAData;
   Error: integer;
 begin
-  if not FActive then
-  begin
+  if FActiveCount = 0 then
     Error := WSAStartup(MakeWord(2, 2), Data);
-    if Error = 0 then
-      FActive := True;
-  end;
+  Inc(FActiveCount);
 end;
 
 class procedure TQuadSocket.Disconnect;
 begin
-  if FActive then
-  begin
+  if FActiveCount = 1 then
     WSACleanup;
-    FActive := False;
-  end;
+  Dec(FActiveCount);
 end;
 
 procedure TQuadSocket.InitSocket(APort: Word = 0);
@@ -179,7 +174,7 @@ var
   i: integer;
 begin
   Result := False;
-  if not FActive or (FSocket <= 0) or (ACount <= 0) then
+  if (FActiveCount > 0) or (FSocket <= 0) or (ACount <= 0) then
     Exit;
 
   if FMemory.Size + ACount < BUFFER_SIZE then
@@ -199,7 +194,7 @@ begin
 
   AMemory.Clear;
   Result := False;
-  if not FActive or (FSocket <= 0) then
+  if (FActiveCount > 0) or (FSocket <= 0) then
     Exit;
 
   repeat
@@ -264,7 +259,7 @@ end;
 function TQuadSocket.Send(Addr: TSockAddrIn): Integer;
 begin
   Result := 0;
-  if not FActive or (FSocket <= 0) or (FMemory.Size <= 0) then
+  if  (FActiveCount > 0) or (FSocket <= 0) or (FMemory.Size <= 0) then
     Exit;
   Result := SendTo(FSocket, PByteArray(FMemory.Memory)[0], FMemory.Size, 0, Addr, SizeOf(Addr));
 end;
@@ -339,7 +334,7 @@ end;
 
 initialization
   TQuadSocket.FGlobalGUID := StringToGUID('{D4523A77-065E-4EB4-A249-6F75B416F8BE}');
-  TQuadSocket.FActive := False;
+  TQuadSocket.FActiveCount := 0;
 
 finalization
   TQuadSocket.Disconnect;

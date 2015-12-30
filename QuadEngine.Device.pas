@@ -19,8 +19,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Direct3D9, QuadEngine.Utils, QuadEngine.Log, Vec2f,
-  QuadEngine.Render, System.IniFiles, QuadEngine, Classes
-  {$IFDEF DEBUG}, QuadEngine.Profiler{$ENDIF};
+  QuadEngine.Render, System.IniFiles, QuadEngine, Classes, QuadEngine.Profiler;
 
 const
   QuadVersion: PWideChar = 'Quad Engine v0.8.0 (Diamond)';
@@ -48,7 +47,7 @@ type
     FCursorSurface: IDirect3DSurface9;
     FIsHardwareCursor: Boolean;
     {$IFDEF DEBUG}
-    FProfiler: TQuadProfiler;
+    //FProfiler: TQuadProfiler;
     {$ENDIF}
     procedure SetLastResultCode(const Value: HResult);
     procedure GetErrorTextByCode(AErrorCode: HResult);
@@ -161,15 +160,15 @@ begin
   FRenderTargets := TList.Create;
   FIsHardwareCursor := False;
   {$IFDEF DEBUG}
-  FProfiler := TQuadProfiler.Create('Quad Device');
+  //FProfiler := TQuadProfiler.Create('Quad Device');
   {$ENDIF}
 end;
 
 destructor TQuadDevice.Destroy;
 begin
   {$IFDEF DEBUG}
-  if Assigned(FProfiler) then
-    FProfiler.Free;
+  //if Assigned(FProfiler) then
+  // FProfiler.Free;
   {$ENDIF}
 
   FRenderTargets.Free;

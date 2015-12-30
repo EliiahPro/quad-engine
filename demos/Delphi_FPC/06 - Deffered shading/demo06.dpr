@@ -32,6 +32,7 @@ var
   i, j: Integer;
   vec: PParticle;
   mVec: PParticle;
+  DiffuseMap: IQuadTexture;
 begin
   QuadInput.Update;
 
@@ -72,7 +73,8 @@ begin
   QuadRender.RenderToGBuffer(False, QuadGBuffer);
   Camera.Disable;
 
-  QuadGBuffer.DiffuseMap.Draw(TVec2f.Zero, $FF080808);
+  QuadGBuffer.GetDiffuseMap(DiffuseMap);
+  DiffuseMap.Draw(TVec2f.Zero, $FF080808);
 
   t := t + delta;
 

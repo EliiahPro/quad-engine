@@ -36,11 +36,11 @@ type
     FCamera: TQuadCamera;
   public
     constructor Create(AQuadRender: TQuadRender); reintroduce;
-    function DiffuseMap: IQuadTexture; stdcall;
-    function NormalMap: IQuadTexture; stdcall;
-    function SpecularMap: IQuadTexture; stdcall;
-    function HeightMap: IQuadTexture; stdcall;
-    function Buffer: IQuadTexture; stdcall;
+    procedure GetDiffuseMap(out ADiffuseMap: IQuadTexture); stdcall;
+    procedure GetNormalMap(out ANormalMap: IQuadTexture); stdcall;
+    procedure GetSpecularMap(out ASpecularMap: IQuadTexture); stdcall;
+    procedure GetHeightMap(out AHeightMap: IQuadTexture); stdcall;
+    procedure GetBuffer(out ABuffer: IQuadTexture); stdcall;
     procedure DrawLight(const APos: TVec2f; AHeight: Single; ARadius: Single; AColor: Cardinal); stdcall;
     property Camera: TQuadCamera read FCamera write FCamera;
   end;
@@ -86,9 +86,9 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadGBuffer.DiffuseMap: IQuadTexture;
+procedure TQuadGBuffer.GetDiffuseMap(out ADiffuseMap: IQuadTexture);
 begin
-  Result := FDiffuseMap;
+  ADiffuseMap := FDiffuseMap;
 end;
 
 //=============================================================================
@@ -136,33 +136,37 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadGBuffer.NormalMap: IQuadTexture;
+procedure TQuadGBuffer.GetNormalMap(out ANormalMap: IQuadTexture); stdcall;
 begin
-  Result := FNormalMap;
+  ANormalMap := FNormalMap;
 end;
 
 //=============================================================================
 //
 //=============================================================================
-function TQuadGBuffer.SpecularMap: IQuadTexture;
+procedure TQuadGBuffer.GetSpecularMap(out ASpecularMap: IQuadTexture); stdcall;
 begin
-  Result := FSpecularMap;
+  ASpecularMap := FSpecularMap;
 end;
 
 //=============================================================================
 //
 //=============================================================================
-function TQuadGBuffer.HeightMap: IQuadTexture;
+procedure TQuadGBuffer.GetHeightMap(out AHeightMap: IQuadTexture); stdcall;
 begin
-  Result := FHeightMap;
+  AHeightMap := FHeightMap;
 end;
 
 //=============================================================================
 //
 //=============================================================================
-function TQuadGBuffer.Buffer: IQuadTexture; stdcall;
+procedure TQuadGBuffer.GetBuffer(out ABuffer: IQuadTexture); stdcall;
 begin
-  Result := FBuffer;
+  ABuffer := FBuffer;
 end;
+
+
+
+
 
 end.

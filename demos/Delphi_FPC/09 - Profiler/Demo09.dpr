@@ -56,6 +56,8 @@ begin
   QuadTimer.SetState(False);
   sleep(500);
 
+  QuadProfiler := nil;
+
   QuadTimer := nil;
   QuadRender := nil;
   QuadWindow := nil;
@@ -63,6 +65,8 @@ begin
 end;
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
+
   Device := TQuadDevice.Create; QuadDevice := Device;
  // QuadDevice := CreateQuadDevice;
   QuadDevice.CreateWindow(QuadWindow);

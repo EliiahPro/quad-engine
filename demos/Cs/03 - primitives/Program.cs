@@ -26,7 +26,7 @@ namespace Demo03
             quadRender.Clear(0);
 
             quadRender.Rectangle(new Vec2f(100, 100), new Vec2f(400, 400), QuadColor.Blue);
-            quadRender.Rectangle(new Vec2f(200, 200), new Vec2f(500, 500), QuadColor.Lime.Lerp(QuadColor.Red, xPos / 800));
+            quadRender.Rectangle(new Vec2f(200, 200), new Vec2f(500, 500), QuadColor.Lime.Lerp(QuadColor.Red, xPos / 800.0f));
 
             quadRender.SetBlendMode(TQuadBlendMode.qbmSrcAlpha);
             quadRender.DrawCircle(new Vec2f(400, 400), 100, 95, QuadColor.Blue);

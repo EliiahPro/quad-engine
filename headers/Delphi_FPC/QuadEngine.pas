@@ -554,11 +554,11 @@ type
   {Quad GBuffer}
   IQuadGBuffer = interface(IUnknown)
   ['{FD99AF6B-1A7A-4981-8A1D-F70D427EA2E9}']
-    function DiffuseMap: IQuadTexture; stdcall;
-    function NormalMap: IQuadTexture; stdcall;
-    function SpecularMap: IQuadTexture; stdcall;
-    function HeightMap: IQuadTexture; stdcall;
-    function Buffer: IQuadTexture; stdcall;
+    procedure GetDiffuseMap(out ADiffuseMap: IQuadTexture); stdcall;
+    procedure GetNormalMap(out ANormalMap: IQuadTexture); stdcall;
+    procedure GetSpecularMap(out ASpecularMap: IQuadTexture); stdcall;
+    procedure GetHeightMap(out AHeightMap: IQuadTexture); stdcall;
+    procedure GetBuffer(out ABuffer: IQuadTexture); stdcall;
     /// <summary>Draw light using GBuffer data</summary>
     /// <param name="APos">Position in world space</param>
     /// <param name="AHeight">Height of light. Lower is closer to plain.</param>

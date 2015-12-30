@@ -13,7 +13,7 @@ namespace Demo06
         private struct Particle {
             public float X, Y, Z;
             public uint color;
-            public float radius;
+            public float radius;            
          };
 
         private static IQuadDevice quadDevice;
@@ -26,11 +26,8 @@ namespace Demo06
         private static IQuadTexture texture;
         private static IQuadCamera camera;
         private static IQuadTexture diff;
-        //private static TVec3f lightpos;
-        //private static Single LightUV[] = new LightUV[4];
 
         private static List<Particle> mList = new List<Particle>();
-        // mList: TList;
 
         private static double t = 0.0f;
 
@@ -51,32 +48,33 @@ namespace Demo06
             quadRender.RenderToGBuffer(false, quadGBuffer);
             camera.Disable();
 
-            // quadGBuffer.DiffuseMap.Draw(TVec2f.Zero, $FF080808);
+            IQuadTexture DiffuseMap;
+            quadGBuffer.GetDiffuseMap(out DiffuseMap);
+            DiffuseMap.Draw(new Vec2f(), 0xFF080808);
 
             t += delta;
-
+            Particle prt;
             if (t > 1.0)
             {
                 t = 0.0f;
                 Random rand = new Random();
-                Particle prt = new Particle();             
+                prt = new Particle();             
                 prt.radius = rand.Next(50, 250);
                 prt.X = rand.Next(800);
-                prt.Y = 100;
+                prt.Y = -100;
                 prt.Z = rand.Next(5, 35);
                 prt.color = (uint)(rand.NextDouble() * 0xFFFFFF) + 0xFF000000;
                 mList.Add(prt);
             }
 
             quadRender.SetBlendMode(TQuadBlendMode.qbmSrcAlphaAdd);
-
-            Particle prt;
-            //foreach (Particle prt in mList)
-            for (int i = 0; i < mList.Count; i++)
+            
+            for (int i = mList.Count - 1; i >= 0; i--)
             {
-                mList[i].Y = mList[i].Y + (float)delta * 100;
-
                 prt = mList[i];
+                prt.Y += (float)delta * 100.0f;
+                mList[i] = prt;
+
                 quadGBuffer.DrawLight(new Vec2f(prt.X, prt.Y), prt.Z, prt.radius, prt.color);
 
                 camera.Enable();
@@ -84,16 +82,10 @@ namespace Demo06
                 camera.Disable();
 
                 quadRender.FlushBuffer();
+                if (prt.Y > 1000)
+                    mList.RemoveAt(i);
             }
             
-            /*
-            Camera.Enable;
-            QuadRender.Rectangle(TVec2f.Create(mVec ^.X - 2, mVec ^.Y - 2),
-                                 TVec2f.Create(mVec ^.X + 2, mVec ^.Y + 2),
-                                 mVec ^.color);
-            Camera.Disable;
-
-    */
             quadRender.EndRender();
         }
 

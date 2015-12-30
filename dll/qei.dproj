@@ -77,10 +77,9 @@
         <DCC_DebugInformation>true</DCC_DebugInformation>
         <DCC_DcuOutput>dcu</DCC_DcuOutput>
         <VerInfo_MinorVer>7</VerInfo_MinorVer>
-        <DCC_UnitSearchPath>../;../headers;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\headers\Delphi_FPC;..\;../;../DirectX/;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.7.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=0.7.0.0;Comments=</VerInfo_Keys>
-        <Manifest_File>None</Manifest_File>
         <VerInfo_Build>0</VerInfo_Build>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">

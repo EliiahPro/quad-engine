@@ -97,6 +97,7 @@ type
     function GetIsSeparateAlphaBlend: Boolean;
   public
     constructor Create;
+    destructor Destroy; override;
     procedure GetClipRect(out ARect: TRect); stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
@@ -305,8 +306,10 @@ end;
 procedure TQuadRender.BeginRender;
 begin
   {$IFDEF DEBUG}
-  FProfiler.BeginTick;
-  FProfilerTags.BeginScene.BeginCount;
+  if Assigned(FProfiler) then
+    FProfiler.BeginTick;
+  if Assigned(FProfilerTags.BeginScene) then
+    FProfilerTags.BeginScene.BeginCount;
   {$ENDIF}
 
   Device.LastResultCode := FD3DDevice.BeginScene;
@@ -321,7 +324,8 @@ begin
 
   FCount := 0;
   {$IFDEF DEBUG}
-  FProfilerTags.BeginScene.EndCount;
+  if Assigned(FProfilerTags.BeginScene) then
+    FProfilerTags.BeginScene.EndCount;
   {$ENDIF}
 end;
 
@@ -354,11 +358,13 @@ end;
 procedure TQuadRender.Clear(AColor: Cardinal);
 begin
   {$IFDEF DEBUG}
-  FProfilerTags.Clear.BeginCount;
+  if Assigned(FProfilerTags.Clear) then
+    FProfilerTags.Clear.BeginCount;
   {$ENDIF}
   Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0);
   {$IFDEF DEBUG}
-  FProfilerTags.Clear.EndCount;
+  if Assigned(FProfilerTags.Clear) then
+    FProfilerTags.Clear.EndCount;
   {$ENDIF}
 end;
 
@@ -397,6 +403,24 @@ begin
   FProfiler.CreateTag('SwitchRenderTarget', FProfilerTags.SwitchRenderTarget);
   FProfiler.CreateTag('SwitchTexture', FProfilerTags.SwitchTexture);
   {$ENDIF}
+end;
+
+destructor TQuadRender.Destroy;
+begin
+  {$IFDEF DEBUG}
+  FProfilerTags.Invalid := nil;
+  FProfilerTags.BeginScene := nil;
+  FProfilerTags.EndScene := nil;
+  FProfilerTags.Clear := nil;
+  FProfilerTags.Draw := nil;
+  FProfilerTags.DrawCall := nil;
+  FProfilerTags.SetBlendMode := nil;
+  FProfilerTags.CalculateTBN := nil;
+  FProfilerTags.SwitchRenderTarget := nil;
+  FProfilerTags.SwitchTexture := nil;
+  FProfiler := nil;
+  {$ENDIF}
+  inherited;
 end;
 
 //=============================================================================
@@ -440,7 +464,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
   RenderMode := D3DPT_TRIANGLELIST;
 
@@ -490,7 +515,8 @@ begin
   FQuad[5].u := realUVB.U;   FQuad[5].v := realUVB.V;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -510,7 +536,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   RenderMode := D3DPT_TRIANGLELIST;
@@ -559,7 +586,8 @@ begin
   FQuad[5].u := realUVB.U;   FQuad[5].v := realUVB.V;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -593,7 +621,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   RenderMode := D3DPT_LINELIST;
@@ -608,7 +637,8 @@ begin
   Inc(FCount, 2);
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   if FCount >= MaxBufferCount then
@@ -626,7 +656,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   RenderMode := D3DPT_POINTLIST;
@@ -638,7 +669,8 @@ begin
   inc(FCount, 1);
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   if FCount >= MaxBufferCount then
@@ -658,7 +690,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   line := pointB - pointA;
@@ -681,7 +714,8 @@ begin
   FQuad[5].color := Color2;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -698,7 +732,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   realUVA := UVA;
@@ -735,7 +770,8 @@ begin
   FQuad[5].u := realUVB.X;  FQuad[5].v := realUVB.Y;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -747,7 +783,8 @@ end;
 procedure TQuadRender.EndRender;
 begin
   {$IFDEF DEBUG}
-  FProfilerTags.EndScene.BeginCount;
+  if Assigned(FProfilerTags.EndScene) then
+    FProfilerTags.EndScene.BeginCount;
   {$ENDIF}
   if FIsDeviceLost then
     Exit;
@@ -759,8 +796,10 @@ begin
     Device.LastResultCode := FD3DDevice.Present(nil, nil, 0, nil);
 
   {$IFDEF DEBUG}
-  FProfilerTags.EndScene.BeginCount;
-  FProfiler.EndTick;
+  if Assigned(FProfilerTags.EndScene) then
+    FProfilerTags.EndScene.BeginCount;
+  if Assigned(FProfiler) then
+    FProfiler.EndTick;
   {$ENDIF}
 end;
 
@@ -820,7 +859,8 @@ begin
   end;
 
   {$IFDEF DEBUG}
-  FProfilerTags.DrawCall.BeginCount;
+  if Assigned(FProfilerTags.DrawCall) then
+    FProfilerTags.DrawCall.BeginCount;
   {$ENDIF}
   Device.LastResultCode := FD3DVB.Lock(0, 0, pver, D3DLOCK_DISCARD);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
@@ -828,7 +868,8 @@ begin
   Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
   FCount := 0;
   {$IFDEF DEBUG}
-  FProfilerTags.DrawCall.EndCount;
+  if Assigned(FProfilerTags.DrawCall) then
+    FProfilerTags.DrawCall.EndCount;
   {$ENDIF}
 end;
 
@@ -1090,7 +1131,8 @@ begin
   if FIsDeviceLost then
     Exit;
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   RenderMode := D3DPT_TRIANGLELIST;
@@ -1110,7 +1152,8 @@ begin
   FQuad[5].color := Color;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -1127,7 +1170,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
   RenderMode := D3DPT_TRIANGLELIST;
 
@@ -1146,7 +1190,8 @@ begin
   FQuad[5].color := Color;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -1164,7 +1209,8 @@ begin
     Exit;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.BeginCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
   {$ENDIF}
 
   RenderMode := D3DPT_TRIANGLELIST;
@@ -1184,7 +1230,8 @@ begin
   FQuad[5].color := Color4;
 
   {$IFDEF DEBUG}
-  FProfilerTags.Draw.EndCount;
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
   AddQuadToBuffer;
@@ -1207,16 +1254,18 @@ end;
 procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
 var
   Obj: TQuadGBuffer;
+  TexBuffer: IQuadTexture;
 begin
   if FIsDeviceLost then
     Exit;
 
   if AIsRenderToGBuffer then
   begin
-    RenderToTexture(True, AQuadGBuffer.Buffer, 0, 0, AIsCropScreen);
-    RenderToTexture(True, AQuadGBuffer.Buffer, 1, 1, AIsCropScreen);
-    RenderToTexture(True, AQuadGBuffer.Buffer, 2, 2, AIsCropScreen);
-    RenderToTexture(True, AQuadGBuffer.Buffer, 3, 3, AIsCropScreen);
+    AQuadGBuffer.GetBuffer(TexBuffer);
+    RenderToTexture(True, TexBuffer, 0, 0, AIsCropScreen);
+    RenderToTexture(True, TexBuffer, 1, 1, AIsCropScreen);
+    RenderToTexture(True, TexBuffer, 2, 2, AIsCropScreen);
+    RenderToTexture(True, TexBuffer, 3, 3, AIsCropScreen);
 
     Obj := AQuadGBuffer as TQuadGBuffer;
     Obj.Camera := TQuadCamera.CurrentCamera;
@@ -1247,7 +1296,8 @@ begin
   FlushBuffer;
 
   {$IFDEF DEBUG}
-  FProfilerTags.SwitchRenderTarget.BeginCount;
+  if Assigned(FProfilerTags.SwitchRenderTarget) then
+    FProfilerTags.SwitchRenderTarget.BeginCount;
   {$ENDIF}
 
   if (AQuadTexture = nil) and AIsRenderToTexture then
@@ -1277,7 +1327,8 @@ begin
     Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
   end;
   {$IFDEF DEBUG}
-  FProfilerTags.SwitchRenderTarget.EndCount;
+  if Assigned(FProfilerTags.SwitchRenderTarget) then
+    FProfilerTags.SwitchRenderTarget.EndCount;
   {$ENDIF}
 end;
 
@@ -1334,7 +1385,8 @@ begin
   FlushBuffer;
 
   {$IFDEF DEBUG}
-  FProfilerTags.SetBlendMode.BeginCount;
+  if Assigned(FProfilerTags.SetBlendMode) then
+    FProfilerTags.SetBlendMode.BeginCount;
   {$ENDIF}
   Fqbm := qbm;
   case qbm of
@@ -1441,7 +1493,8 @@ begin
   end;
 
   {$IFDEF DEBUG}
-  FProfilerTags.SetBlendMode.EndCount;
+  if Assigned(FProfilerTags.SetBlendMode) then
+    FProfilerTags.SetBlendMode.EndCount;
   {$ENDIF}
 end;
 
@@ -1684,12 +1737,14 @@ begin
   FlushBuffer;
 
   {$IFDEF DEBUG}
-  FProfilerTags.SwitchTexture.BeginCount;
+  if Assigned(FProfilerTags.SwitchTexture) then
+    FProfilerTags.SwitchTexture.BeginCount;
   {$ENDIF}
   FActiveTexture[aRegister] := aTexture;
   Device.LastResultCode := FD3DDevice.SetTexture(aRegister, FActiveTexture[aRegister]);
   {$IFDEF DEBUG}
-  FProfilerTags.SwitchTexture.EndCount;
+  if Assigned(FProfilerTags.SwitchTexture) then
+    FProfilerTags.SwitchTexture.EndCount;
   {$ENDIF}
 end;
 

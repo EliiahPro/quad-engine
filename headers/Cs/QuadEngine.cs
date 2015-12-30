@@ -609,11 +609,11 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadGBuffer
     {
-        [PreserveSig] IQuadTexture DiffuseMap();
-        [PreserveSig] IQuadTexture NormalMap();
-        [PreserveSig] IQuadTexture SpecularMap();
-        [PreserveSig] IQuadTexture HeightMap();
-        [PreserveSig] IQuadTexture Buffer();
+        void GetDiffuseMap(out IQuadTexture DiffuseMap);
+        void GetNormalMap(out IQuadTexture NormalMap);
+        void GetSpecularMap(out IQuadTexture SpecularMap);
+        void GetHeightMap(out IQuadTexture HeightMap);
+        void GetBuffer(out IQuadTexture Buffer);
         /// <summary>Draw light using GBuffer data</summary>
         /// <param name="APos">Position in world space</param>
         /// <param name="AHeight">Height of light. Lower is closer to plain.</param>
@@ -638,7 +638,7 @@ namespace QuadEngine
       void BeginCount();
       void EndCount();
       string GetName();
-      void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = pmtMessage);
+      void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = TQuadProfilerMessageType.pmtMessage);
     }
 
     [ComImport]
@@ -648,8 +648,8 @@ namespace QuadEngine
       uint CreateTag(string AName, out IQuadProfilerTag ATag);
       void BeginTick();
       void EndTick();
-      void SetGUID(const AGUID: TGUID); stdcall;
-      void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = pmtMessage);
+      void SetGUID(ref Guid GUID);
+      void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = TQuadProfilerMessageType.pmtMessage);
     }
 
     public static class QuadEngine
