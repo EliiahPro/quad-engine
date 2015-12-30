@@ -5,8 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, DiagramView, QuadEngine.Socket,
-  System.Generics.Collections, DiagramLine
-  ;
+  System.Generics.Collections, DiagramLine, Vcl.ComCtrls, ListLogItem;
 
 type
   TfMain = class(TForm)
@@ -14,10 +13,12 @@ type
     PanelGroup: TCategoryPanelGroup;
     Button1: TButton;
     Timer: TTimer;
-    ListBox1: TListBox;
+    lvLog: TListView;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
+    procedure lvLogCreateItemClass(Sender: TCustomListView;
+      var ItemClass: TListItemClass);
   private
     FSocket: TQuadSocket;
     FMemory: TMemoryStream;
@@ -46,6 +47,11 @@ begin
   FMemory.Free;
 end;
 
+procedure TfMain.lvLogCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
+begin
+  ItemClass := TLogListItem;
+end;
+
 procedure TfMain.TimerTimer(Sender: TObject);
   function FindPanel(const GUID: TGUID): TDiagramView;
   var
@@ -70,7 +76,7 @@ begin
     begin
       FMemory.Read(Code, SizeOf(Code));
       case Code of
-        1, 2, 3:
+        1, 2, 3, 4:
           begin
             FMemory.Read(GUID, SizeOf(GUID));
             Diagram := FindPanel(GUID);
@@ -78,7 +84,7 @@ begin
             begin
               case Code of
                 1: Diagram.Write(FMemory);
-                2, 3: Diagram.UpdateInfo(Code, FMemory);
+                2, 3, 4: Diagram.UpdateInfo(Code, FMemory);
               end;
             end
             else

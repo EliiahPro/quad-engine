@@ -26,10 +26,11 @@ type
     pLeft: TPanel;
     List: TListView;
     procedure ListCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
+    procedure ListItemChecked(Sender: TObject; Item: TListItem);
   private
   public
     Diagram: TDiagram;
-    procedure Draw;
+    procedure Draw(Sender: TObject);
     function FindLineByID(AID: Word): TDiagramLine;
   end;
 
@@ -78,7 +79,12 @@ begin
   ItemClass := TDiagramLine;
 end;
 
-procedure TfDiagramFrame.Draw;
+procedure TfDiagramFrame.ListItemChecked(Sender: TObject; Item: TListItem);
+begin
+  Diagram.Repaint;
+end;
+
+procedure TfDiagramFrame.Draw(Sender: TObject);
 var
   DC: HDC;
   memDC: HDC;
@@ -124,7 +130,7 @@ begin
       begin
         Line := TDiagramLine(List.Items[i]);
 
-        Pen.SetColor(LINE_COLOR[i]);
+        Pen.SetColor(LINE_COLOR[i mod Length(LINE_COLOR)]);
         if Line.Selected then
           Pen.SetWidth(2)
         else
@@ -137,7 +143,6 @@ begin
         begin
           Points[k].X := Diagram.Width - 32 - (MaxTime - Line[j].Time) * 24 * 60 * 60 * 20  {* FScale};
           Points[k].Y := Diagram.Height - 5 - Line[j].Value * ScaleY;
-         // Graphics.DrawLine(Pen, 0, 0, Points[k].X, Points[k].Y);
           Dec(j);
         end;
         Graphics.DrawLines(Pen, PGPPointF(@Points[0]), Line.ValueCount);

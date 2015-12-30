@@ -168,6 +168,7 @@ namespace QuadEngine
         /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
         void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister);
         uint CreateWindow(out IQuadWindow IQuadWindow);
+        uint CreateProfiler(string AName, out IQuadProfiler quadProfiler);
         [PreserveSig] bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);
         [PreserveSig] string GetLastError();
         [PreserveSig] byte GetMonitorsCount();
@@ -621,7 +622,35 @@ namespace QuadEngine
         /// <remarks>DrawLight must be used without using camera. GBuffer stores camera used to create it.</remarks>
         void DrawLight(ref Vec2f APos, float AHeight, float ARadius, UInt32 AColor);
     }
-    
+
+    /* Quad Profiler */
+
+    public enum TQuadProfilerMessageType {
+        pmtMessage = 0,
+        pmtWarning = 1,
+        pmtError = 2
+    };
+
+    [ComImport]
+    [Guid("0CBAA03E-B54B-4351-B9EF-EEC46D99FCFB")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IQuadProfilerTag {
+      void BeginCount();
+      void EndCount();
+      string GetName();
+      void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = pmtMessage);
+    }
+
+    [ComImport]
+    [Guid("06063E8F-A230-4920-BC28-A672F1B31529")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IQuadProfiler {
+      uint CreateTag(string AName, out IQuadProfilerTag ATag);
+      void BeginTick();
+      void EndTick();
+      void SetGUID(const AGUID: TGUID); stdcall;
+      void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = pmtMessage);
+    }
 
     public static class QuadEngine
     {

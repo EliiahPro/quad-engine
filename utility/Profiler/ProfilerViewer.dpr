@@ -11,14 +11,14 @@ uses
   Vcl.Styles,
   DiagramView in 'DiagramView.pas',
   DiagramLine in 'DiagramLine.pas',
-  DiagramFrame in 'DiagramFrame.pas' {fDiagramFrame: TFrame};
+  DiagramFrame in 'DiagramFrame.pas' {fDiagramFrame: TFrame},
+  ListLogItem in 'ListLogItem.pas';
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TfMain, fMain);
   Application.Run;
 end.

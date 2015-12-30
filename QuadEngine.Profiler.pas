@@ -26,6 +26,10 @@ type
     MinValue: Double;
   end;
 
+  TQuadProfilerTag = class;
+
+  TOnSendMessageEvent = procedure(ATag: TQuadProfilerTag; AMessage: PWideChar; AMessageType: TQuadProfilerMessageType) of object;
+
   TQuadProfilerTag = class(TInterfacedObject, IQuadProfilerTag)
   private
     class var FPerformanceFrequency: Int64;
@@ -36,17 +40,27 @@ type
     FName: WideString;
     FCurrentAPICallStartTime: Int64;
     FCurrentAPICall: TAPICall;
+    FOnSendMessage: TOnSendMessageEvent;
   public
     constructor Create(const AName: PWideChar);
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
+    procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
     procedure Refresh;
     procedure SetTime(ATime: TDateTime);
+    procedure SetOnSendMessage(AOnSendMessage: TOnSendMessageEvent);
 
     property ID: Word read FID;
     property Name: WideString read FName;
     property Call: TAPICall read FCurrentAPICall;
+  end;
+
+  TQuadProfilerMessage = record
+    ID: Word;
+    DateTime: TDateTime;
+    MessageType: TQuadProfilerMessageType;
+    MessageText: WideString;
   end;
 
   TQuadProfiler = class(TInterfacedObject, IQuadProfiler)
@@ -62,8 +76,12 @@ type
     FMemory: TMemoryStream;
     FSocket: TQuadSocket;
     FSocketAddress: PQuadSocketAddressItem;
+
+    FMessages: TQueue<TQuadProfilerMessage>;
+
     procedure LoadFromIniFile;
     procedure Recv;
+    procedure AddMessage(ATag: TQuadProfilerTag; AMessage: PWideChar; AMessageType: TQuadProfilerMessageType);
   public
     constructor Create(AName: PWideChar);
     destructor Destroy; override;
@@ -72,6 +90,7 @@ type
     procedure EndTick; stdcall;
     procedure SetAdress(AAdress: PAnsiChar; APort: Word = 17788); stdcall;
     procedure SetGUID(const AGUID: TGUID); stdcall;
+    procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
 
 implementation
@@ -138,6 +157,17 @@ begin
   FCurrentAPICall.Time := ATime;
 end;
 
+procedure TQuadProfilerTag.SetOnSendMessage(AOnSendMessage: TOnSendMessageEvent);
+begin
+  FOnSendMessage := AOnSendMessage;
+end;
+
+procedure TQuadProfilerTag.SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
+begin
+  if Assigned(FOnSendMessage) then
+    FOnSendMessage(Self, AMessage, AMessageType);
+end;
+
 { TQuadProfiler }
 
 function TQuadProfiler.CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
@@ -146,6 +176,7 @@ var
 begin
   Tag := TQuadProfilerTag.Create(AName);
   FTags.Add(Tag);
+  Tag.SetOnSendMessage(AddMessage);
   ATag := Tag;
   if Assigned(ATag) then
     Result := S_OK
@@ -179,6 +210,7 @@ begin
   FIsSend := False;
   CreateGUID(FGUID);
   FMemory := TMemoryStream.Create;
+  FMessages := TQueue<TQuadProfilerMessage>.Create;
 
   LoadFromIniFile;
   if FIsSend then
@@ -199,9 +231,29 @@ end;
 
 destructor TQuadProfiler.Destroy;
 begin
+  FMessages.Free;
   FMemory.Free;
   FTags.Free;
   inherited;
+end;
+
+procedure TQuadProfiler.SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
+begin
+  AddMessage(nil, AMessage, AMessageType);
+end;
+
+procedure TQuadProfiler.AddMessage(ATag: TQuadProfilerTag; AMessage: PWideChar; AMessageType: TQuadProfilerMessageType);
+var
+  Msg: TQuadProfilerMessage;
+begin
+  Msg.DateTime := Now;
+  if Assigned(ATag) then
+    Msg.ID := ATag.ID
+  else
+    Msg.ID := 0;
+  Msg.MessageType := AMessageType;
+  Msg.MessageText := AMessage;
+  FMessages.Enqueue(Msg);
 end;
 
 procedure TQuadProfiler.BeginTick;
@@ -261,14 +313,16 @@ var
   Tag: TQuadProfilerTag;
   Code: Word;
   TagsCount: Word;
+  i: Integer;
+  Msg: TQuadProfilerMessage;
+  StrLength: Byte;
 begin
   if FIsSend and Assigned(FSocket) then
   begin
     Recv;
 
     FSocket.Clear;
-    Code := 1;
-    FSocket.Write(Code, SizeOf(Code));
+    FSocket.SetCode(1);
     FSocket.Write(FGUID, SizeOf(FGUID));
     TagsCount := FTags.Count;
     FSocket.Write(TagsCount, SizeOf(TagsCount));
@@ -281,6 +335,26 @@ begin
     end;
 
     FSocket.Send(FSocketAddress);
+
+    for i := 0 to FMessages.Count - 1 do
+    begin
+      Msg := FMessages.Dequeue;
+
+      FSocket.Clear;
+      FSocket.SetCode(4);
+      FSocket.Write(FGUID, SizeOf(FGUID));
+      FSocket.Write(Msg.ID, SizeOf(Msg.ID));
+      FSocket.Write(Msg.DateTime, SizeOf(Msg.DateTime));
+      FSocket.Write(Msg.MessageType, SizeOf(Msg.MessageType));
+
+      StrLength := Length(Msg.MessageText);
+      FSocket.Write(StrLength, SizeOf(StrLength));
+      FSocket.Write(Msg.MessageText[1], StrLength * 2);
+
+      FSocket.Send(FSocketAddress);
+    end;
+
+
   end;
 end;
 

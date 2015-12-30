@@ -51,7 +51,7 @@ object fDiagramFrame: TfDiagramFrame
       TabOrder = 0
       ViewStyle = vsReport
       OnCreateItemClass = ListCreateItemClass
-      ExplicitWidth = 163
+      OnItemChecked = ListItemChecked
     end
   end
 end

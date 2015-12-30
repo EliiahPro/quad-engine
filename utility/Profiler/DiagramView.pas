@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Generics.Collections, System.Math,
-  QuadEngine.Socket, DiagramLine, DiagramFrame, QuadEngine.Profiler;
+  QuadEngine.Socket, DiagramLine, DiagramFrame, QuadEngine.Profiler, QuadEngine;
 
 type
   TProfilerInfo = packed record
@@ -38,7 +38,7 @@ implementation
 
 { TDiagramPanel }
 
-uses Main;
+uses Main, ListLogItem;
 
 { TDiagramView }
 
@@ -63,7 +63,7 @@ begin
   FFrame.Diagram := TDiagram.Create(FFrame);
   FFrame.Diagram.Parent := FFrame.Panel;
   FFrame.Diagram.Align := alClient;
-  FFrame.Diagram.Caption := '11';
+  FFrame.Diagram.OnPaint := FFrame.Draw;
 
   fMain.Socket.Clear;
   fMain.Socket.SetCode(2);
@@ -108,6 +108,9 @@ var
   StrLen: Byte;
   ID: Word;
   Line: TDiagramLine;
+  MsgType: TQuadProfilerMessageType;
+  DateTime: TDateTime;
+  LogItem: TLogListItem;
 begin
   case ACode of
     2:
@@ -129,6 +132,29 @@ begin
           Line.Caption := Str;
         end;
       end;
+    4:
+      begin
+        AMemory.Read(ID, SizeOf(ID));
+        AMemory.Read(DateTime, SizeOf(DateTime));
+        AMemory.Read(MsgType, SizeOf(MsgType));
+        AMemory.Read(StrLen, SizeOf(StrLen));
+        SetLength(Str, StrLen);
+        AMemory.Read(Pointer(Str)^, StrLen * SizeOf(WideChar));
+
+        LogItem := fMain.lvLog.Items.Add as TLogListItem;
+        LogItem.Caption := '';
+        LogItem.SubItems.Add('DateTime');
+        LogItem.SubItems.Add(Str);
+        LogItem.SubItems.Add(Caption);
+
+        if ID > 0 then
+        begin
+          Line := FFrame.FindLineByID(ID);
+          LogItem.SubItems.Add(Line.Caption);
+        end
+        else
+          LogItem.SubItems.Add('');
+      end;
   end;
 end;
 
@@ -140,7 +166,7 @@ end;
 
 procedure TDiagramView.Repaint;
 begin
-  FFrame.Draw;
+  FFrame.Draw(nil);
 end;
 
 initialization
