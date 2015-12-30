@@ -5,7 +5,7 @@ program demo09;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, Vec2f, System.SysUtils;
+  QuadEngine, Vec2f, System.SysUtils, QuadEngine.Device;
 
 var
   QuadDevice: IQuadDevice;
@@ -34,7 +34,11 @@ begin
     Inc(PointCount);
   end;
 
-  //QuadProfiler.BeginTick;
+  QuadProfiler.BeginTick;
+
+  if QuadInput.IsMouseClick(mbRight) then
+    QuadProfiler.SendMessage('Mouse right button press', pmtMessage);
+
   QuadRender.BeginRender;
   QuadRender.Clear($FF000000);
   QuadProfilerTag.BeginCount;
@@ -44,7 +48,7 @@ begin
 
   QuadProfilerTag.EndCount;
   QuadRender.EndRender;
-  //QuadProfiler.EndTick;
+  QuadProfiler.EndTick;
 end;
 
 procedure OnClose; stdcall;
@@ -59,8 +63,8 @@ begin
 end;
 
 begin
-  //Device := TQuadDevice.Create; QuadDevice := Device;
-  QuadDevice := CreateQuadDevice;
+  Device := TQuadDevice.Create; QuadDevice := Device;
+ // QuadDevice := CreateQuadDevice;
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.CreateInput(QuadInput);
   QuadWindow.SetOnClose(OnClose);

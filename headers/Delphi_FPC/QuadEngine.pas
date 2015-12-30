@@ -569,11 +569,19 @@ type
   end;
 
   { Quad Profiler }
+
+  TQuadProfilerMessageType = (
+    pmtMessage = 0,
+    pmtWarning = 1,
+    pmtError = 2
+  );
+
   IQuadProfilerTag = interface(IUnknown)
   ['{0CBAA03E-B54B-4351-B9EF-EEC46D99FCFB}']
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
+    procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
 
   IQuadProfiler = interface(IUnknown)
@@ -582,6 +590,7 @@ type
     procedure BeginTick; stdcall;
     procedure EndTick; stdcall;
     procedure SetGUID(const AGUID: TGUID); stdcall;
+    procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
 
   TCreateQuadDevice    = function(out QuadDevice: IQuadDevice): HResult; stdcall;

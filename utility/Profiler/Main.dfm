@@ -36,7 +36,7 @@ object fMain: TfMain
     Left = 0
     Top = 33
     Width = 794
-    Height = 458
+    Height = 447
     VertScrollBar.Tracking = True
     Align = alClient
     HeaderFont.Charset = DEFAULT_CHARSET
@@ -45,17 +45,39 @@ object fMain: TfMain
     HeaderFont.Name = 'Tahoma'
     HeaderFont.Style = []
     TabOrder = 1
-    ExplicitHeight = 215
+    ExplicitHeight = 458
   end
-  object ListBox1: TListBox
+  object lvLog: TListView
     Left = 0
-    Top = 491
+    Top = 480
     Width = 794
-    Height = 81
+    Height = 92
     Align = alBottom
-    ItemHeight = 13
+    Columns = <
+      item
+        Width = 20
+      end
+      item
+        Caption = 'Time'
+        Width = 70
+      end
+      item
+        AutoSize = True
+        Caption = 'Message'
+      end
+      item
+        Caption = 'Profiler'
+        Width = 100
+      end
+      item
+        Caption = 'Tag'
+        Width = 100
+      end>
+    ColumnClick = False
+    RowSelect = True
     TabOrder = 2
-    ExplicitTop = 248
+    ViewStyle = vsReport
+    OnCreateItemClass = lvLogCreateItemClass
   end
   object Timer: TTimer
     Interval = 16
