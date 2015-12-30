@@ -27,7 +27,7 @@ library qei;
 uses
   Windows,
   SysUtils,
-  QuadEngine in '..\headers\QuadEngine.pas',
+  QuadEngine in '..\headers\Delphi_FPC\QuadEngine.pas',
   QuadEngine.Device in '..\QuadEngine.Device.pas',
   QuadEngine.Font in '..\QuadEngine.Font.pas',
   QuadEngine.GBuffer in '..\QuadEngine.GBuffer.pas',  
@@ -41,8 +41,8 @@ uses
   QuadEngine.Window in '..\QuadEngine.Window.pas',
   QuadEngine.Input in '..\QuadEngine.Input.pas',
   QuadEngine.Camera in '..\QuadEngine.Camera.pas',
-  QuadEngine.Color in '..\headers\QuadEngine.Color.pas',
-  Vec2f in '..\headers\Vec2f.pas',
+  QuadEngine.Color in '..\headers\Delphi_FPC\QuadEngine.Color.pas',
+  Vec2f in '..\headers\Delphi_FPC\Vec2f.pas',
   BeRoDDS in '..\BeRoDDS.pas'
   {$IFDEF DEBUG}
 , QuadEngine.Profiler in '..\QuadEngine.Profiler.pas',

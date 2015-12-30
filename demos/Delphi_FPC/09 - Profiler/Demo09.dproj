@@ -3,7 +3,7 @@
         <ProjectGuid>{054ED277-DF08-4134-8139-9D1A8269BAA5}</ProjectGuid>
         <ProjectVersion>15.4</ProjectVersion>
         <FrameworkType>None</FrameworkType>
-        <MainSource>Demo09.dpr</MainSource>
+        <MainSource>demo09.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -35,7 +35,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <SanitizedProjectName>Demo09</SanitizedProjectName>
+        <SanitizedProjectName>demo09</SanitizedProjectName>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
@@ -61,7 +61,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DCC_UnitSearchPath>..\..\..\headers;..;..\..\..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\headers\Delphi_FPC;..;..\..\..\plugins\QuadFX\headers;..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Manifest_File>None</Manifest_File>
         <DCC_ExeOutput>..\..\..\Bin</DCC_ExeOutput>
         <DCC_DcuOutput>dcu</DCC_DcuOutput>
@@ -95,7 +95,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">Demo09.dpr</Source>
+                    <Source Name="MainSource">demo09.dpr</Source>
                 </Source>
             </Delphi.Personality>
             <Platforms>

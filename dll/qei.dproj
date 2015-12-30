@@ -97,11 +97,13 @@
         <DCC_GenerateStackFrames>True</DCC_GenerateStackFrames>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_ExeOutput>..\bin</DCC_ExeOutput>
+        <DCC_DcuOutput>dcu</DCC_DcuOutput>
+        <DCC_UnitSearchPath>..\headers\Delphi_FPC;..\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <Manifest_File>None</Manifest_File>
         <VerInfo_Build>0</VerInfo_Build>
     </PropertyGroup>
     <ProjectExtensions>
@@ -141,10 +143,7 @@
                     <VersionInfoKeys Name="ProductVersion">0.4.0</VersionInfoKeys>
                     <VersionInfoKeys Name="Comments">http://quad-engine.com</VersionInfoKeys>
                 </VersionInfoKeys>
-                <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                </Excluded_Packages>
+                <Excluded_Packages/>
                 <Source>
                     <Source Name="MainSource">qei.dpr</Source>
                 </Source>
@@ -466,7 +465,7 @@
         <RcCompile Include="Shaders.rc">
             <Form>Shaders.res</Form>
         </RcCompile>
-        <DCCReference Include="..\headers\QuadEngine.pas"/>
+        <DCCReference Include="..\headers\Delphi_FPC\QuadEngine.pas"/>
         <DCCReference Include="..\QuadEngine.Device.pas"/>
         <DCCReference Include="..\QuadEngine.Font.pas"/>
         <DCCReference Include="..\QuadEngine.GBuffer.pas"/>
@@ -480,8 +479,8 @@
         <DCCReference Include="..\QuadEngine.Window.pas"/>
         <DCCReference Include="..\QuadEngine.Input.pas"/>
         <DCCReference Include="..\QuadEngine.Camera.pas"/>
-        <DCCReference Include="..\headers\QuadEngine.Color.pas"/>
-        <DCCReference Include="..\headers\Vec2f.pas"/>
+        <DCCReference Include="..\headers\Delphi_FPC\QuadEngine.Color.pas"/>
+        <DCCReference Include="..\headers\Delphi_FPC\Vec2f.pas"/>
         <DCCReference Include="..\BeRoDDS.pas">
             <Form>$IFDEF DEBUG</Form>
         </DCCReference>
@@ -506,11 +505,3 @@
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
     <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
 </Project>
-
-<!-- EurekaLog First Line
-[Exception Log]
-EurekaLog Version=7007
-Activate=0
-DeleteMapAfterCompile=0
-Encrypt Password=""
-EurekaLog Last Line -->

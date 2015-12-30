@@ -27,6 +27,9 @@
         <Projects Include="08 - QuadFX plugin\demo08.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="09 - Profiler\Demo09.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -107,14 +110,23 @@
     <Target Name="demo08:Make">
         <MSBuild Projects="08 - QuadFX plugin\demo08.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Demo09">
+        <MSBuild Projects="09 - Profiler\Demo09.dproj"/>
+    </Target>
+    <Target Name="Demo09:Clean">
+        <MSBuild Projects="09 - Profiler\Demo09.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Demo09:Make">
+        <MSBuild Projects="09 - Profiler\Demo09.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="demo01;demo02;demo03;demo04;demo05;demo06;demo07;demo08"/>
+        <CallTarget Targets="demo01;demo02;demo03;demo04;demo05;demo06;demo07;demo08;Demo09"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean;demo05:Clean;demo06:Clean;demo07:Clean;demo08:Clean"/>
+        <CallTarget Targets="demo01:Clean;demo02:Clean;demo03:Clean;demo04:Clean;demo05:Clean;demo06:Clean;demo07:Clean;demo08:Clean;Demo09:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make;demo05:Make;demo06:Make;demo07:Make;demo08:Make"/>
+        <CallTarget Targets="demo01:Make;demo02:Make;demo03:Make;demo04:Make;demo05:Make;demo06:Make;demo07:Make;demo08:Make;Demo09:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

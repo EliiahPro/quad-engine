@@ -1,11 +1,11 @@
-program Demo09;
+program demo09;
 
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$WEAKLINKRTTI ON}
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, Vec2f, System.SysUtils, QuadEngine.Device;
+  QuadEngine, Vec2f, System.SysUtils;
 
 var
   QuadDevice: IQuadDevice;
@@ -59,12 +59,12 @@ begin
 end;
 
 begin
-  Device := TQuadDevice.Create; QuadDevice := Device;
-  //QuadDevice := CreateQuadDevice;
+  //Device := TQuadDevice.Create; QuadDevice := Device;
+  QuadDevice := CreateQuadDevice;
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.CreateInput(QuadInput);
   QuadWindow.SetOnClose(OnClose);
-  QuadWindow.SetCaption('Quad-engine profiler demo');
+  QuadWindow.SetCaption('QuadEngine - Demo09 - Profiler');
   QuadWindow.SetSize(160, 90);
 
   QuadDevice.CreateRender(QuadRender);
