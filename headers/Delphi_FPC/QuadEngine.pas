@@ -25,15 +25,15 @@ interface
 {$INCLUDE QuadEngine.inc}
 
 uses
-  Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f, Classes;
+  Windows, {$IFDEF USED3D} Direct3D9,{$ENDIF} Vec2f;
 
 const
   LibraryName: PChar = 'qei.dll';
   CreateQuadDeviceProcName: PChar = 'CreateQuadDevice';
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
   QuadEngineMinorVersion: Byte = 0;
-  QuadEngineMajorVersion: Byte = 7;
-  QuadEngineReleaseVersion: Byte = 2;
+  QuadEngineMajorVersion: Byte = 8;
+  QuadEngineReleaseVersion: Byte = 0;
 
 type
   ///<summary>Blending mode types.</summary>

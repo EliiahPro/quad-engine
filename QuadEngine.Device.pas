@@ -19,7 +19,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Direct3D9, QuadEngine.Utils, QuadEngine.Log, Vec2f,
-  QuadEngine.Render, System.IniFiles, QuadEngine, Classes, QuadEngine.Profiler;
+  QuadEngine.Render, System.IniFiles, QuadEngine, Classes;
 
 const
   QuadVersion: PWideChar = 'Quad Engine v0.8.0 (Diamond)';
@@ -46,9 +46,6 @@ type
     FRenderTargets: TList;
     FCursorSurface: IDirect3DSurface9;
     FIsHardwareCursor: Boolean;
-    {$IFDEF DEBUG}
-    //FProfiler: TQuadProfiler;
-    {$ENDIF}
     procedure SetLastResultCode(const Value: HResult);
     procedure GetErrorTextByCode(AErrorCode: HResult);
     procedure SetOnErrorFunction(const Value: TOnErrorFunction);
@@ -99,7 +96,8 @@ implementation
 
 uses
   System.SysUtils, QuadEngine.Font, QuadEngine.Shader, QuadEngine.Timer,
-  QuadEngine.Texture, QuadEngine.Camera, QuadEngine.Window, QuadEngine.GBuffer;
+  QuadEngine.Texture, QuadEngine.Camera, QuadEngine.Window, QuadEngine.GBuffer,
+  QuadEngine.Profiler;
 
 { TQuadDevice }
 
@@ -159,18 +157,10 @@ begin
 
   FRenderTargets := TList.Create;
   FIsHardwareCursor := False;
-  {$IFDEF DEBUG}
-  //FProfiler := TQuadProfiler.Create('Quad Device');
-  {$ENDIF}
 end;
 
 destructor TQuadDevice.Destroy;
 begin
-  {$IFDEF DEBUG}
-  //if Assigned(FProfiler) then
-  // FProfiler.Free;
-  {$ENDIF}
-
   FRenderTargets.Free;
   FD3D := nil;
 end;
@@ -387,7 +377,7 @@ begin
     Result := E_FAIL;
 end;
 
-function TQuadDevice.CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult; stdcall;
+function TQuadDevice.CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult;
 begin
   pQuadProfiler := TQuadProfiler.Create(AName);
   if Assigned(pQuadProfiler) then

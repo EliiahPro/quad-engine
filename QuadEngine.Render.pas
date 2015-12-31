@@ -267,14 +267,16 @@ begin
   if FIsAutoCalculateTBN then
   begin
     {$IFDEF DEBUG}
-    //FProfiler.BeginCount(atCalculateTBN);
+    if Assigned(FProfilerTags.CalculateTBN) then
+      FProfilerTags.CalculateTBN.BeginCount;
     {$ENDIF}
     CalcTBN(FQuad[0].tangent, FQuad[0].binormal, FQuad[0].normal, FQuad[0], FQuad[1], FQuad[2]);
     CalcTBN(FQuad[1].tangent, FQuad[1].binormal, FQuad[1].normal, FQuad[0], FQuad[1], FQuad[2]);
     CalcTBN(FQuad[2].tangent, FQuad[2].binormal, FQuad[2].normal, FQuad[0], FQuad[1], FQuad[2]);
     CalcTBN(FQuad[5].tangent, FQuad[5].binormal, FQuad[5].normal, FQuad[0], FQuad[1], FQuad[2]);
     {$IFDEF DEBUG}
-    //FProfiler.EndCount(atCalculateTBN);
+    if Assigned(FProfilerTags.CalculateTBN) then
+      FProfilerTags.CalculateTBN.EndCount;
     {$ENDIF}
   end;
 

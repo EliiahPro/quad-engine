@@ -66,7 +66,7 @@ begin
   if FMaxValue < ACall.Value then
     FMaxValue := ACall.Value;
 
-  SubItems[0] := FValues.Count.ToString;
+  SubItems[0] := IntToStr(FValues.Count);
 end;
 
 function TDiagramLine.GetValue(Index: Integer): TAPICall;

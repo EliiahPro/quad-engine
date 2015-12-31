@@ -115,12 +115,12 @@ begin
   Refresh;
 end;
 
-procedure TQuadProfilerTag.BeginCount; stdcall;
+procedure TQuadProfilerTag.BeginCount;
 begin
   QueryPerformanceCounter(FCurrentAPICallStartTime);
 end;
 
-procedure TQuadProfilerTag.EndCount; stdcall;
+procedure TQuadProfilerTag.EndCount;
 var
   Counter: Int64;
   Value: Double;
@@ -147,7 +147,7 @@ begin
   FCurrentAPICall.MinValue := MaxDouble;
 end;
 
-function TQuadProfilerTag.GetName: PWideChar; stdcall;
+function TQuadProfilerTag.GetName: PWideChar;
 begin
   Result := PWideChar(FName);
 end;
@@ -162,7 +162,7 @@ begin
   FOnSendMessage := AOnSendMessage;
 end;
 
-procedure TQuadProfilerTag.SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
+procedure TQuadProfilerTag.SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage);
 begin
   if Assigned(FOnSendMessage) then
     FOnSendMessage(Self, AMessage, AMessageType);
@@ -170,7 +170,7 @@ end;
 
 { TQuadProfiler }
 
-function TQuadProfiler.CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
+function TQuadProfiler.CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult;
 var
   Tag: TQuadProfilerTag;
 begin
@@ -199,7 +199,6 @@ begin
   finally
     ini.Free;
   end;
-
 end;
 
 constructor TQuadProfiler.Create(AName: PWideChar);
@@ -217,7 +216,7 @@ begin
     SetAdress(PAnsiChar(FServerAdress), FServerPort);
 end;
 
-procedure TQuadProfiler.SetAdress(AAdress: PAnsiChar; APort: Word = 17788); stdcall;
+procedure TQuadProfiler.SetAdress(AAdress: PAnsiChar; APort: Word = 17788);
 begin
   if not Assigned(FSocket) then
     FSocket := TQuadSocket.Create;
@@ -231,14 +230,18 @@ end;
 
 destructor TQuadProfiler.Destroy;
 begin
-  FSocket.Free;
-  FMessages.Free;
-  FMemory.Free;
-  FTags.Free;
+  if Assigned(FSocket) then
+    FSocket.Free;
+  if Assigned(FMessages) then
+    FMessages.Free;
+  if Assigned(FMemory) then
+    FMemory.Free;
+  if Assigned(FTags) then
+    FTags.Free;
   inherited;
 end;
 
-procedure TQuadProfiler.SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
+procedure TQuadProfiler.SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage);
 begin
   AddMessage(nil, AMessage, AMessageType);
 end;
@@ -354,8 +357,6 @@ begin
 
       FSocket.Send(FSocketAddress);
     end;
-
-
   end;
 end;
 

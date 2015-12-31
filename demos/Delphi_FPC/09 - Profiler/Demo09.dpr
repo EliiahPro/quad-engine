@@ -5,7 +5,7 @@ program demo09;
 {$SETPEFLAGS 1}
 
 uses
-  QuadEngine, Vec2f, System.SysUtils, QuadEngine.Device;
+  QuadEngine, Vec2f, System.SysUtils;
 
 var
   QuadDevice: IQuadDevice;
@@ -54,7 +54,6 @@ end;
 procedure OnClose; stdcall;
 begin
   QuadTimer.SetState(False);
-  sleep(500);
 
   QuadProfiler := nil;
 
@@ -65,15 +64,13 @@ begin
 end;
 
 begin
-  ReportMemoryLeaksOnShutdown := True;
-
-  Device := TQuadDevice.Create; QuadDevice := Device;
- // QuadDevice := CreateQuadDevice;
+  QuadDevice := CreateQuadDevice;
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.CreateInput(QuadInput);
   QuadWindow.SetOnClose(OnClose);
   QuadWindow.SetCaption('QuadEngine - Demo09 - Profiler');
-  QuadWindow.SetSize(160, 90);
+  QuadWindow.SetSize(800, 600);
+  QuadWindow.SetPosition(100, 100);
 
   QuadDevice.CreateRender(QuadRender);
   QuadRender.Initialize(QuadWindow.GetHandle, 800, 600, False);

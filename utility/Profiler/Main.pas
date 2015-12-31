@@ -11,7 +11,6 @@ type
   TfMain = class(TForm)
     Panel1: TPanel;
     PanelGroup: TCategoryPanelGroup;
-    Button1: TButton;
     Timer: TTimer;
     lvLog: TListView;
     procedure FormCreate(Sender: TObject);
@@ -43,8 +42,10 @@ end;
 
 procedure TfMain.FormDestroy(Sender: TObject);
 begin
-  FSocket.Free;
-  FMemory.Free;
+  if Assigned(FSocket) then
+    FSocket.Free;
+  if Assigned(FMemory) then
+    FMemory.Free;
 end;
 
 procedure TfMain.lvLogCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);

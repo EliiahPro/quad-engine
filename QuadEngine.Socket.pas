@@ -3,9 +3,8 @@ unit QuadEngine.Socket;
 interface
 
 uses
-  Winapi.Windows, System.SyncObjs, winapi.WinSock, System.Classes, System.SysUtils, System.Generics.Collections, System.DateUtils;
-
-
+  Winapi.Windows, System.SyncObjs, winapi.WinSock, System.Classes,
+  System.SysUtils, System.Generics.Collections, System.DateUtils;
 
 const
   BUFFER_SIZE = 1024;
@@ -144,10 +143,10 @@ begin
     CloseSocket(FSocket);
 
   FSocket := socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  if FSocket = -1 then
+  if FSocket = SOCKET_ERROR then
     Exit;
 
-  if ioctlsocket(FSocket, FIONBIO, flag) = -1 then
+  if ioctlsocket(FSocket, FIONBIO, flag) = SOCKET_ERROR then
     Exit;
 
   setsockopt(FSocket, SOL_SOCKET, SO_BROADCAST, PAnsiChar(@i), SizeOf(i));
@@ -156,7 +155,7 @@ begin
   Address.sin_port        := htons(APort);
   Address.sin_family      := AF_INET;
 
-  if bind(FSocket, Address, sizeof(Address)) = -1 then
+  if bind(FSocket, Address, sizeof(Address)) = SOCKET_ERROR then
   begin
     CloseSocket(FSocket);
     FSocket := -1;

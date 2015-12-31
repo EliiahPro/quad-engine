@@ -1,7 +1,7 @@
 object fMain: TfMain
   Left = 0
   Top = 0
-  Caption = 'fMain'
+  Caption = 'QuadProfiler (beta)'
   ClientHeight = 572
   ClientWidth = 794
   Color = clBtnFace
@@ -23,14 +23,6 @@ object fMain: TfMain
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    object Button1: TButton
-      Left = 392
-      Top = 5
-      Width = 75
-      Height = 25
-      Caption = 'Button1'
-      TabOrder = 0
-    end
   end
   object PanelGroup: TCategoryPanelGroup
     Left = 0
@@ -45,7 +37,6 @@ object fMain: TfMain
     HeaderFont.Name = 'Tahoma'
     HeaderFont.Style = []
     TabOrder = 1
-    ExplicitHeight = 458
   end
   object lvLog: TListView
     Left = 0
