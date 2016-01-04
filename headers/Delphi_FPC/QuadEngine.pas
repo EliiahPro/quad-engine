@@ -406,6 +406,7 @@ type
     /// <param name="ATextureFilename">Filename of texture file.</param>
     /// <param name="AUVFilename">Filename of additional font data file.</param>
     procedure LoadFromFile(ATextureFilename, AUVFilename : PWideChar); stdcall;
+    procedure LoadFromStream(AStream: Pointer; AStreamSize: Integer; ATexture: IQuadTexture); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;

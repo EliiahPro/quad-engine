@@ -17,7 +17,7 @@ interface
 
 uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Texture, QuadEngine.Log,
-  QuadEngine, QuadEngine.Shader, Vec2f;
+  QuadEngine, QuadEngine.Shader, Vec2f, System.Classes;
 
 type
   TLetterUV = record
@@ -62,9 +62,8 @@ type
     FKerning: Single;
     FSpacing: Single;
     FLetters: array[Word] of TLetterUV;
-    FLog: TQuadLog;
-    FQuadRender: TQuadRender;
-    FTexture: TQuadTexture;
+    FQuadRender: IQuadRender;
+    FTexture: IQuadTexture;
     FWidth: Word;
     FFontHeight: Integer;
 
@@ -85,6 +84,7 @@ type
     function GetSpacing: Single; stdcall;
     procedure SetSpacing(AValue: Single); stdcall;
     procedure LoadFromFile(ATextureFilename, AUVFilename: PWideChar); stdcall;
+    procedure LoadFromStream(AStream: Pointer; AStreamSize: Integer; ATexture: IQuadTexture); stdcall;
     procedure SetSmartColor(AColorChar: WideChar; AColor: Cardinal); stdcall;
     procedure SetDistanceFieldParams(const ADistanceFieldParams: TDistanceFieldParams); stdcall;
     procedure SetIsSmartColoring(Value: Boolean); stdcall;
@@ -108,7 +108,6 @@ var
   i: Integer;
 begin
   FQuadRender := AQuadRender;
-  FLog := Device.Log;
   FKerning := 0.0;
 
   for i := 0 to High(FColors) do
@@ -140,9 +139,6 @@ begin
   FDistanceFieldParams.Params[1] := 0.0;
   FDistanceFieldParams.SetColor($FFFFFFFF);
 
-  TQuadShader.DistanceField.BindVariableToPS(0, @FDistanceFieldParams.Edges, 1);
-  TQuadShader.DistanceField.BindVariableToPS(1, @FDistanceFieldParams.OuterColor, 1);
-  TQuadShader.DistanceField.BindVariableToPS(2, @FDistanceFieldParams.Params, 1);
 end;
 
 //=============================================================================
@@ -150,8 +146,8 @@ end;
 //=============================================================================
 destructor TQuadFont.destroy;
 begin
-  FTexture.Free;
-
+  FTexture := nil;
+  FQuadRender := nil;
   inherited;
 end;
 
@@ -190,9 +186,35 @@ end;
 //=============================================================================
 // Load font from file and calculate UV for texture
 //=============================================================================
+
 procedure TQuadFont.LoadFromFile(ATextureFilename, aUVFilename: PWideChar);
 var
-  f: File;
+  Stream: TMemoryStream;
+begin
+  Device.Log.Write(PWideChar('Loading font "' + aUVFilename + '"'));
+
+  if not FileExists(aUVFilename) then
+  begin
+    Device.Log.Write(PWideChar('Texture "' + aUVFilename + '" not found!'));
+    Exit;
+  end;
+
+  if GetIsLoaded then
+    FTexture := nil;
+
+  Device.CreateAndLoadTexture(0, ATextureFilename, FTexture);
+
+  Stream := TMemoryStream.Create;
+  Stream.LoadFromFile(aUVFilename);
+
+  LoadFromStream(Stream.Memory, Stream.Size, FTexture);
+
+  FreeAndNil(Stream);
+end;
+
+procedure TQuadFont.LoadFromStream(AStream: Pointer; AStreamSize: Integer; ATexture: IQuadTexture);
+var
+  Stream: TMemoryStream;
   TempUV: TLetterUV;
   c: array[0..3] of Char;
   Size: Cardinal;
@@ -201,39 +223,44 @@ var
   FQuadChars2: array of TQuadChar;
   CharSize: Cardinal;
 begin
-  if GetIsLoaded then
-    FTexture.Free;
+  if not Assigned(ATexture) then
+  begin
+    Device.Log.Write(PWideChar('Texture to font not found!'));
+    Exit;
+  end;
 
-  FTexture := TQuadTexture.Create(FQuadRender);
-  FTexture.LoadFromFile(0, ATextureFilename);
+  Device.Log.Write(PWideChar('Loading font from stream'));
 
-  FWidth := FTexture.TextureWidth;
-  FHeight := FTexture.TextureHeight;
+  FWidth := ATexture.GetTextureWidth;
+  FHeight := ATexture.GetTextureHeight;
+  FTexture := ATexture;
 
-  AssignFile(f, String(AUVFilename));
-  Reset(f, 1);
-  BlockRead(f, c, 8);
-  Seek(f, 0);
+  Stream := TMemoryStream.Create;
+  Stream.WriteBuffer((AStream)^, AStreamSize);
+  Stream.Seek(0, soBeginning);
+
+  Stream.Read(c, 8);
+  Stream.Seek(0, soBeginning);
 
   if c = 'QEF2' then
   begin  // v2.0
     FIsDistanceField := True;
     // header
-    BlockRead(f, c, 8);
-    BlockRead(f, Size, 4);
-    BlockRead(f, FQuadFontHeader, Size);
+    Stream.Read(c, 8);
+    Stream.Read(Size, 4);
+    Stream.Read(FQuadFontHeader, Size);
 
     // chardata
-    BlockRead(f, c, 8);
-    BlockRead(f, CharSize, 4);
+    Stream.Read(c, 8);
+    Stream.Read(CharSize, 4);
     SetLength(FQuadChars2, CharSize div SizeOf(TQuadChar));
-    BlockRead(f, FQuadChars2[0], CharSize);
+    Stream.Read(FQuadChars2[0], CharSize);
 
     // kerning pairs
-    BlockRead(f, c, 8);
-    BlockRead(f, Size, 4);
+    Stream.Read(c, 8);
+    Stream.Read(Size, 4);
     SetLength(FKerningPairs, Size div SizeOf(tagKERNINGPAIR));
-    BlockRead(f, FKerningPairs[0], Size);
+    Stream.Read(FKerningPairs[0], Size);
 
     FFontHeight := 0;
     for i := 0 to CharSize div SizeOf(TQuadChar) do
@@ -245,17 +272,18 @@ begin
       FQuadChars[idx] := FQuadChars2[i];
     end;
     FQuadChars[CHAR_SPACE] := FQuadChars2[CHAR_SPACE];
-    Device.Log.Write(PWideChar(String('Font loaded. Char count: ' + IntToStr(CharSize div SizeOf(TQuadChar)))));
+    Device.Log.Write(PWideChar(String('Distance field font loaded. Char count: ' + IntToStr(CharSize div SizeOf(TQuadChar)))));
   end
   else
   begin  // v1.0
     FIsDistanceField := False;
+    i := 0;
     repeat
-      BlockRead(f, TempUV.id, SizeOf(Word));
-      BlockRead(f, TempUV.X, SizeOf(Word));
-      BlockRead(f, TempUV.Y, Sizeof(Word));
-      BlockRead(f, TempUV.W, SizeOf(Byte));
-      BlockRead(f, TempUV.H, SizeOf(Byte));
+      Stream.Read(TempUV.id, SizeOf(Word));
+      Stream.Read(TempUV.X, SizeOf(Word));
+      Stream.Read(TempUV.Y, Sizeof(Word));
+      Stream.Read(TempUV.W, SizeOf(Byte));
+      Stream.Read(TempUV.H, SizeOf(Byte));
 
       TempUV.U1 := TempUV.X / FWidth;
       TempUV.V1 := TempUV.Y / FHeight;
@@ -264,10 +292,12 @@ begin
       TempUV.V2 := (TempUV.Y + TempUV.H) / FHeight;
 
       FLetters[TempUV.id] := TempUV;
-    until FilePos(f) >= FileSize(f);
+      Inc(i);
+    until Stream.Position >= Stream.Size;
+    Device.Log.Write(PWideChar(String('Font loaded. Char count: ' + IntToStr(i))));
   end;
 
-  CloseFile(f);
+  FreeAndNil(Stream);
 end;
 
 //=============================================================================
@@ -353,6 +383,13 @@ begin
     sx := 0;
   end;
 
+  if FIsDistanceField then
+  begin
+    TQuadShader.DistanceField.BindVariableToPS(0, @FDistanceFieldParams.Edges, 1);
+    TQuadShader.DistanceField.BindVariableToPS(1, @FDistanceFieldParams.OuterColor, 1);
+    TQuadShader.DistanceField.BindVariableToPS(2, @FDistanceFieldParams.Params, 1);
+  end;
+
   startX := sx;
   ypos := Position.Y;
 
@@ -364,7 +401,10 @@ begin
       if (AText[i]='!') then
         CurrentColor := AColor
       else
-        CurrentColor := FColors[Ord(AText[i])] or CurrentAlpha;
+        if (AText[i]='#') then
+
+        else
+          CurrentColor := FColors[Ord(AText[i])] or CurrentAlpha;
       Inc(i);
     end;
 
@@ -391,10 +431,10 @@ begin
                    (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
                    TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
                    (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
-                   TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth,
-                   FQuadChars[l].YPos / FTexture.TextureHeight),
-                   TVec2f.Create(FQuadChars[l].Xpos / FTexture.TextureWidth + FQuadChars[l].SizeX / FTexture.TextureWidth,
-                   FQuadChars[l].YPos / FTexture.TextureHeight + FQuadChars[l].SizeY / FTexture.TextureHeight),
+                   TVec2f.Create(FQuadChars[l].Xpos / FWidth,
+                   FQuadChars[l].YPos / FHeight),
+                   TVec2f.Create(FQuadChars[l].Xpos / FWidth + FQuadChars[l].SizeX / FWidth,
+                   FQuadChars[l].YPos / FHeight + FQuadChars[l].SizeY / FHeight),
                    CurrentColor);
 
         sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
