@@ -38,7 +38,7 @@ type
     FActiveMonitorIndex: Byte;
     FD3D: IDirect3D9;
     FLastResultCode: HResult;
-    FLog: TQuadLog;
+    FLog: IQuadLog;
     FRender: TQuadRender;
     FLastErrorText: PWideChar;
     FOnErrorFunction: TOnErrorFunction;
@@ -83,7 +83,7 @@ type
     property ActiveMonitorIndex: Byte read FActiveMonitorIndex;
     property D3D: IDirect3D9 read FD3D;
     property LastResultCode: HRESULT read FLastResultCode write SetLastResultCode;
-    property Log: TQuadLog read FLog;
+    property Log: IQuadLog read FLog;
     property OnError: TOnErrorFunction read FOnErrorFunction write SetOnErrorFunction;
     property Render: TQuadRender read FRender;
     property IsHardwareCursor: Boolean read FIsHardwareCursor;
@@ -123,7 +123,7 @@ begin
 
   {$REGION 'Aspect Ratio'}
   if FLog <> nil then
-  FLog.Write(PChar('Monitors Count: ' + IntToStr(MonitorsCount)));
+    FLog.Write(PChar('Monitors Count: ' + IntToStr(MonitorsCount)));
 
   for i := 0 to MonitorsCount - 1 do
   begin
@@ -161,6 +161,7 @@ end;
 
 destructor TQuadDevice.Destroy;
 begin
+  FLog := nil;
   FRenderTargets.Free;
   FD3D := nil;
 end;
@@ -316,7 +317,6 @@ begin
     FLog := TQuadLog.Create;
 
   pQuadLog := FLog;
-  pQuadLog._AddRef;
 
   if Assigned(pQuadLog) then
     Result := S_OK
