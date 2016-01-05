@@ -1,0 +1,4 @@
+Background RCDATA "data/Background.png"
+Background1 RCDATA "data/Background1.png"
+FontConsoleTex RCDATA "data/console.bmp"
+FontConsole RCDATA "data/console.qef"
