@@ -20,8 +20,7 @@ uses
   QuadFX.FileLoader.JSON in '..\QuadFX.FileLoader.JSON.pas',
   QuadFX.EffectEmitterProxy in '..\QuadFX.EffectEmitterProxy.pas',
   QuadFX.LayerEffectProxy in '..\QuadFX.LayerEffectProxy.pas',
-  QuadFX.FileLoader.XML in '..\QuadFX.FileLoader.XML.pas',
-  QuadFX.Profiler in '..\QuadFX.Profiler.pas';
+  QuadFX.FileLoader.XML in '..\QuadFX.FileLoader.XML.pas';
 
 {$R *.res}
 

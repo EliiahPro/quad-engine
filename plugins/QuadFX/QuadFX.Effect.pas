@@ -71,7 +71,7 @@ type
 implementation
 
 uses
-  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils{, QuadFX.Profiler};
+  QuadFX.Layer, QuadFX.EffectParams, QuadEngine.Utils;
 
 constructor TQuadFXEffect.Create(AParams: IQuadFXEffectParams; APosition: TVec2f; AAngle, AScale: Single);
 var
@@ -163,8 +163,6 @@ begin
   if FIsNeedToKill or not FEffectEmitterProxy.Enabled then
     Exit;
 
-  //Profiler.BeginCount(ptEffects);
-
   FLife := FLife + ADelta;
 
   Ac := False;
@@ -183,7 +181,6 @@ begin
     FAction := False;
     FIsNeedToKill := True;
   end;
-  //Profiler.EndCount(ptEffects);
 end;
 
 procedure TQuadFXEffect.Draw; stdcall;

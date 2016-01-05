@@ -97,7 +97,7 @@ type
 implementation
 
 uses
-  QuadFX.Effect, QuadFX.Manager{, QuadFX.Profiler};
+  QuadFX.Effect, QuadFX.Manager;
 
 function TQuadFXEmitter.GetPosition: TVec2f;
 var
@@ -154,26 +154,11 @@ begin
 end;
 
 procedure TQuadFXEmitter.Restart;
-{var
-  P: PQuadFXParticle;
-  V: PVertexes;  }
 begin
   RestartParams;
   FTime := 0;
 
   FParticlesCount := 0;
-             {
-  P := FParticles;
-  while Cardinal(P) < Cardinal(FParticlesLastRecord) do
-  begin
-    Dec(FParticlesLastRecord);
-    Dec(FVertexesLastRecord);
-    V := P.Vertexes;
-    P^ := FParticlesLastRecord^;
-    V^ := FParticlesLastRecord.Vertexes^;
-    P.Vertexes := V;
-    Dec(FParticlesCount);
-  end;  }
 end;
 
 function TQuadFXEmitter.GetStartVelocity: Single;
@@ -211,8 +196,6 @@ begin
 end;
 
 constructor TQuadFXEmitter.Create(AEffectEmitterProxy: IEffectEmitterProxy; AParams: PQuadFXEmitterParams);
-//var
-//  i: Integer;
 begin
   FEffectEmitterProxy := AEffectEmitterProxy;
   FIsNeedToKill := False;
@@ -227,18 +210,7 @@ begin
 
   SetLength(FParticles, AParams.MaxParticles);
   SetLength(FVertexes, AParams.MaxParticles);
-            {
-  FParticleSize := SizeOf(TQuadFXParticle);
-  FParticlesSize := FParticleSize * AParams.MaxParticles;
-  GetMem(FParticles, FParticlesSize);
 
-  FVertexeSize := SizeOf(TVertexes);
-  FVertexesSize := FVertexeSize * AParams.MaxParticles;
-  GetMem(FVertexes, FVertexesSize);
-
-  FVertexesLastRecord := FVertexes;
-  FParticlesLastRecord := FParticles;
-                                 }
   FParams := AParams;
   RestartParams;
   FTime := 0;
@@ -295,8 +267,6 @@ destructor TQuadFXEmitter.Destroy;
 begin
   SetLength(FParticles, 0);
   SetLength(FVertexes, 0);
-  //FreeMem(FParticles);
-  //FreeMem(FVertexes);
   FEffectEmitterProxy := nil;
   inherited;
 end;
@@ -306,16 +276,11 @@ var
   P: PQuadFXParticle;
   EmissionTime: Double;
   LifePos: Single;
-  //V: PVertexes;
   i: Integer;
 begin
   if not Assigned(FParams) and FEnabled and FEffectEmitterProxy.GetEnabled then
     Exit;
 
-  //Profiler.BeginCount(ptEmitters);
-
-  //Profiler.BeginCount(ptParticles);
-  //P := FParticles;
 
   if FIsDebug then
   begin
@@ -323,14 +288,12 @@ begin
     FRect.RightBottom := FRect.LeftTop;
   end;
 
- // while Cardinal(P) < Cardinal(FParticlesLastRecord) do
   for i := FParticlesCount - 1 downto 0 do
   begin
     P := @FParticles[i];
     if (P.Time + ADelta <= P.LifeTime) then
     begin
       ParticleUpdate(P, ADelta);
-   //   Inc(P);
     end
     else
     begin
@@ -338,16 +301,8 @@ begin
       FParticles[i] := FParticles[FParticlesCount];
       FVertexes[i] := FVertexes[FParticlesCount];
       FParticles[i].Vertexes := @FVertexes[i];
-      {
-      Dec(FParticlesLastRecord);
-      Dec(FVertexesLastRecord);
-      V := P.Vertexes;
-      P^ := FParticlesLastRecord^;
-      V^ := FParticlesLastRecord.Vertexes^;
-      P.Vertexes := V;      }
     end;
   end;
-  //Profiler.EndCount(ptParticles);
 
   FTime := FTime + ADelta;
 
@@ -367,12 +322,9 @@ begin
 
   if (FEmission.Value > 0) and FEmissionEnabled and FEffectEmitterProxy.GetEmissionEnabled then
   begin
-    //Profiler.BeginCount(ptParticlesParams);
     FLife := (FTime - FParams.BeginTime) / (FParams.EndTime - FParams.BeginTime);
     UpdateParams;
-    //Profiler.EndCount(ptParticlesParams);
 
-    //Profiler.BeginCount(ptParticlesAdd);
     LifePos := FLife + FLastTime;
     EmissionTime := 1 / FEmission.Value;
     FLastTime := FLastTime + ADelta;
@@ -386,10 +338,7 @@ begin
       FLastTime := FLastTime - EmissionTime;
       ParticleUpdate(Add, FLastTime);
     end;
-    //Profiler.EndCount(ptParticlesAdd);
   end;
-
-  //Profiler.EndCount(ptEmitters);
 end;
 
 procedure TQuadFXEmitter.ParticleUpdate(AParticle: PQuadFXParticle; ADelta: Double);
@@ -404,32 +353,20 @@ var
   CPrev, CNext: PQuadFXColorDiagramValue;
   SinRad, CosRad: Single;
   p1, p2: TVec2f;
-  //ProfilerCounter: Int64;
 begin
-  //Profiler.BeginCount(ptParticlesUpdate);
   AParticle.Time := AParticle.Time + ADelta;
   AParticle.Life := AParticle.Time / AParticle.LifeTime;
 
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
   // Velocity
   AParticle.Velocity.Update(AParticle.Life);
   AParticle.Position := AParticle.Position + (AParticle.StartVelocity * AParticle.Velocity.Value * FEffectEmitterProxy.GetScale + FEffectEmitterProxy.GetGravitation * AParticle.Gravitation.Value)  * ADelta;
-
-  //Profiler.EndPerformanceCounter('  Velocity', ProfilerCounter);
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
 
   // Spin
   AParticle.Spin.Update(AParticle.Life);
   AParticle.Angle := RealMod(AParticle.StartAngle * AParticle.Spin.Value, 360);
 
-  //Profiler.EndPerformanceCounter('  Spin', ProfilerCounter);
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
-
   // Scale
   AParticle.Scale.Update(AParticle.Life);
-
-  //Profiler.EndPerformanceCounter('  Scale', ProfilerCounter);
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
 
   // Color
   if AParticle.Life > FParams.Particle.Color.List[0].Life then
@@ -453,19 +390,10 @@ begin
   else
     AParticle.Color := FParams.Particle.Color.List[0].Value;
 
-  //Profiler.EndPerformanceCounter('  Color', ProfilerCounter);
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
-
   // Opacity
   AParticle.Opacity.Update(AParticle.Life);
   AParticle.Color.A := AParticle.Opacity.Value;
 
-  //Profiler.EndCount(ptParticlesUpdate);
-
-  //Profiler.EndPerformanceCounter('  Opacity', ProfilerCounter);
-  //ProfilerCounter := Profiler.StartPerformanceCounter;
-
-  //Profiler.BeginCount(ptParticlesVertexes);
   if AParticle.Angle <> 0 then
   begin
     FastSinCos(AParticle.Angle * (pi / 180), SinRad, CosRad);
@@ -544,8 +472,6 @@ begin
   AParticle.Vertexes[3] := AParticle.Vertexes[2];
   AParticle.Vertexes[4] := AParticle.Vertexes[1];
 
-  //Profiler.EndCount(ptParticlesVertexes);
-  //Profiler.EndPerformanceCounter('  Vertexes', ProfilerCounter);
   {
   if FIsDebug then
   begin
@@ -568,8 +494,6 @@ var
 begin
   Result := @FParticles[FParticlesCount];
   Result.Vertexes := @FVertexes[FParticlesCount];
- { Inc(FParticlesLastRecord);
-  Inc(FVertexesLastRecord);}
   Inc(FParticlesCount);
 
   Result.TextureIndex := Random(FParams.TextureCount);
@@ -664,9 +588,7 @@ begin
       Manager.QuadRender.SetTexture(i, nil);
   end;
 
-  //Profiler.BeginCount(ptDraw);
   Manager.QuadRender.AddTrianglesToBuffer(FVertexes[0], 6 * FParticlesCount);
-  //Profiler.EndCount(ptDraw);
   Manager.QuadRender.FlushBuffer;
 end;
 
