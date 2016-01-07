@@ -35,6 +35,7 @@ type
     property Params: PQuadFXParams read FParams;
   public
     constructor CreateEx(AOwner: TComponent; AParams: PQuadFXParams);
+    procedure SetLife(ALife: Double); override;
   end;
 
   TListItemValue = class(TCustomParamListItem)
@@ -391,6 +392,11 @@ begin
     end;
     LoadDiagram(dDiagram.Lines[1], @FParams.Diagram[1]);
   end;
+end;
+
+procedure TFrameValue.SetLife(ALife: Double);
+begin
+  dDiagram.Position := ALife * 100;
 end;
 
 procedure TFrameValue.dDiagramPointAdd(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);

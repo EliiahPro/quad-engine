@@ -153,7 +153,6 @@ type
     procedure SetEffectSelected(Value: TEffectNode);
     procedure ClearAll;
   public
-    procedure OnPreviewRenderDraw(ADelay: TRenderPanelDelayType);
     procedure OnPaint;
     property RenderPreview: TRenderPanel read FRenderPreview;
     property EffectSelected: TEffectNode read FEffectSelected write SetEffectSelected;
@@ -287,46 +286,6 @@ begin
  // TFileAssociationContoller.Create.Show;
 end;
 
-procedure TfMain.OnPreviewRenderDraw(ADelay: TRenderPanelDelayType);
-var
-  i: Integer;
-  Effect: TEffectNode;
-  Angle: Single;
-begin
-  try
-    case ADelay of
-      rpdtRefresh:
-        begin
-          case FDelay of
-            dOpen: ;
-            dExit: Exit;
-            dChange:
-              begin
-              //
-
-              end;
-          end;
-          FDelay := dNone;
-        end;
-      rpdtDraw:
-        if Assigned(FEffectSelected) then
-        begin
-          Effect := FEffectSelected;
-          Angle := DegToRad(dGravDirection.GetValue(0));
-
-          FRenderPreview.Layer.SetGravitation(TVec2f.Create(Cos(Angle), Sin(Angle)) * dGravForce.GetValue(0));
-
-          for i := 0 to FEffectSelected.Count - 1 do
-            if Assigned(FRenderPreview) and (Effect.Item[i] is TEmitterNode) and (i < Effect.Count) then
-              FRenderPreview.EmitterDraw(TEmitterNode(Effect.Item[i]), tvEffectList.Selected = Effect.Item[i]);
-        end;
-    end;
-  except
-    on E : Exception do
-      ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
-  end;
-end;
-
 procedure TfMain.OnPaint;
 var
   Effect: TEffectNode;
@@ -336,6 +295,8 @@ begin
 
   Effect := FEffectSelected;
   EffectTimeLine.Position := TQuadFXEffect(Effect.Effect).Life;
+  if Assigned(FParamFrame) and Assigned(FEmitterSelected) and Assigned(FEmitterSelected.Emitter) then
+    FParamFrame.SetLife(TQuadFXEmitter(FEmitterSelected.Emitter).Life);
   dGravDirection.Position := EffectTimeLine.Position - Trunc(EffectTimeLine.Position / 5) * 5;
   dGravForce.Position := dGravDirection.Position;
 end;
@@ -348,8 +309,6 @@ begin
     Exit;
 
   try
-    FRenderPreview.Action := False;
-    FRenderPreview.WaitTimer;
     FEffectSelected := nil;
     FEmitterSelected := nil;
     FRenderPreview.SetEffect(nil, nil, nil);
@@ -359,7 +318,6 @@ begin
     Node := tvEffectList.Items.AddChild(nil, 'New pack') as TPackNode;
     Node.LoadFromFile(OpenDialog.FileName);
     Node.Expanded := True;
-    FRenderPreview.Action := True;
   except
     on E : Exception do
       ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
@@ -378,7 +336,6 @@ end;
 procedure TfMain.ClearAll;
 begin
   try
-    FRenderPreview.Action := False;
     FRenderPreview.WaitTimer;
     tvEffectList.Items.Clear;
   //  fTextures.Clear;
@@ -386,7 +343,6 @@ begin
     FEmitterSelected := nil;
     FRenderPreview.SetEffect(nil, nil, nil);
     SetParamFrame(nil);
-    FRenderPreview.Action := true;
   except
     on E : Exception do
       ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
@@ -647,8 +603,6 @@ end;
 
 procedure TfMain.tvEffectListChange(Sender: TObject; Node: TTreeNode);
 begin
-  FRenderPreview.Action := False;
-
   if Assigned(tvEffectList.Selected) then
   begin
     if tvEffectList.Selected is TPackNode then
@@ -664,7 +618,7 @@ begin
       begin
         EffectSelected := TEffectNode(tvEffectList.Selected);
         FEmitterSelected := nil;
-        FRenderPreview.SetEffect(FEffectSelected.EffectParams, FEffectSelected.Effect, nil);
+        FRenderPreview.SetEffect(FEffectSelected.EffectParams, FEffectSelected, nil);
         SetParamFrame(nil);
       end
       else
@@ -672,7 +626,7 @@ begin
         begin
           FEmitterSelected := TEmitterNode(tvEffectList.Selected);
           EffectSelected := TEffectNode(FEmitterSelected.Parent);
-          FRenderPreview.SetEffect(FEffectSelected.EffectParams, EffectSelected.Effect, FEmitterSelected.Emitter);
+          FRenderPreview.SetEffect(FEffectSelected.EffectParams, EffectSelected, FEmitterSelected.Emitter);
           SetParamFrame(lvParamList.Selected);
         end
         else
@@ -688,7 +642,6 @@ begin
   end;
 
   lvParamList.Enabled := Assigned(FEmitterSelected);
-  FRenderPreview.Action := True;
 
   aCreateEffect.Enabled := Assigned(FPackSelected);
   aCreateEmitter.Enabled := Assigned(FEffectSelected);
@@ -748,6 +701,12 @@ begin
     if (X > RectEye.Left) and (X < RectEye.Right) and (Y > RectEye.Top) and (Y < RectEye.Bottom) then
     begin
       EmitterNode.Visible := not EmitterNode.Visible;
+      EnterCriticalSection(TRenderPanel.CriticalSection);
+      try
+        FRenderPreview.RefreshEmittersList;
+      finally
+       LeaveCriticalSection(TRenderPanel.CriticalSection);
+      end;
       tvEffectList.Repaint;
     end;
   end;
@@ -785,7 +744,7 @@ begin
     cbRegistredStyles.Items.Add(TStyleManager.StyleNames[i]);
   cbRegistredStyles.ItemIndex := 1;  }
 
-  FRenderPreview := TRenderPanel.CreateEx(pPreview, OnPreviewRenderDraw, OnPaint);
+  FRenderPreview := TRenderPanel.CreateEx(pPreview, OnPaint);
   //FRenderPreview.SetBackgroundImage('Data\Background.png');
 
   FMax := 0;

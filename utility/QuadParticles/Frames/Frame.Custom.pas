@@ -16,6 +16,7 @@ type
   public
     constructor CreateEx(AOwner: TComponent; AParams: PQuadFXEmitterParams);
     procedure LoadDiagram(ALine: TQuadDiagramLineItem; APoints: PQuadFXSingleDiagram);
+    procedure SetLife(ALife: Double); virtual;
     property Params: PQuadFXEmitterParams read FParams;
   end;
 
@@ -58,6 +59,11 @@ begin
   inherited Create(AOwner);
   FParams := AParams;
   Align := alClient;
+end;
+
+procedure TCustomParamFrame.SetLife(ALife: Double);
+begin
+
 end;
 
 function TCustomParamFrame.ValueConvert(AValue: Single): Single;

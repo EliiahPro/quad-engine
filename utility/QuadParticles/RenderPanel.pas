@@ -23,8 +23,20 @@ type
     btColor = 3
   );
 
-  TRenderPanelEvent = procedure(ADelay: TRenderPanelDelayType) of object;
+  TEmitterItem = record
+    Emitter: IQuadFXEmitter;
+    Selected: Boolean;
+  end;
+
   TRenderPanelPaintEvent = procedure of object;
+
+  TTimerThread = class(TThread)
+  private
+    FOwner: TRenderPanel;
+    procedure RepaintComponents;
+  protected
+    procedure Execute; override;
+  end;
 
   TRenderPanel = class(TPanel)
   private
@@ -32,6 +44,7 @@ type
     FMouseOldPosition: TVec2f;
     FMouseCameraDrag: Boolean;
 
+    FThread: TTimerThread;
     FPlay: Boolean;
     FLoop: Boolean;
     FAction: Boolean;
@@ -40,9 +53,7 @@ type
     FIsShapeDraw: Boolean;
     FQuadDevice: IQuadDevice;
     FQuadRender: IQuadRender;
-    FQuadTimer: IQuadTimer;
     FQuadCamera: IQuadCamera;
-    FOnDelay: TRenderPanelEvent;
     FOnPaint: TRenderPanelPaintEvent;
 
     FBackground: array[0..2] of IQuadTexture;
@@ -54,10 +65,10 @@ type
     FQuadFXLayer: IQuadFXLayer;
     FQuadFXEffectParams: IQuadFXEffectParams;
     FEffect: IQuadFXEffect;
-    FEmitter: IQuadFXEmitter;
+    FEmitters: TList<TEmitterItem>;
+    FEffectNode: TEffectNode;
 
     FBackgroundType: TBackgroundType;
-    class var FRenderPanel: TRenderPanel;
     procedure QuadDestroy;
     procedure QuadInit;
   protected
@@ -69,28 +80,27 @@ type
     procedure EffectProcess(const Delta: Double);
     procedure SetAction(const Value: Boolean);
     procedure MouseWheel(var AMessage: TWMMouseWheel); message WM_MOUSEWHEEL;
-    procedure ReDraw;
   public
     class var CriticalSection: TRTLCriticalSection;
-    class procedure Process(ADelta: Double);
-    constructor CreateEx(AOwner: TWinControl; AOnDelay: TRenderPanelEvent = nil; AOnPaint: TRenderPanelPaintEvent = nil);
+    constructor CreateEx(AOwner: TWinControl; AOnPaint: TRenderPanelPaintEvent = nil);
     destructor Destroy; override;
     procedure ReInit(AOwner: TWinControl);
     procedure Play;
     procedure Pause;
     procedure Restart(ATime: Single = 0);
     procedure Loop(AEnable: Boolean);
+    procedure RepaintComponents;
 
-    procedure OnRenderProcess(ADelta: Double);
+    procedure Timer(ADelta: Double); stdcall;
     procedure SetBackgroundImage(AFileName: String);
     procedure SetBackgroundColor(AColor: TQuadColor);
     procedure SetBackgroundType(AType: TBackgroundType);
-    procedure SetEffect(AEffectParams: IQuadFXEffectParams; AEffect: IQuadFXEffect; AEmitter: IQuadFXEmitter);
+    procedure SetEffect(AEffectParams: IQuadFXEffectParams; AEffect: TEffectNode; AEmitter: IQuadFXEmitter);
     function LoadTexture(AFileName: String; ARegister: Byte = 0): IQuadTexture;
-    procedure EmitterDraw(AEmitterNode: TEmitterNode; AShapeDraw: Boolean = false);
+    procedure RefreshEmittersList;
+    procedure EmitterDraw(const AEmitter: TEmitterItem); stdcall;
     procedure WaitTimer;
  //  AEmitter: IQPEmitter; AParticles: PQPParticle; AParticleCount: Integer; AShapeDraw: Boolean = false);
-    class function NewInstance: TObject; override;
     property QuadRender: IQuadRender read FQuadRender;
     property QuadDevice : IQuadDevice read FQuadDevice;
     property Action: Boolean read FAction write SetAction;
@@ -109,9 +119,50 @@ uses
   QuadFX.EffectParams, Math, QuadFX.Emitter, Textures,
   Vcl.Dialogs, QuadFX.Effect, Main;
 
-procedure RenderUpdateAll(out delta: Double; Id: Cardinal); stdcall;
+{ TTimerThread }
+
+procedure TTimerThread.RepaintComponents;
 begin
-  TRenderPanel.Process(delta);
+  FOwner.RepaintComponents;
+end;
+
+procedure TTimerThread.Execute;
+var
+  Timestart, TimeEnd : Int64;
+  TimeSpentOnTick: Double;
+  Interval: Integer;
+  PerformanceFrequency: Int64;
+  PerformanceLastCounter: Int64;
+begin
+  inherited;
+
+  QueryPerformanceFrequency(PerformanceFrequency);
+  QueryPerformanceCounter(PerformanceLastCounter);
+  TimeSpentOnTick := 0;
+  Interval := 16;
+
+  while not Terminated do
+  begin
+    if (Interval - Round(TimeSpentOnTick * 1000)) > 0 then
+      WaitForSingleObject(Self.Handle, Interval - Round(TimeSpentOnTick * 1000));
+
+    QueryPerformanceCounter(TimeStart);
+    FOwner.Timer((TimeStart - PerformanceLastCounter) / PerformanceFrequency);
+    Synchronize(RepaintComponents);
+    PerformanceLastCounter := TimeStart;
+
+    QueryPerformanceCounter(TimeEnd);
+    TimeSpentOnTick := (TimeEnd - TimeStart) / PerformanceFrequency;
+  end;
+
+end;
+
+{ TRenderPanel }
+
+procedure TRenderPanel.RepaintComponents;
+begin
+  if Assigned(FOnPaint) then
+    FOnPaint;
 end;
 
 procedure TRenderPanel.SetAction(const Value: Boolean);
@@ -176,11 +227,38 @@ begin
   FMouseOldPosition := FMousePosition;
 end;
 
-procedure TRenderPanel.SetEffect(AEffectParams: IQuadFXEffectParams; AEffect: IQuadFXEffect; AEmitter: IQuadFXEmitter);
+procedure TRenderPanel.RefreshEmittersList;
+var
+  i: Integer;
+  Item: TEmitterItem;
 begin
-  FQuadFXEffectParams := AEffectParams;
-  FEffect := AEffect;
-  FEmitter := AEmitter;
+  FEmitters.Clear;
+  if Assigned(FEffectNode) then
+    for i := 0 to FEffectNode.Count - 1 do
+      if (FEffectNode[i] is TEmitterNode) then
+      begin
+        Item.Emitter := TEmitterNode(FEffectNode[i]).Emitter;
+        Item.Selected := FEffectNode[i].Selected;
+        FEmitters.Add(Item);
+      end;
+end;
+
+procedure TRenderPanel.SetEffect(AEffectParams: IQuadFXEffectParams; AEffect: TEffectNode; AEmitter: IQuadFXEmitter);
+begin
+  EnterCriticalSection(CriticalSection);
+  try
+    FQuadFXEffectParams := AEffectParams;
+    FEffectNode := AEffect;
+    if Assigned(FEffectNode) then
+    begin
+      FEffect := FEffectNode.Effect;
+      RefreshEmittersList;
+    end
+    else
+      FEffect := nil;
+  finally
+    LeaveCriticalSection(CriticalSection);
+  end;
 end;
 
 procedure TRenderPanel.MouseDown(Button: TMouseButton; Shift: TShiftState; X: Integer; Y: Integer);
@@ -224,13 +302,7 @@ begin
     FBackgroundType := btBlack;
 end;
 
-class procedure TRenderPanel.Process(ADelta: Double);
-begin
-  if Assigned(FRenderPanel) then
-    FRenderPanel.OnRenderProcess(ADelta);
-end;
-
-procedure TRenderPanel.OnRenderProcess(ADelta: Double);
+procedure TRenderPanel.Timer(ADelta: Double);
   procedure DrawBackground;
   var
     X, Y, W, H: Integer;
@@ -268,30 +340,34 @@ procedure TRenderPanel.OnRenderProcess(ADelta: Double);
       FQuadRender.Rectangle(TVec2f.Create(-10, -10), TVec2f.Create(Width + 10, Height + 10), FBackgroundColor);
     end;
   end;
+var
+  i: Integer;
 begin
   EnterCriticalSection(CriticalSection);
   try
-    if FAction and Assigned(FQuadTimer) and Assigned(FQuadRender) then
-    begin
-      if Assigned(FOnDelay) then
-        FOnDelay(rpdtRefresh);
 
+    if FAction and Assigned(FThread) and Assigned(FQuadRender) then
+    begin
       FQuadRender.BeginRender;
       FQuadRender.Clear(0);
       DrawBackground;
       FQuadCamera.Enable;
 
       EffectProcess(ADelta);
-      if Assigned(FOnDelay) then
-        FOnDelay(rpdtDraw);
+      //if Assigned(FOnDelay) then
+      //  FOnDelay(rpdtDraw);
       //EffectDraw;
+      if Assigned(FEffectNode) then
+        for i := 0 to FEmitters.Count - 1 do
+          EmitterDraw(FEmitters[i]);
 
       FQuadCamera.Disable;
+
       if FIsFPS then
       begin
         FQuadRender.SetBlendMode(qbmSrcAlpha);
-        FFont.TextOut(TVec2f.Create(8, 5), 1, PWideChar(format('FPS: %f', [FQuadTimer.GetFPS])));
-        FFont.TextOut(TVec2f.Create(8, 18), 1, PWideChar(format('CPU: %f', [FQuadTimer.GetCPUload])));
+        //FFont.TextOut(TVec2f.Create(8, 5), 1, PWideChar(format('FPS: %f', [FQuadTimer.GetFPS])));
+        //FFont.TextOut(TVec2f.Create(8, 18), 1, PWideChar(format('CPU: %f', [FQuadTimer.GetCPUload])));
       end;
 
       FQuadRender.EndRender;
@@ -310,16 +386,8 @@ begin
   finally
     LeaveCriticalSection(CriticalSection);
 
-    fMain.ListBox1.Items.Insert(0, 'Draw End');
+   // fMain.ListBox1.Items.Insert(0, 'Draw End');
   end;
-  if Assigned(FOnPaint) then
-    ReDraw;
-end;
-
-procedure TRenderPanel.ReDraw;
-begin
-  if Assigned(FOnPaint) then
-    FOnPaint;
 end;
 
 procedure TRenderPanel.Paint;
@@ -327,7 +395,7 @@ begin
 //  inherited;
 end;
 
-constructor TRenderPanel.CreateEx(AOwner: TWinControl; AOnDelay: TRenderPanelEvent = nil; AOnPaint: TRenderPanelPaintEvent = nil);
+constructor TRenderPanel.CreateEx(AOwner: TWinControl; AOnPaint: TRenderPanelPaintEvent = nil);
 begin
   inherited Create(AOwner);
   FZoom := 1;
@@ -335,17 +403,33 @@ begin
   FAction := True;
   FIsFPS := True;
   FIsShapeDraw := True;
-  FOnDelay := AOnDelay;
   FOnPaint := AOnPaint;
   Align := alClient;
   QuadInit;
   FLoop := True;
   FPlay := True;
+  FEmitters := TList<TEmitterItem>.Create;
+
+  FThread := TTimerThread.Create(True);
+  FThread.FOwner := Self;
+  FThread.Priority := tpNormal;
+  FThread.Resume;
 end;
 
 destructor TRenderPanel.Destroy;
 begin
-  QuadDestroy;
+  EnterCriticalSection(CriticalSection);
+  try
+    FThread.Terminate;
+    repeat
+      WaitForSingleObject(0, 10);
+    until FThread.Terminated;
+    FThread.Free;
+    FEmitters.Free;
+    QuadDestroy;
+  finally
+    LeaveCriticalSection(CriticalSection);
+  end;
   inherited;
 end;
 
@@ -361,10 +445,8 @@ begin
   Action := False;
   WaitTimer;
 
-  if Assigned(FQuadTimer) then
-    FQuadTimer.SetState(False);
+  FThread.Terminate;
 
-  FQuadTimer := nil;
   FBackground[0] := nil;
   FBackground[1] := nil;
   FBackground[2] := nil;
@@ -450,10 +532,10 @@ begin
   FQPLayer.CreateEffect(FQuadFXEffectParams, TVec2f.Zero, FEffect);   }
   //FQPLayer.SetOnDraw(EmitterDraw);
 
-  FQuadDevice.CreateTimer(FQuadTimer);
-  FQuadTimer.SetInterval(16);
-  FQuadTimer.SetCallBack(RenderUpdateAll);
-  FQuadTimer.SetState(True);
+  FThread := TTimerThread.Create(True);
+  FThread.FOwner := Self;
+  FThread.FreeOnTerminate := True;
+  FThread.Priority := tpNormal;
 end;
 
 procedure TRenderPanel.Resize;
@@ -473,21 +555,14 @@ begin
   FQuadDevice.CreateAndLoadTexture(ARegister, PWideChar(AFileName), Result);
 end;
 
-class function TRenderPanel.NewInstance: TObject;
-begin
-  if FRenderPanel = nil then
-    FRenderPanel := TRenderPanel(inherited NewInstance);
-
-  Result := FRenderPanel;
-end;
-
 procedure TRenderPanel.EffectProcess(const Delta: Double);
 begin
   if FPlay and Assigned(FEffect) then
     FEffect.Update(Delta);
 end;
 
-procedure TRenderPanel.EmitterDraw(AEmitterNode: TEmitterNode; AShapeDraw: Boolean = false);
+procedure TRenderPanel.EmitterDraw(const AEmitter: TEmitterItem);
+
   procedure DrawLine(const APointA, APointB: TVec2f; AColor: Cardinal = $FFFF0000; AWidth: Single = 1);
   begin
     FQuadRender.DrawQuadLine(APointA, APointB, AWidth, AWidth, AColor, AColor);
@@ -558,15 +633,15 @@ var
   Emitter: TQuadFXEmitter;
   Speed: Single;
 begin
-  if not Assigned(AEmitterNode) or not AEmitterNode.Visible or not Assigned(AEmitterNode.Emitter) then
+  if not Assigned(AEmitter.Emitter) then
     Exit;
-  Emitter := TQuadFXEmitter(AEmitterNode.Emitter);
+
+  Emitter := TQuadFXEmitter(AEmitter.Emitter);
 
   Emitter.Draw;
 
   FQuadRender.SetBlendMode(qbmSrcAlpha);
-
-  AParams := AEmitterNode.EmitterParams;
+  AEmitter.Emitter.GetEmitterParams(AParams);
   if not Assigned(AParams) then
     Exit;
 
@@ -580,7 +655,7 @@ begin
       FFont.TextOut(TVec2f.Create(150, 8), 1, PWideChar('Action: False'));
   end;
 
-  if FEmitter = AEmitterNode.Emitter then
+  if AEmitter.Selected then
   begin
 
   FFont.TextOut(TVec2f.Create(8, 45), 1, PWideChar(format('Particles: %d', [Emitter.ParticleCount])));
@@ -608,10 +683,11 @@ begin
           }
   end;
   FQuadCamera.Enable;
-  if FIsShapeDraw and AShapeDraw then
+  if FIsShapeDraw and AEmitter.Selected then
   begin
     case AParams.Shape.ShapeType of
-      qeftPoint: ;
+      qeftPoint:
+        FQuadRender.DrawCircle(Emitter.Position, 2, 0, $FFFF0000);
         //  DrawCircle(AParams.Shape.Position, 5, $FFFF0000);
       qeftLine:
         begin
@@ -621,8 +697,10 @@ begin
         end;
       qeftCircle:
         begin
-          DrawCircle(Emitter.Position, Emitter.Values[0], $FFFF0000);
-          DrawCircle(Emitter.Position, Emitter.Values[1], $FFFF0000);
+          if Emitter.Values[0] <> 0 then
+            DrawCircle(Emitter.Position, Emitter.Values[0], $FFFF0000);
+          if Emitter.Values[1] <> 0 then
+            DrawCircle(Emitter.Position, Emitter.Values[1], $FFFF0000);
         end;
       qeftRect:
         begin
