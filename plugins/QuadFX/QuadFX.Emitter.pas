@@ -281,7 +281,6 @@ begin
   if not Assigned(FParams) and FEnabled and FEffectEmitterProxy.GetEnabled then
     Exit;
 
-
   if FIsDebug then
   begin
     FRect.LeftTop := Position;
@@ -313,7 +312,7 @@ begin
   begin
     if not FParams.IsLoop then
     begin
-      FIsNeedToKill := False;
+      FIsNeedToKill := True;
       Exit;
     end
     else
