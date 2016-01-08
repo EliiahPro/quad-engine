@@ -13,13 +13,6 @@ uses
   FloatSpinEdit, Vcl.ExtDlgs;
 
 type
-  TDelay = (
-    dNone = 0,
-    dOpen = 1,
-    dExit = 2,
-    dChange = 3
-  );
-
   TfMain = class(TForm)
     tvEffectList: TTreeView;
     Panel2: TPanel;
@@ -103,7 +96,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure cbRegistredStylesChange(Sender: TObject);
     procedure pPreviewResize(Sender: TObject);
     procedure lvParamListChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure tbDrawShapeClick(Sender: TObject);
@@ -136,7 +128,6 @@ type
     procedure tbBackgroundImgClick(Sender: TObject);
     procedure aCreatePackExecute(Sender: TObject);
   private
-    FDelay: TDelay;
     FRenderPreview: TRenderPanel;
     FMax: Integer;
     FParamFrame: TCustomParamFrame;
@@ -145,7 +136,6 @@ type
     FEmitterSelected: TEmitterNode;
 
     procedure SetParamFrame(AItem: TListItem);
-    procedure RefreshEffectList;
     procedure ParamsMessage(ACommand: WideString);
     procedure SaveJson(AFileName: String);
     procedure SaveXml(AFileName: String);
@@ -267,9 +257,22 @@ procedure TfMain.FormDestroy(Sender: TObject);
 begin
   try
     ClearAll;
-    EffectTimeLine.Free;
-    tvEffectList.Items.Clear;
     FRenderPreview.Free;
+  except
+    on E : Exception do
+      ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
+  end;
+end;
+
+procedure TfMain.ClearAll;
+begin
+  try
+    tvEffectList.Items.Clear;
+  //  fTextures.Clear;
+    FEffectSelected := nil;
+    FEmitterSelected := nil;
+    FRenderPreview.SetEffect(nil, nil, nil);
+    SetParamFrame(nil);
   except
     on E : Exception do
       ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
@@ -283,6 +286,7 @@ end;
 
 procedure TfMain.FormShow(Sender: TObject);
 begin
+  FRenderPreview.Action := true;
  // TFileAssociationContoller.Create.Show;
 end;
 
@@ -292,7 +296,6 @@ var
 begin
   if not Assigned(FEffectSelected) then
     Exit;
-
   Effect := FEffectSelected;
   EffectTimeLine.Position := TQuadFXEffect(Effect.Effect).Life;
   if Assigned(FParamFrame) and Assigned(FEmitterSelected) and Assigned(FEmitterSelected.Emitter) then
@@ -332,22 +335,6 @@ begin
   Node := tvEffectList.Items.AddChild(nil, 'New pack') as TPackNode;
   Node.Expanded := True;
 end;
-
-procedure TfMain.ClearAll;
-begin
-  try
-    FRenderPreview.WaitTimer;
-    tvEffectList.Items.Clear;
-  //  fTextures.Clear;
-    FEffectSelected := nil;
-    FEmitterSelected := nil;
-    FRenderPreview.SetEffect(nil, nil, nil);
-    SetParamFrame(nil);
-  except
-    on E : Exception do
-      ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
-  end;
-end;
     {
 procedure TfMain.OpenFile(AFileName: String);
 begin
@@ -369,7 +356,6 @@ begin
   ListBox1.Items.Add(Format('SaveQFX: %s;', [AFileName]));
   Mem := TMemoryStream.Create;
   try
-
   {  for i := 0 to tvEffectList.TopItem.Count - 1 do
       if tvEffectList.Items[i] is TEffectNode then
         Mem.WriteStream(TQuadFXEffectParams(TEffectNode(tvEffectList.Items[i]).EffectParams).ToMemory);
@@ -503,7 +489,6 @@ end;
 procedure TfMain.aExitExecute(Sender: TObject);
 begin
   RenderPreview.Action := False;
-  FDelay := dExit;
   sleep(100);
   Close;
 end;
@@ -713,43 +698,17 @@ begin
 
 end;
 
-procedure TfMain.cbRegistredStylesChange(Sender: TObject);
-//var
- // i: Integer;
-begin
- // TStyleManager.TrySetStyle(cbRegistredStyles.Items[cbRegistredStyles.ItemIndex], false);
-{  FRenderPreview.Free;
-
-  Application.ProcessMessages;
-  FRenderPreview := TRenderPanel.Create(pPreview, OnPreviewRenderUpdate);
-  FRenderPreview.SetBackground('Data\Background.png');
-  }
-  //FRenderPreview.ReInit(pPreview);
-end;
-
 procedure TfMain.FormCreate(Sender: TObject);
 var
   i: integer;
- // Effect: IQPEffect;
 begin
-  FDelay := dNone;
   TFileAssociationContoller.Create.SetOnCommandEvent(ParamsMessage);
 
   ListBox1.Clear;
   for i := 0 to ParamCount do
     ListBox1.Items.Add(ParamStr(i));
-
-                              {
-  for i := 0 to Length(TStyleManager.StyleNames) - 1 do
-    cbRegistredStyles.Items.Add(TStyleManager.StyleNames[i]);
-  cbRegistredStyles.ItemIndex := 1;  }
-
   FRenderPreview := TRenderPanel.CreateEx(pPreview, OnPaint);
-  //FRenderPreview.SetBackgroundImage('Data\Background.png');
-
   FMax := 0;
-
-  RefreshEffectList;
 
   TListItemGlobals.CreateEx(lvParamList.Items);
   TListItemPosition.CreateEx(lvParamList.Items);
@@ -770,30 +729,6 @@ begin
   TListItemSpin.CreateEx(lvParamList.Items);
   TListItemOpacity.CreateEx(lvParamList.Items);
   TListItemGravitation.CreateEx(lvParamList.Items);
-end;
-
-procedure TfMain.RefreshEffectList;
-{var
-  i, j: Integer;
-  EffectList: TQPEffectParamsList;
-  Effect: IQPEffectParams;
-  EffectNode: TEffectNode;
-  EmitterNode: TEmitterNode;   }
-begin
- { EffectList := TQPEffectParamsList(FEffectList);
-  tvEffectList.Items.Clear;
-  for i := 0 to FEffectList.EffectCount - 1 do
-  begin
-    Effect := FEffectList.Effects[i];
-
-    EffectNode := TEffectTreeNode.CreateEx(tvEffectList.Items, Effect);
-
-    for j := 0 to Effect.EmitterParamsCount - 1 do
-      EmitterNode := TEmitterTreeNode.CreateEx(tvEffectList.Items, EffectNode, Effect.EmitterParams[j]);
-
-
-  end;
-      }
 end;
 
 end.

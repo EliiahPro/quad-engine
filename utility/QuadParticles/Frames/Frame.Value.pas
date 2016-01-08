@@ -395,8 +395,14 @@ begin
 end;
 
 procedure TFrameValue.SetLife(ALife: Double);
+var
+  Position: Double;
 begin
-  dDiagram.Position := ALife * 100;
+  Position := ALife * 100;
+  if (Position >= 0) or (Position <= 100) then
+    dDiagram.Position := Position
+  else
+    dDiagram.Position := -1;
 end;
 
 procedure TFrameValue.dDiagramPointAdd(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);

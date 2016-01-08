@@ -25,6 +25,7 @@ type
 
   TEmitterItem = record
     Emitter: IQuadFXEmitter;
+    Visible: Boolean;
     Selected: Boolean;
   end;
 
@@ -58,6 +59,8 @@ type
 
     FBackground: array[0..2] of IQuadTexture;
     FBackgroundColor: TQuadColor;
+    FBackgroundPosition: TVec2f;
+    FBackgroundScale: Double;
     FFont: IQuadFont;
     FZoom: Single;
 
@@ -80,6 +83,7 @@ type
     procedure EffectProcess(const Delta: Double);
     procedure SetAction(const Value: Boolean);
     procedure MouseWheel(var AMessage: TWMMouseWheel); message WM_MOUSEWHEEL;
+    function GetPressedKeyButtons: TPressedKeyButtons;
   public
     class var CriticalSection: TRTLCriticalSection;
     constructor CreateEx(AOwner: TWinControl; AOnPaint: TRenderPanelPaintEvent = nil);
@@ -99,8 +103,6 @@ type
     function LoadTexture(AFileName: String; ARegister: Byte = 0): IQuadTexture;
     procedure RefreshEmittersList;
     procedure EmitterDraw(const AEmitter: TEmitterItem); stdcall;
-    procedure WaitTimer;
- //  AEmitter: IQPEmitter; AParticles: PQPParticle; AParticleCount: Integer; AShapeDraw: Boolean = false);
     property QuadRender: IQuadRender read FQuadRender;
     property QuadDevice : IQuadDevice read FQuadDevice;
     property Action: Boolean read FAction write SetAction;
@@ -154,10 +156,30 @@ begin
     QueryPerformanceCounter(TimeEnd);
     TimeSpentOnTick := (TimeEnd - TimeStart) / PerformanceFrequency;
   end;
-
+  FOwner := nil;
 end;
 
 { TRenderPanel }
+
+function TRenderPanel.GetPressedKeyButtons: TPressedKeyButtons;
+var
+  State: TKeyboardState;
+begin
+  GetKeyboardState(State);
+  Result.LShift := ((State[VK_LSHIFT] and 128) <> 0);
+  Result.RShift := ((State[VK_RSHIFT] and 128) <> 0);
+  Result.Shift := Result.LShift or Result.RShift;
+
+  Result.LCtrl := ((State[VK_LCONTROL] and 128) <> 0);
+  Result.RCtrl := ((State[VK_RCONTROL] and 128) <> 0);
+  Result.Ctrl := Result.LCtrl or Result.RCtrl;
+
+  Result.LAlt := ((State[VK_LMENU] and 128) <> 0);
+  Result.RAlt := ((State[VK_RMENU] and 128) <> 0);
+  Result.Alt := Result.LAlt or Result.RAlt;
+
+  Result.None := not (Result.Shift or Result.Ctrl or Result.Alt);
+end;
 
 procedure TRenderPanel.RepaintComponents;
 begin
@@ -174,24 +196,35 @@ begin
 end;
 
 procedure TRenderPanel.MouseWheel(var AMessage: TWMMouseWheel);
+var
+  Keys: TPressedKeyButtons;
 begin
-  if (AMessage.WheelDelta > 0) and (FZoom > 0.1) then
-    FZoom := FZoom * 0.95
+  Keys := GetPressedKeyButtons;
+
+  if Keys.Ctrl then
+  begin
+    if (AMessage.WheelDelta > 0) and (FZoom > 0.1) then
+      FZoom := FZoom * 0.95
+    else
+      if (AMessage.WheelDelta < 0) and (FZoom < 20) then
+        FZoom := FZoom * 1.05;
+  end
   else
-    if (AMessage.WheelDelta < 0) and (FZoom < 20) then
-      FZoom := FZoom * 1.05;
+  begin
+    if (AMessage.WheelDelta > 0) and (FBackgroundScale > 0.1) then
+      FBackgroundScale := FBackgroundScale * 0.95
+    else
+      if (AMessage.WheelDelta < 0) and (FBackgroundScale < 20) then
+        FBackgroundScale := FBackgroundScale * 1.05;
+
+    if (AMessage.WheelDelta > 0) and (FZoom > 0.1) then
+      FZoom := FZoom * 0.95
+    else
+      if (AMessage.WheelDelta < 0) and (FZoom < 20) then
+        FZoom := FZoom * 1.05;
+  end;
 
   FQuadCamera.Scale(FZoom);
-end;
-
-procedure TRenderPanel.WaitTimer;
-begin
-  // Это просто безумие!
-  // Безумие? Это СПАРТА!!!!!
-  FTimerAction := True;
-  FAction := False;
-  while FTimerAction and not Action do
-    Application.ProcessMessages;
 end;
 
 procedure TRenderPanel.Play;
@@ -219,10 +252,21 @@ begin
 end;
 
 procedure TRenderPanel.MouseMove(Shift: TShiftState; X: Integer; Y: Integer);
+var
+  Keys: TPressedKeyButtons;
 begin
   FMousePosition := TVec2f.Create(X, Y);
   if FMouseCameraDrag then
-    FQuadCamera.Translate((FMouseOldPosition - FMousePosition) / FZoom);
+  begin
+    Keys := GetPressedKeyButtons;
+    if Keys.LCtrl then
+      FQuadCamera.Translate((FMouseOldPosition - FMousePosition) / FZoom)
+    else
+    begin
+      FBackgroundPosition := FBackgroundPosition + (FMouseOldPosition - FMousePosition) / FZoom / FBackgroundScale;
+      FQuadCamera.Translate((FMouseOldPosition - FMousePosition) / FZoom);
+    end;
+  end;
 
   FMouseOldPosition := FMousePosition;
 end;
@@ -238,6 +282,7 @@ begin
       if (FEffectNode[i] is TEmitterNode) then
       begin
         Item.Emitter := TEmitterNode(FEffectNode[i]).Emitter;
+        Item.Visible := TEmitterNode(FEffectNode[i]).Visible;
         Item.Selected := FEffectNode[i].Selected;
         FEmitters.Add(Item);
       end;
@@ -303,9 +348,11 @@ begin
 end;
 
 procedure TRenderPanel.Timer(ADelta: Double);
+
   procedure DrawBackground;
   var
-    X, Y, W, H: Integer;
+    X, Y: Integer;
+    Size, Position: TVec2f;
     Cam: TVec2f;
     Tex: IQuadTexture;
     CameraPosition: TVec2f;
@@ -313,24 +360,33 @@ procedure TRenderPanel.Timer(ADelta: Double);
     if not FAction then
       Exit;
 
-    if (FBackgroundType <> btColor) then
+    if FBackgroundType <> btColor then
     begin
       Tex := FBackground[Integer(FBackgroundType)];
       if Assigned(Tex) then
       begin
-        W := Tex.GetSpriteWidth;
-        H := Tex.GetSpriteHeight;
+        Size := TVec2f.Create(Tex.GetSpriteWidth, Tex.GetSpriteHeight) * FBackgroundScale;
         FQuadCamera.GetPosition(CameraPosition);
-        Cam := CameraPosition * FZoom;
-        Cam := TVec2f.Create(
-          Round(Cam.X - Trunc(Cam.X / W) * W),
-          Round(Cam.Y - Trunc(Cam.Y / H) * H)
-        );
+        //Cam := CameraPosition * FZoom * FBackgroundScale;
+        Cam := {CameraPosition + }-TVec2f.Create(
+          CameraPosition.X - (Trunc(CameraPosition.X / Size.X) * Size.X),
+          CameraPosition.Y - (Trunc(CameraPosition.Y / Size.Y) * Size.Y)
+        ) - Size;
         FQuadRender.SetBlendMode(qbmNone);
 
-        for Y := -1 to Height div H + 1 do
-          for X := -1 to Width div W + 1 do
-            Tex.Draw(TVec2f.Create(X * W, Y * H) - Cam);
+        Position := Cam;
+       // FQuadCamera.Enable;
+        for Y := -1 to Height div Round(Size.Y) + 1 do
+        begin
+          for X := -1 to Width div Round(Size.X) + 1 do
+          begin
+            Tex.DrawRot(Position, 0, FBackgroundScale);
+            Position.X := Position.X + Size.X;
+          end;
+          Position.Y := Position.Y + Size.Y;
+          Position.X := Cam.X;
+        end;
+       // FQuadCamera.Disable;
       end
       else
         FQuadRender.Rectangle(TVec2f.Create(-10, -10), TVec2f.Create(Width + 10, Height + 10), $FF464646);
@@ -340,6 +396,7 @@ procedure TRenderPanel.Timer(ADelta: Double);
       FQuadRender.Rectangle(TVec2f.Create(-10, -10), TVec2f.Create(Width + 10, Height + 10), FBackgroundColor);
     end;
   end;
+
 var
   i: Integer;
 begin
@@ -354,12 +411,10 @@ begin
       FQuadCamera.Enable;
 
       EffectProcess(ADelta);
-      //if Assigned(FOnDelay) then
-      //  FOnDelay(rpdtDraw);
-      //EffectDraw;
       if Assigned(FEffectNode) then
         for i := 0 to FEmitters.Count - 1 do
-          EmitterDraw(FEmitters[i]);
+          if FEmitters[i].Visible then
+            EmitterDraw(FEmitters[i]);
 
       FQuadCamera.Disable;
 
@@ -400,7 +455,7 @@ begin
   inherited Create(AOwner);
   FZoom := 1;
   Parent := AOwner;
-  FAction := True;
+  FAction := false;
   FIsFPS := True;
   FIsShapeDraw := True;
   FOnPaint := AOnPaint;
@@ -409,6 +464,8 @@ begin
   FLoop := True;
   FPlay := True;
   FEmitters := TList<TEmitterItem>.Create;
+  FBackgroundPosition := TVec2f.Zero;
+  FBackgroundScale := 1;
 
   FThread := TTimerThread.Create(True);
   FThread.FOwner := Self;
@@ -420,12 +477,6 @@ destructor TRenderPanel.Destroy;
 begin
   EnterCriticalSection(CriticalSection);
   try
-    FThread.Terminate;
-    repeat
-      WaitForSingleObject(0, 10);
-    until FThread.Terminated;
-    FThread.Free;
-    FEmitters.Free;
     QuadDestroy;
   finally
     LeaveCriticalSection(CriticalSection);
@@ -443,10 +494,15 @@ end;
 procedure TRenderPanel.QuadDestroy;
 begin
   Action := False;
-  WaitTimer;
 
   FThread.Terminate;
-
+  repeat
+    WaitForSingleObject(0, 10);
+  until FThread.Terminated;
+  FThread.Terminate;
+  FThread.Free;
+  FEmitters.Free;
+  FThread := nil;
   FBackground[0] := nil;
   FBackground[1] := nil;
   FBackground[2] := nil;
@@ -531,22 +587,21 @@ begin
 
   FQPLayer.CreateEffect(FQuadFXEffectParams, TVec2f.Zero, FEffect);   }
   //FQPLayer.SetOnDraw(EmitterDraw);
-
-  FThread := TTimerThread.Create(True);
-  FThread.FOwner := Self;
-  FThread.FreeOnTerminate := True;
-  FThread.Priority := tpNormal;
 end;
 
 procedure TRenderPanel.Resize;
 begin
   inherited;
-
   if FAction and Assigned(FQuadRender) then
   begin
-    //FQuadRender.ChangeResolution(Width, Height);
+    EnterCriticalSection(CriticalSection);
+    try
+      FQuadRender.ChangeResolution(Width, Height, False);
     //QuadDestroy;
     //QuadInit;
+    finally
+      LeaveCriticalSection(CriticalSection);
+    end;
   end;
 end;
 
