@@ -173,7 +173,7 @@ var
   i: integer;
 begin
   Result := False;
-  if (FActiveCount > 0) or (FSocket <= 0) or (ACount <= 0) then
+  if (FActiveCount = 0) or (FSocket <= 0) or (ACount <= 0) then
     Exit;
 
   if FMemory.Size + ACount < BUFFER_SIZE then
@@ -193,7 +193,7 @@ begin
 
   AMemory.Clear;
   Result := False;
-  if (FActiveCount > 0) or (FSocket <= 0) then
+  if (FActiveCount = 0) or (FSocket <= 0) then
     Exit;
 
   repeat
@@ -258,7 +258,7 @@ end;
 function TQuadSocket.Send(Addr: TSockAddrIn): Integer;
 begin
   Result := 0;
-  if  (FActiveCount > 0) or (FSocket <= 0) or (FMemory.Size <= 0) then
+  if (FActiveCount = 0) or (FSocket <= 0) or (FMemory.Size <= 0) then
     Exit;
   Result := SendTo(FSocket, PByteArray(FMemory.Memory)[0], FMemory.Size, 0, Addr, SizeOf(Addr));
 end;
