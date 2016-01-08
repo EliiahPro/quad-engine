@@ -2,20 +2,20 @@ object fDiagramFrame: TfDiagramFrame
   Left = 0
   Top = 0
   Width = 451
-  Height = 304
+  Height = 305
   Align = alClient
   TabOrder = 0
   object Panel: TPanel
     Left = 169
     Top = 0
     Width = 282
-    Height = 304
+    Height = 305
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object Scroll: TScrollBar
       Left = 0
-      Top = 287
+      Top = 288
       Width = 282
       Height = 17
       Align = alBottom
@@ -27,7 +27,7 @@ object fDiagramFrame: TfDiagramFrame
     Left = 0
     Top = 0
     Width = 169
-    Height = 304
+    Height = 305
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
@@ -35,7 +35,7 @@ object fDiagramFrame: TfDiagramFrame
       Left = 0
       Top = 0
       Width = 169
-      Height = 304
+      Height = 305
       Align = alClient
       Checkboxes = True
       Columns = <

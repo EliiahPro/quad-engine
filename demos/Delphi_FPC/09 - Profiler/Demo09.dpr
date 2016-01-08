@@ -16,6 +16,7 @@ var
 
   QuadProfiler: IQuadProfiler;
   QuadProfilerTag: IQuadProfilerTag;
+  QuadProfilerTag2: IQuadProfilerTag;
 
   Points: array[0..999] of TVec2f;
   PointCount: Integer = 0;
@@ -25,6 +26,8 @@ var
   i: Integer;
   MousePosition: TVec2f;
 begin
+  QuadProfiler.BeginTick;
+  QuadProfilerTag2.BeginCount;
   QuadInput.Update;
   QuadInput.GetMousePosition(MousePosition);
 
@@ -34,7 +37,6 @@ begin
     Inc(PointCount);
   end;
 
-  QuadProfiler.BeginTick;
 
   if QuadInput.IsMouseClick(mbRight) then
     QuadProfiler.SendMessage('Mouse right button press', pmtMessage);
@@ -48,6 +50,7 @@ begin
 
   QuadProfilerTag.EndCount;
   QuadRender.EndRender;
+  QuadProfilerTag2.EndCount;
   QuadProfiler.EndTick;
 end;
 
@@ -78,6 +81,7 @@ begin
   QuadDevice.CreateProfiler('Demo 09 - Profiler', QuadProfiler);
   QuadProfiler.SetGUID(StringToGUID('{AFEBAB39-0D7C-40A4-AA2C-122F3E8950C1}'));
   QuadProfiler.CreateTag('Line 01', QuadProfilerTag);
+  QuadProfiler.CreateTag('Line 02', QuadProfilerTag2);
 
   QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
 

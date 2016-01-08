@@ -28,8 +28,10 @@ type
     procedure ListCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
     procedure ListItemChecked(Sender: TObject; Item: TListItem);
   private
+    FPadding: Integer;
   public
     Diagram: TDiagram;
+    constructor Create(AOwner: TComponent); override;
     procedure Draw(Sender: TObject);
     function FindLineByID(AID: Word): TDiagramLine;
   end;
@@ -64,6 +66,12 @@ end;
 
 { TfDiagramFrame }
 
+constructor TfDiagramFrame.Create(AOwner: TComponent);
+begin
+  inherited;
+  FPadding := 8;
+end;
+
 function TfDiagramFrame.FindLineByID(AID: Word): TDiagramLine;
 var
   i: Integer;
@@ -94,8 +102,13 @@ var
   ScaleY, MaxTime, MaxValue: Double;
   Ruler: Single;
   Graphics: TGPGraphics;
+  FontFormat: TGPStringFormat;
+  Font: TGPFont;
+  FontFamily: TGPFontFamily;
   Pen: TGPPen;
+  Brush: TGPSolidBrush;
   Line: TDiagramLine;
+  Str: WideString;
 begin
   if List.Items.Count = 0 then
     Exit;
@@ -111,7 +124,7 @@ begin
 
   Ruler := Max({Ceil(}MaxValue {* 1000) / 1000}, 0.0001);
   if Ruler > 0 then
-    ScaleY := (Diagram.Height - 10) / Ruler
+    ScaleY := (Diagram.Height - FPadding * 2) / Ruler
   else
     ScaleY := 0;
 
@@ -121,10 +134,34 @@ begin
 
   Graphics := TGPGraphics.Create(memDC);
 
+  FontFamily := TGPFontFamily.Create('Verdana');
+  Font := TGPFont.Create(FontFamily, 10, FontStyleRegular, UnitPixel);
+  FontFormat := TGPStringFormat.Create;
+
+  Brush := TGPSolidBrush.Create($FFCCCCCC);
+
   Graphics.SetSmoothingMode(SmoothingModeAntiAlias);
   Graphics.Clear($FF171717);
   Pen := TGPPen.Create($FF000000, 1);
+
   try
+    Pen.SetColor($FF555555);
+    Graphics.DrawLine(Pen, 0, FPadding, Diagram.Width - 32, FPadding);
+    Pen.SetColor($FF333333);
+    Graphics.DrawLine(Pen, 0, Diagram.Height div 2, Diagram.Width - 32, Diagram.Height div 2);
+    Pen.SetColor($FF666666);
+    Graphics.DrawLine(Pen, 0, Diagram.Height - FPadding, Diagram.Width - 32, Diagram.Height - FPadding);
+    Graphics.DrawLine(Pen, Diagram.Width - 32, FPadding, Diagram.Width - 32, Diagram.Height - FPadding);
+
+    FontFormat.SetAlignment(StringAlignmentNear);
+    Str := Format('%f', [Ruler]);
+    Graphics.DrawString(Str, Length(Str), Font, MakePoint(Diagram.Width - 32.0, FPadding - 6.0), FontFormat, Brush);
+    Str := Format('%f', [Ruler / 2]);
+    Graphics.DrawString(Str, Length(Str), Font, MakePoint(Diagram.Width - 32.0, Diagram.Height div 2 - 6), FontFormat, Brush);
+    Str := '0';
+    Graphics.DrawString(Str, Length(Str), Font, MakePoint(Diagram.Width - 32.0, Diagram.Height - 6 - FPadding), FontFormat, Brush);
+
+
     for i := 0 to List.Items.Count - 1 do
       if List.Items[i].Checked then
       begin
@@ -147,9 +184,13 @@ begin
         end;
         Graphics.DrawLines(Pen, PGPPointF(@Points[0]), Line.ValueCount);
       end;
+
   finally
+    FontFormat.Free;
+    FontFamily.Free;
+    Font.Free;
     Pen.Free;
-    Graphics.free;
+    Graphics.Free;
     BitBlt(Diagram.Canvas.Handle, 0, 0, Diagram.Width, Diagram.Height, memDC, 0, 0, SRCCOPY);
     DeleteObject(hBMP);
   end;
