@@ -46,10 +46,10 @@ type
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
   class var
-    DistanceField: IQuadShader;
-    CircleShader: IQuadShader;
-    MRTShader: IQuadShader;
-    DeferredShading: IQuadShader;
+    DistanceField: TQuadShader;
+    CircleShader: TQuadShader;
+    MRTShader: TQuadShader;
+    DeferredShading: TQuadShader;
   end;
 
 implementation

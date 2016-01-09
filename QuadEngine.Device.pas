@@ -38,7 +38,7 @@ type
     FActiveMonitorIndex: Byte;
     FD3D: IDirect3D9;
     FLastResultCode: HResult;
-    FLog: IQuadLog;
+    FLog: TQuadLog;
     FRender: TQuadRender;
     FLastErrorText: PWideChar;
     FOnErrorFunction: TOnErrorFunction;
@@ -83,7 +83,7 @@ type
     property ActiveMonitorIndex: Byte read FActiveMonitorIndex;
     property D3D: IDirect3D9 read FD3D;
     property LastResultCode: HRESULT read FLastResultCode write SetLastResultCode;
-    property Log: IQuadLog read FLog;
+    property Log: TQuadLog read FLog;
     property OnError: TOnErrorFunction read FOnErrorFunction write SetOnErrorFunction;
     property Render: TQuadRender read FRender;
     property IsHardwareCursor: Boolean read FIsHardwareCursor;
@@ -161,7 +161,6 @@ end;
 
 destructor TQuadDevice.Destroy;
 begin
-  FLog := nil;
   FRenderTargets.Free;
   FD3D := nil;
 end;
@@ -317,6 +316,7 @@ begin
     FLog := TQuadLog.Create;
 
   pQuadLog := FLog;
+  pQuadLog._AddRef;
 
   if Assigned(pQuadLog) then
     Result := S_OK
