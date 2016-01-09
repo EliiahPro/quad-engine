@@ -1710,6 +1710,7 @@ begin
       if Device.Log <> nil then
         Device.Log.Write('Shader model 3.0');
 
+      Shader := TQuadShader.Create(Self);
       Shader.LoadFromResource('DistantFieldVS30', False);
       Shader.LoadFromResource('DistantFieldPS30');
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
