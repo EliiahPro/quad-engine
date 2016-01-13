@@ -17,7 +17,7 @@ interface
 
 uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Texture, QuadEngine.Log,
-  QuadEngine, QuadEngine.Shader, Vec2f, System.Classes;
+  QuadEngine, QuadEngine.Shader, Vec2f, System.Classes, QuadEngine.Color;
 
 type
   TLetterUV = record
@@ -111,25 +111,25 @@ begin
   FKerning := 0.0;
 
   for i := 0 to High(FColors) do
-    FColors[i] := $00FFFFFF;
+    FColors[i] := TQuadColor.White;
 
 //  Now set up predefined colors:
-  SetSmartColor('W', $00FFFFFF);  // white
-  SetSmartColor('Z', $00000000);  // black (zero)
-  SetSmartColor('R', $00FF0000);  // red
-  SetSmartColor('L', $0000FF00);  // lime
-  SetSmartColor('B', $000000FF);  // blue
-  SetSmartColor('M', $00800000);  // maroon
-  SetSmartColor('G', $00008000);  // green
-  SetSmartColor('N', $00000080);  // Navy
-  SetSmartColor('Y', $00FFFF00);  // yellow
-  SetSmartColor('F', $00FF00FF);  // fuchsia
-  SetSmartColor('A', $0000FFFF);  // aqua
-  SetSmartColor('O', $00808000);  // olive
-  SetSmartColor('P', $00800080);  // purple
-  SetSmartColor('T', $00008080);  // teal
-  SetSmartColor('D', $00808080);  // gray (dark)
-  SetSmartColor('S', $00C0C0C0);  // silver
+  SetSmartColor('W', TQuadColor.White);
+  SetSmartColor('Z', TQuadColor.Black);
+  SetSmartColor('R', TQuadColor.Red);
+  SetSmartColor('L', TQuadColor.Lime);
+  SetSmartColor('B', TQuadColor.Blue);
+  SetSmartColor('M', TQuadColor.Maroon);
+  SetSmartColor('G', TQuadColor.Green);
+  SetSmartColor('N', TQuadColor.Navy);
+  SetSmartColor('Y', TQuadColor.Yellow);
+  SetSmartColor('F', TQuadColor.Fuchsia);
+  SetSmartColor('A', TQuadColor.Aqua);
+  SetSmartColor('O', TQuadColor.Olive);
+  SetSmartColor('P', TQuadColor.Purple);
+  SetSmartColor('T', TQuadColor.Teal);
+  SetSmartColor('D', TQuadColor.Gray);
+  SetSmartColor('S', TQuadColor.Silver);
 
   FDistanceFieldParams.Edges[0] := 0.35;
   FDistanceFieldParams.Edges[1] := 0.45;
@@ -137,8 +137,7 @@ begin
   FDistanceFieldParams.Edges[3] := 0.0;
   FDistanceFieldParams.Params[0] := 1.0;
   FDistanceFieldParams.Params[1] := 0.0;
-  FDistanceFieldParams.SetColor($FFFFFFFF);
-
+  FDistanceFieldParams.SetColor(TQuadColor.White);
 end;
 
 //=============================================================================
@@ -359,7 +358,6 @@ var
   startX: Single;
   sx: Single;
   ypos: Single;
-//  width: Single;
   l, c, j: Word;
   CurrentColor: Cardinal;
   CurrentAlpha: Cardinal;
@@ -375,10 +373,7 @@ begin
     qfaLeft   : sx := Position.X;
     qfaRight  : sx := Position.X - Trunc(TextWidth(AText, AScale));
     qfaCenter : sx := Position.X - Trunc(TextWidth(AText, AScale) / 2);
-    qfaJustify: begin
-                  sx := Position.X;
-//                  width := TextWidth(AText, AScale);
-                end;
+    qfaJustify: sx := Position.X;
   else
     sx := 0;
   end;
@@ -388,6 +383,7 @@ begin
     TQuadShader.DistanceField.BindVariableToPS(0, @FDistanceFieldParams.Edges, 1);
     TQuadShader.DistanceField.BindVariableToPS(1, @FDistanceFieldParams.OuterColor, 1);
     TQuadShader.DistanceField.BindVariableToPS(2, @FDistanceFieldParams.Params, 1);
+    TQuadShader.DistanceField.SetShaderState(True);
   end;
 
   startX := sx;
@@ -397,11 +393,11 @@ begin
   repeat
     if (FIsSmartColoring) and (AText[i] = '^') and (AText[i + 1] = '$') then
     begin
-      Inc(I, 2);
-      if (AText[i]='!') then
+      Inc(i, 2);
+      if (AText[i] = '!') then
         CurrentColor := AColor
       else
-        if (AText[i]='#') then
+        if (AText[i] = '#') then
 
         else
           CurrentColor := FColors[Ord(AText[i])] or CurrentAlpha;
@@ -423,7 +419,6 @@ begin
     begin
       if FIsDistanceField then
       begin
-        TQuadShader.DistanceField.SetShaderState(True);
 
         if l <> CHAR_SPACE then
         FTexture.DrawMap(
@@ -438,8 +433,6 @@ begin
                    CurrentColor);
 
         sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
-
-        TQuadShader.DistanceField.SetShaderState(False);
       end
       else
       begin
@@ -452,6 +445,9 @@ begin
 
     Inc(i);
   until AText[i] = #0;
+
+  if FIsDistanceField then
+    TQuadShader.DistanceField.SetShaderState(False);
 end;
 
 //=============================================================================
