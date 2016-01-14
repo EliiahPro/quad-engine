@@ -400,7 +400,7 @@ begin
         if (AText[i] = '#') then
 
         else
-          CurrentColor := FColors[Ord(AText[i])] or CurrentAlpha;
+          CurrentColor := FColors[Ord(AText[i])] and $FFFFFF or CurrentAlpha;
       Inc(i);
     end;
 
