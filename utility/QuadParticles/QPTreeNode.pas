@@ -74,8 +74,8 @@ begin
   CreateGUID(FGUID);
   FFileName := '';
   FFileFormat := ffNone;
-  ImageIndex := -1;
-  SelectedIndex := -1;
+  ImageIndex := 2;
+  SelectedIndex := 2;
 end;
 
 destructor TPackNode.Destroy;

@@ -1,9 +1,9 @@
 object fMain: TfMain
   Left = 200
-  Top = 50
+  Top = 10
   Caption = 'Quad Particles - Alpha'
-  ClientHeight = 800
-  ClientWidth = 1226
+  ClientHeight = 648
+  ClientWidth = 987
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,7 +23,7 @@ object fMain: TfMain
     AlignWithMargins = True
     Left = 288
     Top = 3
-    Height = 722
+    Height = 570
     Beveled = True
     ResizeStyle = rsLine
     ExplicitLeft = 165
@@ -34,7 +34,7 @@ object fMain: TfMain
     AlignWithMargins = True
     Left = 564
     Top = 3
-    Height = 722
+    Height = 570
     Beveled = True
     ResizeStyle = rsLine
     ExplicitLeft = 581
@@ -45,7 +45,7 @@ object fMain: TfMain
     Left = 0
     Top = 0
     Width = 285
-    Height = 728
+    Height = 576
     Align = alLeft
     DoubleBuffered = True
     Font.Charset = DEFAULT_CHARSET
@@ -62,23 +62,28 @@ object fMain: TfMain
     RowSelect = True
     TabOrder = 0
     OnChange = tvEffectListChange
+    OnCollapsed = tvEffectListCollapsed
     OnCreateNodeClass = tvEffectListCreateNodeClass
     OnCustomDrawItem = tvEffectListCustomDrawItem
     OnEdited = tvEffectListEdited
+    OnExpanded = tvEffectListExpanded
     OnMouseDown = tvEffectListMouseDown
+    ExplicitHeight = 728
   end
   object Panel2: TPanel
     Left = 570
     Top = 0
-    Width = 656
-    Height = 728
+    Width = 417
+    Height = 576
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitWidth = 656
+    ExplicitHeight = 728
     object Splitter3: TSplitter
       Left = 0
-      Top = 520
-      Width = 656
+      Top = 368
+      Width = 417
       Height = 3
       Cursor = crVSplit
       Align = alBottom
@@ -89,20 +94,23 @@ object fMain: TfMain
     end
     object Panel3: TPanel
       Left = 0
-      Top = 523
-      Width = 656
+      Top = 371
+      Width = 417
       Height = 205
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
+      ExplicitTop = 523
+      ExplicitWidth = 656
       object Panel5: TPanel
         Left = 0
         Top = 0
-        Width = 656
+        Width = 417
         Height = 38
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 0
+        ExplicitWidth = 656
         object tbTimeLine: TToolBar
           Left = 3
           Top = 0
@@ -138,7 +146,7 @@ object fMain: TfMain
           end
         end
         object TrackBar1: TTrackBar
-          Left = 487
+          Left = 248
           Top = 0
           Width = 169
           Height = 38
@@ -150,12 +158,13 @@ object fMain: TfMain
           TickMarks = tmBoth
           TickStyle = tsManual
           OnChange = TrackBar1Change
+          ExplicitLeft = 487
         end
       end
       object EffectTimeLine: TEffectTimeLine
         Left = 0
         Top = 38
-        Width = 639
+        Width = 400
         Height = 150
         Align = alClient
         HeightLine = 21
@@ -163,31 +172,34 @@ object fMain: TfMain
         Lines = <>
         ScrollBarV = EffectTimeLineScrollV
         ScrollBarH = EffectTimeLineScrollH
+        ExplicitWidth = 639
       end
       object Panel7: TPanel
         Left = 0
         Top = 188
-        Width = 656
+        Width = 417
         Height = 17
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 2
+        ExplicitWidth = 656
         DesignSize = (
-          656
+          417
           17)
         object EffectTimeLineScrollH: TScrollBar
           Left = 128
           Top = 0
-          Width = 511
+          Width = 272
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Max = 1000
           PageSize = 2
           TabOrder = 0
+          ExplicitWidth = 511
         end
       end
       object EffectTimeLineScrollV: TScrollBar
-        Left = 639
+        Left = 400
         Top = 38
         Width = 17
         Height = 150
@@ -195,36 +207,43 @@ object fMain: TfMain
         Kind = sbVertical
         PageSize = 0
         TabOrder = 3
+        ExplicitLeft = 639
       end
     end
     object Panel6: TPanel
-      Left = 652
+      Left = 413
       Top = 0
       Width = 4
-      Height = 497
+      Height = 345
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitLeft = 652
+      ExplicitHeight = 497
     end
     object pPreview: TPanel
       Left = 0
       Top = 0
-      Width = 652
-      Height = 497
+      Width = 413
+      Height = 345
       Align = alClient
       BevelOuter = bvLowered
       TabOrder = 2
       OnResize = pPreviewResize
+      ExplicitWidth = 652
+      ExplicitHeight = 497
     end
     object ToolBar2: TToolBar
       Left = 0
-      Top = 497
-      Width = 656
+      Top = 345
+      Width = 417
       Height = 23
       Align = alBottom
       Caption = 'ToolBar2'
       Images = dmIcomList.ilIcons16
       TabOrder = 3
+      ExplicitTop = 497
+      ExplicitWidth = 656
       object tbDrawShape: TToolButton
         Left = 0
         Top = 0
@@ -276,21 +295,25 @@ object fMain: TfMain
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 781
-    Width = 1226
+    Top = 629
+    Width = 987
     Height = 19
     Panels = <>
+    ExplicitTop = 781
+    ExplicitWidth = 1226
   end
   object pcParams: TPageControl
     Left = 294
     Top = 0
     Width = 267
-    Height = 728
+    Height = 576
     ActivePage = tsProperties
     Align = alLeft
     TabOrder = 3
+    ExplicitHeight = 728
     object tsProperties: TTabSheet
       Caption = 'Properties'
+      ExplicitHeight = 700
       object lvParamList: TListView
         Left = 0
         Top = 35
@@ -341,19 +364,16 @@ object fMain: TfMain
         Left = 0
         Top = 303
         Width = 259
-        Height = 397
+        Height = 245
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 2
+        ExplicitHeight = 397
       end
     end
     object tsGravitation: TTabSheet
       Caption = 'Gravitation'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 0
         Top = 0
@@ -469,12 +489,14 @@ object fMain: TfMain
   end
   object ListBox1: TListBox
     Left = 0
-    Top = 728
-    Width = 1226
+    Top = 576
+    Width = 987
     Height = 53
     Align = alBottom
     ItemHeight = 13
     TabOrder = 4
+    ExplicitTop = 728
+    ExplicitWidth = 1226
   end
   object MainMenu: TMainMenu
     AutoHotkeys = maManual
@@ -678,7 +700,7 @@ object fMain: TfMain
   end
   object ColorDialog: TColorDialog
     Left = 608
-    Top = 388
+    Top = 252
   end
   object OpenPictureDialog: TOpenPictureDialog
     Filter = 
@@ -686,6 +708,6 @@ object fMain: TfMain
       ' Network Graphics (*.png)|*.png|JPEG Image File (*.jpg,*.jpeg)|*' +
       '.jpg;*.jpeg|Bitmaps (*.bmp)|*.bmp'
     Left = 676
-    Top = 392
+    Top = 256
   end
 end

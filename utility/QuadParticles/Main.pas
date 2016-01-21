@@ -128,6 +128,8 @@ type
     procedure tbBackgroundColorClick(Sender: TObject);
     procedure tbBackgroundImgClick(Sender: TObject);
     procedure aCreatePackExecute(Sender: TObject);
+    procedure tvEffectListExpanded(Sender: TObject; Node: TTreeNode);
+    procedure tvEffectListCollapsed(Sender: TObject; Node: TTreeNode);
   private
     FRenderPreview: TRenderPanel;
     FMax: Integer;
@@ -768,6 +770,24 @@ begin
   else
     if Node is TEffectNode then
       TQuadFXEffectParams(TEffectNode(Node).EffectParams).Name := S;
+end;
+
+procedure TfMain.tvEffectListCollapsed(Sender: TObject; Node: TTreeNode);
+begin
+  if Node is TPackNode then
+  begin
+    Node.ImageIndex := 2;
+    Node.SelectedIndex := 2;
+  end;
+end;
+
+procedure TfMain.tvEffectListExpanded(Sender: TObject; Node: TTreeNode);
+begin
+  if Node is TPackNode then
+  begin
+    Node.ImageIndex := 3;
+    Node.SelectedIndex := 3;
+  end;
 end;
 
 procedure TfMain.tvEffectListMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
