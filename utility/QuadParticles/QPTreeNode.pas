@@ -57,6 +57,7 @@ type
     procedure LoadFromFile(AFileName: String);
     procedure SaveToFile(ASaveAs: Boolean = False);
     property GUID: TGUID read FGUID;
+    property FileName: String read FFileName;
   end;
 
 implementation

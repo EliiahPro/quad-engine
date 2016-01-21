@@ -304,13 +304,12 @@ object fMain: TfMain
         Enabled = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -16
+        Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         PopupMenu = pmParamList
         ShowColumnHeaders = False
-        SmallImages = dmIcomList.ilIcons32
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = lvParamListChange
@@ -478,6 +477,7 @@ object fMain: TfMain
     TabOrder = 4
   end
   object MainMenu: TMainMenu
+    AutoHotkeys = maManual
     Images = dmIcomList.ilIcons32
     Left = 26
     Top = 297
@@ -488,6 +488,10 @@ object fMain: TfMain
       end
       object Open1: TMenuItem
         Action = aOpen
+      end
+      object miReopen: TMenuItem
+        Caption = 'Reopen'
+        Enabled = False
       end
       object Save1: TMenuItem
         Action = aSave
