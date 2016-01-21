@@ -182,7 +182,7 @@ destructor TEffectTimeLineCollection.Destroy;
 var
   i: Integer;
 begin
-  for i := Count - 1 to 0 do
+  for i := Count - 1 downto 0 do
     if Assigned(Items[i]) then
       Items[i].Free;
   inherited;
