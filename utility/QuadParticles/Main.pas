@@ -692,6 +692,8 @@ begin
 end;
 
 procedure TfMain.tvEffectListChange(Sender: TObject; Node: TTreeNode);
+var
+  PackNode: TTreeNode;
 begin
   if Assigned(tvEffectList.Selected) then
   begin
@@ -704,6 +706,14 @@ begin
       SetParamFrame(nil);
     end
     else
+    begin
+      PackNode := tvEffectList.Selected;
+      while not (PackNode is TPackNode) and (PackNode.Level > 0) do
+        PackNode := PackNode.Parent;
+
+      if PackNode is TPackNode then
+        FPackSelected := TPackNode(PackNode);
+
       if tvEffectList.Selected is TEffectNode then
       begin
         EffectSelected := TEffectNode(tvEffectList.Selected);
@@ -724,6 +734,7 @@ begin
           FRenderPreview.SetEffect(nil, nil, nil);
           SetParamFrame(nil);
         end;
+    end;
   end
   else
   begin
@@ -761,7 +772,29 @@ begin
 end;
 
 procedure TfMain.tvEffectListEdited(Sender: TObject; Node: TTreeNode; var S: string);
+  function GetFullName(ANode: TTreeNode): WideString;
+  begin
+    Result := ANode.Text;
+    while not (ANode is TPackNode) and (ANode.Level > 1) do
+    begin
+      ANode := ANode.Parent;
+      Result := ANode.Text + '\' + Result;
+    end;
+  end;
+
+  procedure RenameEffect(ANode: TTreeNode);
+  var
+    i: Integer;
+  begin
+    for i := 0 to ANode.Count - 1 do
+      if ANode[i] is TEffectNode then
+        TQuadFXEffectParams(TEffectNode(ANode[i]).EffectParams).Name := GetFullName(ANode[i])
+      else
+        if ANode[i] is TFolderNode then
+          RenameEffect(ANode[i]);
+  end;
 begin
+  Node.Text := S;
   if Node is TEmitterNode then
   begin
     TEmitterNode(Node).EmitterParams.Name := S;
@@ -769,7 +802,10 @@ begin
   end
   else
     if Node is TEffectNode then
-      TQuadFXEffectParams(TEffectNode(Node).EffectParams).Name := S;
+      TQuadFXEffectParams(TEffectNode(Node).EffectParams).Name := GetFullName(Node)
+    else
+      if Node is TFolderNode then
+        RenameEffect(Node);
 end;
 
 procedure TfMain.tvEffectListCollapsed(Sender: TObject; Node: TTreeNode);
@@ -778,7 +814,13 @@ begin
   begin
     Node.ImageIndex := 2;
     Node.SelectedIndex := 2;
-  end;
+  end
+  else
+    if Node is TFolderNode then
+    begin
+      Node.ImageIndex := 4;
+      Node.SelectedIndex := 4;
+    end;
 end;
 
 procedure TfMain.tvEffectListExpanded(Sender: TObject; Node: TTreeNode);
@@ -787,7 +829,13 @@ begin
   begin
     Node.ImageIndex := 3;
     Node.SelectedIndex := 3;
-  end;
+  end
+  else
+    if Node is TFolderNode then
+    begin
+      Node.ImageIndex := 5;
+      Node.SelectedIndex := 5;
+    end;
 end;
 
 procedure TfMain.tvEffectListMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -818,7 +866,6 @@ begin
       tvEffectList.Repaint;
     end;
   end;
-
 end;
 
 procedure TfMain.FormCreate(Sender: TObject);
