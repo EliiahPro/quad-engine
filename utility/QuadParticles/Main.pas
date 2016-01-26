@@ -10,7 +10,7 @@ uses
   Vcl.ImgList, Quad.Diagram, QuadFX.EffectParams, XMLIntf, XMLDoc,
   QuadFX.Effect, Vcl.Themes, Vcl.Styles, FileAssociationContoller, System.Json,
   QuadFX.Helpers, System.Generics.Collections, Quad.EffectTimeLine,
-  FloatSpinEdit, Vcl.ExtDlgs;
+  FloatSpinEdit, Vcl.ExtDlgs, iniFiles;
 
 type
   TfMain = class(TForm)
@@ -93,6 +93,7 @@ type
     OpenPictureDialog: TOpenPictureDialog;
     aCreatePack: TAction;
     aCreatePack1: TMenuItem;
+    miReopen: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -127,6 +128,8 @@ type
     procedure tbBackgroundColorClick(Sender: TObject);
     procedure tbBackgroundImgClick(Sender: TObject);
     procedure aCreatePackExecute(Sender: TObject);
+    procedure tvEffectListExpanded(Sender: TObject; Node: TTreeNode);
+    procedure tvEffectListCollapsed(Sender: TObject; Node: TTreeNode);
   private
     FRenderPreview: TRenderPanel;
     FMax: Integer;
@@ -142,6 +145,11 @@ type
     procedure SaveQFX(AFileName: String);
     procedure SetEffectSelected(Value: TEffectNode);
     procedure ClearAll;
+    procedure AddReopen(AFileName: String; AIsSave: Boolean = True);
+    procedure LoadConfig;
+    procedure SaveReopen;
+    procedure ReopenClick(Sender: TObject);
+    procedure LoadFile(AFileName: String);
   public
     procedure OnPaint;
     property RenderPreview: TRenderPanel read FRenderPreview;
@@ -179,6 +187,87 @@ begin
   Write(Sz, SizeOf(Sz));
   Write(AMemory.Memory, Sz);
   AMemory.Free;
+end;
+
+procedure TfMain.LoadConfig;
+var
+  ini: TIniFile;
+  FileList: TStringList;
+  i: Integer;
+  FileName: String;
+begin
+  ini := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
+  FileList := TStringList.Create;
+  try
+    ini.ReadSection('Reopen', FileList);
+    for i := FileList.Count - 1 downto 0 do
+    begin
+      FileName := ini.ReadString('Reopen', FileList[i], '');
+      if FileExists(FileName) then
+        AddReopen(FileName, False);
+    end;
+  finally
+    FileList.Free;
+    ini.Free;
+  end;
+end;
+
+procedure TfMain.ReopenClick(Sender: TObject);
+begin
+  if Sender is TMenuItem then
+    LoadFile(TMenuItem(Sender).Caption);
+end;
+
+procedure TfMain.SaveReopen;
+var
+  ini: TIniFile;
+  FileList: TStringList;
+  i: Integer;
+begin
+  ini := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
+  FileList := TStringList.Create;
+  try
+    ini.ReadSection('Reopen', FileList);
+    for i := 0 to FileList.Count - 1 do
+      ini.DeleteKey('Reopen', FileList[i]);
+
+    for i := 0 to miReopen.Count - 1 do
+      ini.WriteString('Reopen', 'File_' + i.ToString, miReopen.Items[i].Caption);
+  finally
+    FileList.Free;
+    ini.Free;
+  end;
+end;
+
+procedure TfMain.AddReopen(AFileName: String; AIsSave: Boolean = True);
+var
+  MenuItem: TMenuItem;
+  i: integer;
+begin
+  MenuItem := nil;
+  for i := 0 to miReopen.Count - 1 do
+    if AnsiCompareText(miReopen[i].Caption, AFileName) = 0 then
+    begin
+      MenuItem := miReopen.Items[i];
+      miReopen.Items[i].MenuIndex := 0;
+      Break;
+    end;
+
+  if not Assigned(MenuItem) then
+  begin
+    MenuItem := TMenuItem.Create(miReopen);
+    MenuItem.OnClick := ReopenClick;
+    MenuItem.Caption := AFileName;
+    miReopen.Insert(0, MenuItem);
+  end;
+
+  if miReopen.Count > 10 then
+    miReopen.Delete(miReopen.Count - 1);
+
+  if AIsSave then
+    SaveReopen;
+
+  miReopen.Enabled := True;
 end;
 
 procedure TfMain.ParamsMessage(ACommand: WideString);
@@ -256,8 +345,13 @@ end;
 procedure TfMain.FormDestroy(Sender: TObject);
 begin
   try
-    ClearAll;
-    FRenderPreview.Free;
+    EnterCriticalSection(TRenderPanel.CriticalSection);
+    try
+      ClearAll;
+      FRenderPreview.Free;
+    finally
+      LeaveCriticalSection(TRenderPanel.CriticalSection);
+    end;
   except
     on E : Exception do
       ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
@@ -304,12 +398,16 @@ begin
   dGravForce.Position := dGravDirection.Position;
 end;
 
-procedure TfMain.aOpenExecute(Sender: TObject);
+procedure TfMain.LoadFile(AFileName: String);
 var
   Node: TPackNode;
+  i: Integer;
 begin
-  if not OpenDialog.Execute then
-    Exit;
+  for i := 0 to tvEffectList.Items.Count - 1 do
+    if (tvEffectList.Items[i] is TPackNode) and (AnsiCompareText(TPackNode(tvEffectList.Items[i]).FileName, AFileName) = 0) then
+    begin
+      Exit;
+    end;
 
   try
     FEffectSelected := nil;
@@ -319,12 +417,19 @@ begin
 
     dmIcomList.TreeNodeCreateClass := TPackNode;
     Node := tvEffectList.Items.AddChild(nil, 'New pack') as TPackNode;
-    Node.LoadFromFile(OpenDialog.FileName);
-    Node.Expanded := True;
+    Node.LoadFromFile(AFileName);
+  //  Node.Expanded := True;
   except
     on E : Exception do
       ListBox1.Items.Add(E.ClassName + ' ошибка с сообщением: ' + E.Message);
   end;
+  AddReopen(AFileName);
+end;
+
+procedure TfMain.aOpenExecute(Sender: TObject);
+begin
+  if OpenDialog.Execute then
+    LoadFile(OpenDialog.FileName);
 end;
 
 procedure TfMain.aCreatePackExecute(Sender: TObject);
@@ -587,6 +692,8 @@ begin
 end;
 
 procedure TfMain.tvEffectListChange(Sender: TObject; Node: TTreeNode);
+var
+  PackNode: TTreeNode;
 begin
   if Assigned(tvEffectList.Selected) then
   begin
@@ -599,6 +706,14 @@ begin
       SetParamFrame(nil);
     end
     else
+    begin
+      PackNode := tvEffectList.Selected;
+      while not (PackNode is TPackNode) and (PackNode.Level > 0) do
+        PackNode := PackNode.Parent;
+
+      if PackNode is TPackNode then
+        FPackSelected := TPackNode(PackNode);
+
       if tvEffectList.Selected is TEffectNode then
       begin
         EffectSelected := TEffectNode(tvEffectList.Selected);
@@ -619,6 +734,7 @@ begin
           FRenderPreview.SetEffect(nil, nil, nil);
           SetParamFrame(nil);
         end;
+    end;
   end
   else
   begin
@@ -656,7 +772,29 @@ begin
 end;
 
 procedure TfMain.tvEffectListEdited(Sender: TObject; Node: TTreeNode; var S: string);
+  function GetFullName(ANode: TTreeNode): WideString;
+  begin
+    Result := ANode.Text;
+    while not (ANode is TPackNode) and (ANode.Level > 1) do
+    begin
+      ANode := ANode.Parent;
+      Result := ANode.Text + '\' + Result;
+    end;
+  end;
+
+  procedure RenameEffect(ANode: TTreeNode);
+  var
+    i: Integer;
+  begin
+    for i := 0 to ANode.Count - 1 do
+      if ANode[i] is TEffectNode then
+        TQuadFXEffectParams(TEffectNode(ANode[i]).EffectParams).Name := GetFullName(ANode[i])
+      else
+        if ANode[i] is TFolderNode then
+          RenameEffect(ANode[i]);
+  end;
 begin
+  Node.Text := S;
   if Node is TEmitterNode then
   begin
     TEmitterNode(Node).EmitterParams.Name := S;
@@ -664,7 +802,40 @@ begin
   end
   else
     if Node is TEffectNode then
-      TQuadFXEffectParams(TEffectNode(Node).EffectParams).Name := S;
+      TQuadFXEffectParams(TEffectNode(Node).EffectParams).Name := GetFullName(Node)
+    else
+      if Node is TFolderNode then
+        RenameEffect(Node);
+end;
+
+procedure TfMain.tvEffectListCollapsed(Sender: TObject; Node: TTreeNode);
+begin
+  if Node is TPackNode then
+  begin
+    Node.ImageIndex := 2;
+    Node.SelectedIndex := 2;
+  end
+  else
+    if Node is TFolderNode then
+    begin
+      Node.ImageIndex := 4;
+      Node.SelectedIndex := 4;
+    end;
+end;
+
+procedure TfMain.tvEffectListExpanded(Sender: TObject; Node: TTreeNode);
+begin
+  if Node is TPackNode then
+  begin
+    Node.ImageIndex := 3;
+    Node.SelectedIndex := 3;
+  end
+  else
+    if Node is TFolderNode then
+    begin
+      Node.ImageIndex := 5;
+      Node.SelectedIndex := 5;
+    end;
 end;
 
 procedure TfMain.tvEffectListMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -695,13 +866,14 @@ begin
       tvEffectList.Repaint;
     end;
   end;
-
 end;
 
 procedure TfMain.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
+  LoadConfig;
+
   TFileAssociationContoller.Create.SetOnCommandEvent(ParamsMessage);
 
   ListBox1.Clear;
@@ -729,6 +901,7 @@ begin
   TListItemSpin.CreateEx(lvParamList.Items);
   TListItemOpacity.CreateEx(lvParamList.Items);
   TListItemGravitation.CreateEx(lvParamList.Items);
+
 end;
 
 end.

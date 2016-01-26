@@ -57,6 +57,16 @@ type
     procedure LoadFromFile(AFileName: String);
     procedure SaveToFile(ASaveAs: Boolean = False);
     property GUID: TGUID read FGUID;
+    property FileName: String read FFileName;
+  end;
+
+  TFolderNode = class(TCustomTreeNode)
+  private
+    FID: Integer;
+  public
+    constructor Create(AOwner: TTreeNodes); override;
+    procedure SetId(AID: Integer);
+    property ID: Integer read FID;
   end;
 
 implementation
@@ -64,6 +74,20 @@ implementation
 uses
   QuadFX.EffectParams, Main, Frame.Globals, QuadFX.FileLoader.JSON, QuadFX.Effect,
   Textures, Sprite, RenderPanel;
+
+{ TDirNode }
+
+constructor TFolderNode.Create(AOwner: TTreeNodes);
+begin
+  inherited Create(AOwner);
+  ImageIndex := 4;
+  SelectedIndex := 4;
+end;
+
+procedure TFolderNode.SetId(AID: Integer);
+begin
+  FID := AID;
+end;
 
 { TPackNode }
 
@@ -73,8 +97,8 @@ begin
   CreateGUID(FGUID);
   FFileName := '';
   FFileFormat := ffNone;
-  ImageIndex := -1;
-  SelectedIndex := -1;
+  ImageIndex := 2;
+  SelectedIndex := 2;
 end;
 
 destructor TPackNode.Destroy;
@@ -108,13 +132,38 @@ begin
 end;
 
 function TPackNode.CreateEffect(AEffectParams: IQuadFXEffectParams = nil): TEffectNode;
+  function FindNode(ANode: TCustomTreeNode; AName: WideString): TCustomTreeNode;
+  var
+    i: Integer;
+  begin
+    for i := 0 to ANode.Count - 1 do
+      if (ANode[i] is TFolderNode) and (ANode[i].Text = AName) then
+        Exit(ANode[i] as TCustomTreeNode);
+
+    dmIcomList.TreeNodeCreateClass := TFolderNode;
+    Result := fMain.tvEffectList.Items.AddChild(ANode, AName) as TCustomTreeNode;
+  end;
+
 var
   i: Integer;
   Effect: IQuadFXEffect;
   Emitter: IQuadFXEmitter;
+  Name: WideString;
+  Position: Integer;
+  Node: TCustomTreeNode;
 begin
+  Name := TQuadFXEffectParams(AEffectParams).Name;
+  Position := Pos('\', Name);
+  Node := Self;
+  while Position > 0 do
+  begin
+    Node := FindNode(Node, Copy(Name, 1, Position - 1));
+    System.Delete(Name, 1, Position);
+    Position := Pos('\', Name);
+  end;
+
   dmIcomList.TreeNodeCreateClass := TEffectNode;
-  Result := fMain.tvEffectList.Items.AddChild(Self, 'Effect') as TEffectNode;
+  Result := fMain.tvEffectList.Items.AddChild(Node, Name) as TEffectNode;
 
   if not Assigned(AEffectParams) then
     fMain.RenderPreview.Manager.CreateEffectParams(AEffectParams);
@@ -193,8 +242,6 @@ begin
         EffectFormat.LoadEffectParams(JSONArray.Items[i] as TJSONObject);
 
         EffectNode := CreateEffect(EffectParams);
-        if Assigned(EffectNode)  then
-          EffectNode.Text := TQuadFXEffectParams(EffectNode.EffectParams).Name;
       end;
     end;
   finally
@@ -217,7 +264,10 @@ procedure TPackNode.SaveToJson;
     Result := TJSONObject.Create;
     EffectParams := TQuadFXEffectParams(AEffectParams);
 
+   // Result.AddPair('Name', TJSONString.Create(StringReplace(EffectParams.Name, '\', '\\', [rfReplaceAll, rfIgnoreCase])));
+
     Result.AddPair('Name', TJSONString.Create(EffectParams.Name));
+
 
     JSONEmitters := TJSONArray.Create;
 
