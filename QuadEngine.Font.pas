@@ -35,10 +35,10 @@ type
     id: Word;
     SizeX: Byte;
     SizeY: Byte;
-    OriginX: Smallint;
-    OriginY: Smallint;
-    IncX: Smallint;
-    IncY: Smallint;
+    OriginX: SmallInt;
+    OriginY: SmallInt;
+    IncX: SmallInt;
+    IncY: SmallInt;
   end;
 
   TQuadFontHeader = packed record

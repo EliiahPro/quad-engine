@@ -76,6 +76,7 @@ begin
     Node := InsertNode(aID, FRootNode, AItemWidth, AItemHeight);
   end;
 
+  Result := Node;
   BitBlt(FAtlas.Canvas.Handle, Node.rc.Left, Node.rc.Top, AItemWidth, AItemHeight, AItem.Canvas.Handle, 0, 0, SRCCOPY);
 end;
 

@@ -35,10 +35,10 @@ type
     id: Word;
     SizeX: Byte;
     SizeY: Byte;
-    OriginX: Smallint;
-    OriginY: Smallint;
-    IncX: Smallint;
-    IncY: Smallint;
+    OriginX: SmallInt;
+    OriginY: SmallInt;
+    IncX: SmallInt;
+    IncY: SmallInt;
   end;
 
   TQuadFontHeader = packed record
@@ -132,13 +132,13 @@ begin
     Inc(SizeY);
 
 
-  QuadChars[ord(chari)].SizeX := SizeX;
-  QuadChars[ord(chari)].SizeY := SizeY;
-  QuadChars[ord(chari)].OriginX := gm.gmptGlyphOrigin.X;
-  QuadChars[ord(chari)].OriginY := gm.gmptGlyphOrigin.Y;
-  QuadChars[ord(chari)].IncX := gm.gmCellIncX;
-  QuadChars[ord(chari)].IncY := gm.gmBlackBoxY;
-  QuadChars[ord(chari)].id := ord(chari);
+  QuadChars[Ord(chari)].SizeX := SizeX;
+  QuadChars[Ord(chari)].SizeY := SizeY;
+  QuadChars[Ord(chari)].OriginX := gm.gmptGlyphOrigin.X;
+  QuadChars[Ord(chari)].OriginY := gm.gmptGlyphOrigin.Y;
+  QuadChars[Ord(chari)].IncX := gm.gmCellIncX;
+  QuadChars[Ord(chari)].IncY := gm.gmBlackBoxY;
+  QuadChars[Ord(chari)].id := Ord(chari);
 
 
   if bufsize = 0 then
