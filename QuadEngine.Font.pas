@@ -17,7 +17,8 @@ interface
 
 uses
   windows, direct3d9, QuadEngine.Render, QuadEngine.Texture, QuadEngine.Log,
-  QuadEngine, QuadEngine.Shader, Vec2f, System.Classes, QuadEngine.Color;
+  QuadEngine, QuadEngine.Shader, Vec2f, System.Classes, QuadEngine.Color,
+  System.Generics.Collections;
 
 type
   TLetterUV = record
@@ -52,7 +53,18 @@ type
     procedure SetColor(AColor: Cardinal); inline;
   end;
 
+  TQuadStringLine = record
+    Start: Integer;
+    Spaces: Word;
+    Width: Single;
+    WidthWOSpaces: Single;
+    Count: Integer;
+  end;
+
   TQuadFont = class(TInterfacedObject, IQuadFont)
+    const CHAR_NULL = 0;
+    const CHAR_NEWLINE = 10;
+    const CHAR_CARETRETURN = 13;
     const CHAR_SPACE = 32;
   strict private
     FColors: array[Word] of Cardinal;
@@ -73,9 +85,11 @@ type
     FQuadChars: array [Word] of TQuadChar;
 
     FKerningPairs: array of tagKERNINGPAIR;
+    FStrings: TList<TQuadStringLine>;
     function TextWidthEx(AText: PWideChar; AScale: Single = 1.0; IsIncludeSpaces: Boolean = True): Single;
+    procedure InternalPrepare(AText: PWideChar; AScale: Single);
   public
-    constructor Create(AQuadRender : TQuadRender);
+    constructor Create(AQuadRender: TQuadRender);
     destructor Destroy; override;
 
     function GetIsLoaded: Boolean; stdcall;
@@ -138,6 +152,8 @@ begin
   FDistanceFieldParams.Params[0] := 1.0;
   FDistanceFieldParams.Params[1] := 0.0;
   FDistanceFieldParams.SetColor(TQuadColor.White);
+
+  FStrings := TList<TQuadStringLine>.Create;
 end;
 
 //=============================================================================
@@ -145,6 +161,7 @@ end;
 //=============================================================================
 destructor TQuadFont.destroy;
 begin
+  FStrings.Free;
   FTexture := nil;
   FQuadRender := nil;
   inherited;
@@ -172,6 +189,80 @@ end;
 function TQuadFont.GetSpacing: Single;
 begin
   Result := FSpacing;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadFont.InternalPrepare(AText: PWideChar; AScale: Single);
+var
+  i, j: Integer;
+  LineStart: Integer;
+  l: Word;
+  qsl: TQuadStringLine;
+begin
+  FStrings.Clear;
+
+  if AText[0] = #0 then
+    Exit;
+
+  FillChar(qsl, SizeOf(TQuadStringLine), #0);
+
+  LineStart := 0;
+  i := 0;
+  repeat
+    if (FIsSmartColoring) and (AText[i] = '^') and (AText[i + 1] = '$') then
+    begin
+      Inc(i, 3);
+      Continue;
+    end;
+
+    l := Ord(AText[i]);
+
+    case l of
+      CHAR_SPACE: Inc(qsl.Spaces);
+      CHAR_CARETRETURN: begin
+        qsl.Start := LineStart;
+        qsl.Count := i - LineStart - 1;
+        FStrings.Add(qsl);
+        qsl.Spaces := 0;
+        qsl.Width := 0;
+        qsl.WidthWOSpaces := 0;
+
+        LineStart := i + 1;
+      end;
+      CHAR_NEWLINE: begin
+        qsl.Spaces := 0;
+        qsl.Width := 0;
+        qsl.WidthWOSpaces := 0;
+
+        LineStart := i + 1;
+      end
+    end;
+
+    if not (l in [CHAR_NEWLINE, CHAR_CARETRETURN]) then
+      if FIsDistanceField then
+      begin
+        qsl.Width := qsl.Width + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;
+        if l <> CHAR_SPACE then
+          qsl.WidthWOSpaces := qsl.WidthWOSpaces + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;
+      end
+      else
+      begin
+        qsl.Width := qsl.Width + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+        if l <> CHAR_SPACE then
+          qsl.WidthWOSpaces := qsl.WidthWOSpaces + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+      end;
+
+    Inc(i);
+  until l = CHAR_NULL;
+
+  if i <= LineStart then
+    Exit;
+
+  qsl.Start := LineStart;
+  qsl.Count := i - LineStart - 1;
+  FStrings.Add(qsl);
 end;
 
 //=============================================================================
@@ -354,29 +445,29 @@ end;
 procedure TQuadFont.TextOut(const Position: TVec2f; AScale: Single; AText: PWideChar;
   AColor: Cardinal; AAlign: TqfAlign);
 var
-  i: Integer;
+  i, line: Integer;
   startX: Single;
   sx: Single;
   ypos: Single;
   l, c, j: Word;
   CurrentColor: Cardinal;
   CurrentAlpha: Cardinal;
+  MaxLineWidth: Single;
+  SpaceWidth: Single;
 begin
   if AText[0] = #0 then
     Exit;
+
+  InternalPrepare(AText, AScale);
 
   CurrentColor := AColor;
   CurrentAlpha := AColor and $FF000000;
   ypos := Position.Y;
 
-  case AAlign of
-    qfaLeft   : sx := Position.X;
-    qfaRight  : sx := Position.X - Trunc(TextWidth(AText, AScale));
-    qfaCenter : sx := Position.X - Trunc(TextWidth(AText, AScale) / 2);
-    qfaJustify: sx := Position.X;
-  else
-    sx := 0;
-  end;
+  MaxLineWidth := 0;
+  for i := 0 to FStrings.Count - 1 do
+    if FStrings[i].Width > MaxLineWidth then
+      MaxLineWidth := FStrings[i].Width;
 
   if FIsDistanceField then
   begin
@@ -389,62 +480,74 @@ begin
   startX := sx;
   ypos := Position.Y;
 
-  i := 0;
-  repeat
-    if (FIsSmartColoring) and (AText[i] = '^') and (AText[i + 1] = '$') then
-    begin
-      Inc(i, 2);
-      if (AText[i] = '!') then
-        CurrentColor := AColor
-      else
-        if (AText[i] = '#') then
+  for line := 0 to FStrings.Count - 1 do
+  begin
+    i := 0;
 
+    case AAlign of
+      qfaLeft   : sx := Position.X;
+      qfaRight  : sx := Position.X - Trunc(MaxLineWidth);
+      qfaCenter : sx := Position.X - Trunc(FStrings[line].Width / 2);
+      qfaJustify: sx := Position.X;
+    else
+      sx := 0;
+    end;
+
+    while i <= FStrings[line].Count do
+    begin
+      if (FIsSmartColoring) and (AText[FStrings[line].Start + i] = '^') and (AText[FStrings[line].Start + i + 1] = '$') then
+      begin
+        Inc(i, 2);
+        if (AText[FStrings[line].Start + i] = '!') then
+          CurrentColor := AColor
         else
-          CurrentColor := FColors[Ord(AText[i])] and $FFFFFF or CurrentAlpha;
+          CurrentColor := FColors[Ord(AText[FStrings[line].Start + i])] and $FFFFFF or CurrentAlpha;
+        Inc(i);
+        Continue;
+      end;
+
+      l := Ord(AText[FStrings[line].Start + i]);
+
+      begin
+        if FIsDistanceField then
+        begin
+
+          if l <> CHAR_SPACE then
+          FTexture.DrawMap(
+                     TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
+                     (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
+                     TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
+                     (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
+                     TVec2f.Create(FQuadChars[l].Xpos / FWidth,
+                     FQuadChars[l].YPos / FHeight),
+                     TVec2f.Create(FQuadChars[l].Xpos / FWidth + FQuadChars[l].SizeX / FWidth,
+                     FQuadChars[l].YPos / FHeight + FQuadChars[l].SizeY / FHeight),
+                     CurrentColor);
+
+          if (AAlign = qfaJustify) and (l = CHAR_SPACE) then
+          begin
+            sx := sx + (MaxLineWidth - FStrings[line].WidthWOSpaces) / FStrings[line].Spaces;
+          end
+          else
+            sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;
+        end
+        else
+        begin
+          FTexture.DrawMap(TVec2f.Create(sx, ypos), TVec2f.Create(sx + FLetters[l].W * AScale, ypos + FLetters[l].H * AScale),
+                           TVec2f.Create(FLetters[l].U1, FLetters[l].V1), TVec2f.Create(FLetters[l].U2, FLetters[l].V2),
+                           CurrentColor);
+          sx := sx + FLetters[l].W * AScale + FKerning;
+        end;
+      end;
+
       Inc(i);
     end;
 
-    l := Ord(AText[i]);
-
-    if l = Ord(#13) then
-    begin
-      if not FIsDistanceField then
-        ypos := ypos + FLetters[CHAR_SPACE].H * AScale + FSpacing
-      else
-        ypos := ypos + (FQuadChars[Ord('M')].IncY / FQuadFontHeader.ScaleFactor) * AScale + FSpacing;
-
-      sx := startX;
-    end
+    if not FIsDistanceField then
+      ypos := ypos + FLetters[CHAR_SPACE].H * AScale + FSpacing
     else
-    begin
-      if FIsDistanceField then
-      begin
-
-        if l <> CHAR_SPACE then
-        FTexture.DrawMap(
-                   TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
-                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
-                   TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
-                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
-                   TVec2f.Create(FQuadChars[l].Xpos / FWidth,
-                   FQuadChars[l].YPos / FHeight),
-                   TVec2f.Create(FQuadChars[l].Xpos / FWidth + FQuadChars[l].SizeX / FWidth,
-                   FQuadChars[l].YPos / FHeight + FQuadChars[l].SizeY / FHeight),
-                   CurrentColor);
-
-        sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;// - (QuadChars[c].IncX - QuadChars[c].SizeX) / 2 / QuadFontHeader.ScaleFactor * scale;
-      end
-      else
-      begin
-        FTexture.DrawMap(TVec2f.Create(sx, ypos), TVec2f.Create(sx + FLetters[l].W * AScale, ypos + FLetters[l].H * AScale),
-                         TVec2f.Create(FLetters[l].U1, FLetters[l].V1), TVec2f.Create(FLetters[l].U2, FLetters[l].V2),
-                         CurrentColor);
-        sx := sx + FLetters[l].W * AScale + FKerning;
-      end;
-    end;
-
-    Inc(i);
-  until AText[i] = #0;
+      ypos := ypos + (FQuadChars[Ord('M')].IncY / FQuadFontHeader.ScaleFactor) * AScale + FSpacing;
+  end;
 
   if FIsDistanceField then
     TQuadShader.DistanceField.SetShaderState(False);
@@ -489,7 +592,7 @@ function TQuadFont.TextWidthEx(AText: PWideChar; AScale: Single;
   IsIncludeSpaces: Boolean): Single;
 var
   i, j: Integer;
-  l, c: Word;
+  l: Word;
   max: Single;
 begin
   Result := 0.0;
@@ -500,15 +603,17 @@ begin
   i := 0;
   repeat
     if (FIsSmartColoring) and (AText[i] = '^') and (AText[i + 1] = '$') then
+    begin
       Inc(i, 3);
+      Continue;
+    end;
 
     l := Ord(AText[i]);
     if IsIncludeSpaces or (l <> CHAR_SPACE) then
     begin
       if FIsDistanceField then
       begin
-        c := l;
-        Result := Result + (FQuadChars[c].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning
+        Result := Result + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning
       end
       else
         Result := Result + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
