@@ -51,7 +51,7 @@ type
     FD3DVD: IDirect3DVertexDeclaration9;
     FHandle: THandle;
     FHeight: Integer;
-    FIsAutoCalculateTBN : Boolean;
+    FIsAutoCalculateTBN: Boolean;
     FIsDeviceLost: Boolean;
     FIsEnabledBlending: Boolean;
     FIsInitialized: Boolean;
@@ -175,6 +175,7 @@ type
     property IsSupportedNonPow2: Boolean read GetIsSupportedNonPow2;
     property IsSeparateAlphaBlend: Boolean read GetIsSeparateAlphaBlend;
     property NumSimultaneousRTs: Cardinal read GetNumSimultaneousRTs;
+    property IsDeviceLost: Boolean read FIsDeviceLost;
   end;
 
 implementation
@@ -307,6 +308,9 @@ end;
 //=============================================================================
 procedure TQuadRender.BeginRender;
 begin
+  if FIsDeviceLost then
+    Exit;
+
   {$IFDEF DEBUG}
   if Assigned(FProfiler) then
     FProfiler.BeginTick;
@@ -317,9 +321,6 @@ begin
   Device.LastResultCode := FD3DDevice.BeginScene;
 
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
-
-  if not FIsDeviceLost then
-    Device.LastResultCode := FD3DDevice.BeginScene;
 
   FCount := 0;
   {$IFDEF DEBUG}
@@ -379,6 +380,7 @@ begin
   FOldScreenWidth := -1;
   FOldScreenHeight := -1;
   FIsRenderIntoTexture := False;
+  Fqbm := qbmNone;
 
   FRenderMode := D3DPT_TRIANGLELIST;
 
@@ -1108,19 +1110,19 @@ begin
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_LIGHTING, iFalse);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
 
-  // restore blending
-  qbm := Fqbm;
-  Fqbm := qbmInvalid;
-  SetBlendMode(qbm);
-
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_COLORVERTEX, iFalse);
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZENABLE, iTrue);
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ZWRITEENABLE, iTrue);
-  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iFalse);   
+  Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iFalse);
 
   FD3DDevice.GetRenderTarget(0, FBackBuffer);
   Device.ReInitializeRenderTargets;
+
+  // restore blending
+  qbm := Fqbm;
+  Fqbm := qbmInvalid;
+  SetBlendMode(qbm);
 end;
 
 //=============================================================================
@@ -1243,11 +1245,13 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.ReleaseVolatileResources;
+var
+  i: Integer;
 begin
   Device.FreeRenderTargets;
   FBackBuffer := nil;
-  FD3DVB := nil;
   FD3DVD := nil;
+  FD3DVB := nil;
 end;
 
 //=============================================================================
@@ -1351,6 +1355,7 @@ begin
     repeat
       Sleep(50);
       R := D3DDevice.TestCooperativeLevel;
+
       if R = D3DERR_DEVICELOST then
         Continue;
 

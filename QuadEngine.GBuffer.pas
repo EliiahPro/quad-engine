@@ -71,12 +71,12 @@ begin
   FNormalMap := TQuadTexture.Create(FQuadRender);
   FSpecularMap := TQuadTexture.Create(FQuadRender);
   FHeightMap := TQuadTexture.Create(FQuadRender);
-
+ {
   FDiffuseMap.AssignTexture(FBuffer, R_DIFFUSE, 0);
   FNormalMap.AssignTexture(FBuffer, R_NORMAL, 0);
   FSpecularMap.AssignTexture(FBuffer, R_SCPECULAR, 0);
   FHeightMap.AssignTexture(FBuffer, R_HEIGHT, 0);
-
+          }
   FDiffuseMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
   FNormalMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
   FSpecularMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
@@ -102,6 +102,9 @@ var
   ScreenRatio: Single;
   Position, CameraPosition: TVec2f;
 begin
+  if Device.Render.IsDeviceLost then
+    Exit;
+
   ScreenRatio := FBuffer.GetTextureWidth / FBuffer.GetTextureHeight;
 
   Position := TVec2f.Create(APos.X, APos.Y);
