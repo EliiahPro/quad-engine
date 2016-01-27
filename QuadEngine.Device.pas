@@ -436,7 +436,10 @@ begin
   if AQuadTexture = nil then
   begin
     Device.CreateTexture(AQuadTexture);
+  end;
 
+  if not Render.IsDeviceLost then
+  begin
     New(RenderTarget);
     RenderTarget.Texture := AQuadTexture;
     RenderTarget.Reg := ARegister;
