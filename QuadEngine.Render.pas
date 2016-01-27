@@ -317,12 +317,9 @@ begin
   Device.LastResultCode := FD3DDevice.BeginScene;
 
   FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
-  while FIsDeviceLost do
-  begin
-    Sleep(100);
-    if not FIsDeviceLost then
-      Device.LastResultCode := FD3DDevice.BeginScene;
-  end;
+
+  if not FIsDeviceLost then
+    Device.LastResultCode := FD3DDevice.BeginScene;
 
   FCount := 0;
   {$IFDEF DEBUG}
@@ -816,8 +813,6 @@ end;
 procedure TQuadRender.Finalize;
 begin
   ReleaseVolatileResources;
-  FD3DVD := nil;
-  FD3DVB := nil;
 end;
 
 //=============================================================================
@@ -1249,10 +1244,10 @@ end;
 //=============================================================================
 procedure TQuadRender.ReleaseVolatileResources;
 begin
-  RenderToTexture(False);
   Device.FreeRenderTargets;
   FBackBuffer := nil;
   FD3DVB := nil;
+  FD3DVD := nil;
 end;
 
 //=============================================================================
@@ -1356,14 +1351,11 @@ begin
     repeat
       Sleep(50);
       R := D3DDevice.TestCooperativeLevel;
-
       if R = D3DERR_DEVICELOST then
         Continue;
 
       if R = D3DERR_DEVICENOTRESET then
-      begin
         Device.LastResultCode := FD3DDevice.Reset(FD3DPP);
-      end;
 
     until Succeeded(R);
 
