@@ -36,7 +36,11 @@ type
   private
     function GetItem(Index: Integer): TQuadDiagramLinePointItem;
     procedure SetItem(Index: Integer; const Value: TQuadDiagramLinePointItem);
+  protected
+    procedure Update(Item: TCollectionItem); override;
+    function GetOwner: TQuadDiagramLineItem;
   public
+    constructor Create(AOwner: TQuadDiagramLineItem);
     destructor Destroy; override;
     function Add: TQuadDiagramLinePointItem; overload;
     function Add(X, Y: Double): TQuadDiagramLinePointItem; overload;
@@ -56,6 +60,9 @@ type
     procedure SetPoints(const Value: TQuadDiagramLinePointCollection);
     function GetPoints: TQuadDiagramLinePointCollection;
     procedure SetWidth(const Value: Integer);
+    procedure SetStyle(const Value: TDashStyle);
+    procedure SetEnabled(const Value: Boolean);
+    procedure SetCaption(const Value: String);
   public
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
@@ -63,16 +70,20 @@ type
     property Color: TColor read FColor write SetColor;
     property Points: TQuadDiagramLinePointCollection read GetPoints write SetPoints;
     property Width: Integer read FWidth write SetWidth;
-    property Style: TDashStyle read FStyle write FStyle;
-    property Enabled: Boolean read FEnabled write FEnabled;
-    property Caption: String read FCaption write FCaption;
+    property Style: TDashStyle read FStyle write SetStyle;
+    property Enabled: Boolean read FEnabled write SetEnabled;
+    property Caption: String read FCaption write SetCaption;
   end;
   //
   TQuadDiagramLineCollection = class(TOwnedCollection)
   private
     function GetItem(Index: Integer): TQuadDiagramLineItem;
     procedure SetItem(Index: Integer; const Value: TQuadDiagramLineItem);
+  protected
+    procedure Update(Item: TCollectionItem); override;
+    function GetOwner: TQuadDiagram;
   public
+    constructor Create(AOwner: TQuadDiagram);
     destructor Destroy; override;
     function Add: TQuadDiagramLineItem;
     property Items[Index: Integer]: TQuadDiagramLineItem read GetItem write SetItem; default;
@@ -150,6 +161,7 @@ type
   //
   TQuadDiagram = class(TCustomControl)
   private
+    FUpdateCount: Integer;
     FBg: TBitmap;
     FIsDisable: Boolean;
     FGraphics: TGPGraphics;
@@ -226,6 +238,8 @@ type
     property Lines: TQuadDiagramLineCollection read FLines write SetLines;
     property Position: Double read FPosition write SetPosition;
     function GetValue(ALine: Integer): Double;
+    procedure BeginUpdate;
+    procedure EndUpdate;
 
     property AxisV: TQuadDiagramAxis read FAxisV write SetAxisV;
     property AxisH: TQuadDiagramAxis read FAxisH write SetAxisH;
@@ -240,22 +254,6 @@ implementation
 uses
   Math;
 
-       {
-type
-  TQuadStyleType = (
-    stNone = 0,
-    stSystem = 1
-  );
-
-function ColorToARGB(AType: TQuadStyleType; AColor: TColor; Alpha: byte = 255): DWORD;
-begin
-  if AType = stSystem then
-    AColor := TStyleManager.ActiveStyle.GetSystemColor(AColor);
-
-  AColor := ColorToRgb(AColor);
-  result := MakeColor(Alpha, GetRValue(AColor), GetGValue(AColor), GetBValue(AColor));
-end;
-       }
 function ColorToARGB(AColor: TColor; Alpha: byte = 255): DWORD;
 begin
   AColor := ColorToRgb(AColor);
@@ -267,13 +265,14 @@ end;
 constructor TQuadDiagram.Create(AOwner: TComponent);
 begin
   inherited;
+  FUpdateCount := 0;
   FIsDisable := False;
   FBg := TBitmap.Create;
   FBg.Width := 0;
   FBg.Height := 0;
   //ControlStyle := ControlStyle + [csAcceptsControls];
   FStyle := TQuadDiagramStyle.Create(Self);
-  FLines := TQuadDiagramLineCollection.Create(Self, TQuadDiagramLineItem);
+  FLines := TQuadDiagramLineCollection.Create(Self{, TQuadDiagramLineItem});
   FAxisV := TQuadDiagramAxis.Create(Self);
   FAxisH := TQuadDiagramAxis.Create(Self);
   DoubleBuffered := True;
@@ -307,10 +306,23 @@ begin
   inherited;
 end;
 
+procedure TQuadDiagram.BeginUpdate;
+begin
+  Inc(FUpdateCount);
+end;
+
+procedure TQuadDiagram.EndUpdate;
+begin
+  Dec(FUpdateCount);
+  if FUpdateCount = 0 then
+    Repaint;
+end;
+
 procedure TQuadDiagram.Paint;
 begin
-  if FIsDisable then
+  if FIsDisable or (FUpdateCount > 0) then
     Exit;
+
   inherited;
   FGraphics := TGPGraphics.Create(Canvas.Handle);
   FGraphics.SetSmoothingMode(SmoothingModeAntiAlias);
@@ -865,14 +877,14 @@ begin
           else
             FAxisV.MaxValue := PointSelected.Y;
         end;
-               }
+        }
     if Assigned(FOnPointChange) then
       FOnPointChange(
         Self, FLines.Items[FLineMouseMoveIndex],
         FLines.Items[FLineMouseMoveIndex].Points.Items[FPointMouseMoveIndex]
       );
 
-    Repaint;
+   // Repaint;
   end
   else
   begin
@@ -967,52 +979,74 @@ end;
 
 procedure TQuadDiagramStyle.SetAxis(const Value: TColor);
 begin
-  FAxis := Value;
-  FOwner.Invalidate;
+  if FAxis <> Value then
+  begin
+    FAxis := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetAxisTitle(const Value: TColor);
 begin
-  FAxisTitle := Value;
-  FOwner.Invalidate;
+  if FAxisTitle <> Value then
+  begin
+    FAxisTitle := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetBackground1(const Value: TColor);
 begin
-  FBackground1 := Value;
-  FOwner.Invalidate;
+  if FBackground1 <> Value then
+  begin
+    FBackground1 := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetBackground2(const Value: TColor);
 begin
-  FBackground2 := Value;
-  FOwner.Invalidate;
+  if FBackground2 <> Value then
+  begin
+    FBackground2 := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetGradient(const Value: TLinearGradientMode);
 begin
-  FGradient := Value;
-  FOwner.Invalidate;
+  if FGradient <> Value then
+  begin
+    FGradient := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetGridLine(const Value: TColor);
 begin
-  FGridLine := Value;
-  FOwner.Invalidate;
+  if FGridLine <> Value then
+  begin
+    FGridLine := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetLegendColumns(const Value: Integer);
 begin
-  FLegendColumns := Value;
-  FOwner.Repaint;
-  //FOwner.Invalidate;
+  if FLegendColumns <> Value then
+  begin
+    FLegendColumns := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramStyle.SetLegendVisible(const Value: Boolean);
 begin
-  FLegendVisible := Value;
-  FOwner.Repaint;
-  //FOwner.Invalidate;
+  if FLegendVisible <> Value then
+  begin
+    FLegendVisible := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 { TQuadDiagramLineItem }
@@ -1034,13 +1068,17 @@ end;
 function TQuadDiagramLineItem.GetPoints: TQuadDiagramLinePointCollection;
 begin
   if FPoints = nil then
-    FPoints := TQuadDiagramLinePointCollection.Create(Self, TQuadDiagramLinePointItem);
+    FPoints := TQuadDiagramLinePointCollection.Create(Self);
   Result := FPoints;
 end;
 
 procedure TQuadDiagramLineItem.SetColor(const Value: TColor);
 begin
-  FColor := Value;
+  if FColor <> Value then
+  begin
+    FColor := Value;
+    Changed(False);
+  end;
 end;
 
 procedure TQuadDiagramLineItem.SetPoints(const Value: TQuadDiagramLinePointCollection);
@@ -1050,24 +1088,62 @@ end;
 
 procedure TQuadDiagramLineItem.SetWidth(const Value: Integer);
 begin
-  FWidth := Value;
+  if FWidth <> Value then
+  begin
+    FWidth := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TQuadDiagramLineItem.SetStyle(const Value: TDashStyle);
+begin
+  if FStyle <> Value then
+  begin
+    FStyle := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TQuadDiagramLineItem.SetEnabled(const Value: Boolean);
+begin
+  if FEnabled <> Value then
+  begin
+    FEnabled := Value;
+    Changed(False);
+  end;
+end;
+
+procedure TQuadDiagramLineItem.SetCaption(const Value: String);
+begin
+  if FCaption <> Value then
+  begin
+    FCaption := Value;
+    Changed(False);
+  end;
 end;
 
 { TQuadDiagramLineCollection }
 
-destructor TQuadDiagramLineCollection.Destroy;
-var
-  i: Integer;
+constructor TQuadDiagramLineCollection.Create(AOwner: TQuadDiagram);
 begin
-    for i := Count - 1 to 0 do
-      if Assigned(Items[i]) then
-        Items[i].Free;
+  inherited Create(AOwner, TQuadDiagramLineItem);
+
+end;
+
+destructor TQuadDiagramLineCollection.Destroy;
+begin
+
   inherited;
 end;
 
 function TQuadDiagramLineCollection.Add: TQuadDiagramLineItem;
 begin
   Result := TQuadDiagramLineItem(inherited Add);
+end;
+
+function TQuadDiagramLineCollection.GetOwner: TQuadDiagram;
+begin
+  Result := TQuadDiagram(inherited GetOwner);
 end;
 
 function TQuadDiagramLineCollection.GetItem(Index: Integer): TQuadDiagramLineItem;
@@ -1078,6 +1154,13 @@ end;
 procedure TQuadDiagramLineCollection.SetItem(Index: Integer; const Value: TQuadDiagramLineItem);
 begin
   Items[index].Assign(Value);
+end;
+
+procedure TQuadDiagramLineCollection.Update(Item: TCollectionItem);
+begin
+  inherited Update(Item);
+//  if GetOwner <> nil then
+    GetOwner.Repaint;
 end;
 
 { TQuadDiagramLinePointItem }
@@ -1097,28 +1180,41 @@ end;
 
 procedure TQuadDiagramLinePointItem.SetColor(const Value: TColor);
 begin
-  FColor := Value;
+  if FColor <> Value then
+  begin
+    FColor := Value;
+    Changed(False);
+  end;
 end;
 
 procedure TQuadDiagramLinePointItem.SetX(const Value: Double);
 begin
-  FX := Value;
+  if FX <> Value then
+  begin
+    FX := Value;
+    Changed(False);
+  end;
 end;
 
 procedure TQuadDiagramLinePointItem.SetY(const Value: Double);
 begin
-  FY := Value;
+  if FY <> Value then
+  begin
+    FY := Value;
+    Changed(False);
+  end;
 end;
 
 { TQuadDiagramLinePointCollection }
 
-destructor TQuadDiagramLinePointCollection.Destroy;
-var
-  i: Integer;
+constructor TQuadDiagramLinePointCollection.Create(AOwner: TQuadDiagramLineItem);
 begin
-  if Count > 0 then
-    for i := Count - 1 to 0 do
-      Items[i].Free;
+  inherited Create(AOwner, TQuadDiagramLinePointItem);
+end;
+
+destructor TQuadDiagramLinePointCollection.Destroy;
+begin
+
   inherited;
 end;
 
@@ -1132,6 +1228,7 @@ begin
   Result := TQuadDiagramLinePointItem(inherited Add);
   Result.FX := X;
   Result.FY := Y;
+  Result.FColor := 0;
 end;
 
 function TQuadDiagramLinePointCollection.GetItem(Index: Integer): TQuadDiagramLinePointItem;
@@ -1147,6 +1244,17 @@ end;
 procedure TQuadDiagramLinePointCollection.SetItem(Index: Integer; const Value: TQuadDiagramLinePointItem);
 begin
   Items[index].Assign(Value);
+end;
+
+procedure TQuadDiagramLinePointCollection.Update(Item: TCollectionItem);
+begin
+  inherited Update(Item);
+  GetOwner.Changed(false);
+end;
+
+function TQuadDiagramLinePointCollection.GetOwner: TQuadDiagramLineItem;
+begin
+  Result := TQuadDiagramLineItem(inherited GetOwner);
 end;
 
 { TQuadDiagramAxis }
@@ -1185,52 +1293,83 @@ end;
 
 procedure TQuadDiagramAxis.SetName(Value: String);
 begin
-  FName := Value;
-  FOwner.Repaint;
+  if FName <> Value then
+  begin
+    FName := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetFormat(Value: String);
 begin
-  FFormat := Value;
-  FOwner.Repaint;
+  if FFormat <> Value then
+  begin
+    FFormat := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetMinValue(Value: Single);
 begin
-  FMinValue := Value;
-  FOwner.Repaint;
+  if FMinValue <> Value then
+  begin
+    FMinValue := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetMaxValue(Value: Single);
 begin
-  FMaxValue := Value;
-  FOwner.Repaint;
+  if FMaxValue <> Value then
+  begin
+    FMaxValue := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetGridSize(Value: Single);
 begin
-  FGridSize := Value;
-  FOwner.Repaint;
+  if FGridSize <> Value then
+  begin
+    FGridSize := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetLowMin(Value: Single);
 begin
-  FLowMin := Value;
+  if FLowMin <> Value then
+  begin
+    FLowMin := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetLowMax(Value: Single);
 begin
-  FLowMax := Value;
+  if FLowMax <> Value then
+  begin
+    FLowMax := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetHighMin(Value: Single);
 begin
-  FHighMin := Value;
+  if FHighMin <> Value then
+  begin
+    FHighMin := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 procedure TQuadDiagramAxis.SetHighMax(Value: Single);
 begin
-  FHighMax := Value;
+  if FHighMax <> Value then
+  begin
+    FHighMax := Value;
+    FOwner.Repaint;
+  end;
 end;
 
 end.
