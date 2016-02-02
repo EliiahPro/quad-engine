@@ -138,7 +138,7 @@ begin
     begin
 //      SetCursor(0);
       Device.Render.D3DDevice.ShowCursor(True);
-      Result := 1;
+      Result := 0;
     end;
 
   WM_ACTIVATEAPP:

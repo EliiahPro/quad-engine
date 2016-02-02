@@ -320,8 +320,6 @@ begin
 
   Device.LastResultCode := FD3DDevice.BeginScene;
 
-  FIsDeviceLost := (Device.LastResultCode = D3DERR_DEVICELOST);
-
   FCount := 0;
   {$IFDEF DEBUG}
   if Assigned(FProfilerTags.BeginScene) then
@@ -1248,9 +1246,10 @@ procedure TQuadRender.ReleaseVolatileResources;
 var
   i: Integer;
 begin
+  FIsRenderIntoTexture := False;
   Device.FreeRenderTargets;
   FBackBuffer := nil;
-  FD3DVD := nil;
+//  FD3DVD := nil;
   FD3DVB := nil;
 end;
 

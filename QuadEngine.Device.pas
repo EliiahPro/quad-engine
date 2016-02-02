@@ -442,6 +442,7 @@ begin
   begin
     New(RenderTarget);
     RenderTarget.Texture := AQuadTexture;
+    RenderTarget.Texture._Release;
     RenderTarget.Reg := ARegister;
     RenderTarget.Width := AWidth;
     RenderTarget.Height := AHeight;
