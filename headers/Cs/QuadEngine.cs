@@ -577,7 +577,8 @@ namespace QuadEngine
         void SetOnMouseUp(IntPtr onMouseUp); 
         void SetOnMouseDblClick(IntPtr onMouseDblClick); 
         void SetOnMouseWheel(IntPtr onMouseWheel); 
-        void SetOnWindowMove(IntPtr onWindowMove); 
+        void SetOnWindowMove(IntPtr onWindowMove);
+        void SetOnDeviceRestored(IntPtr onDeviceRestored);
     }
 
     /* Quad Camera */

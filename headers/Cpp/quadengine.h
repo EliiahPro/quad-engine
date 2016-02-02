@@ -445,7 +445,8 @@ DECLARE_INTERFACE_(IQuadWindow, IUnknown)
 	virtual void CALLBACK SetOnMouseUp(TOnMouseEvent onMouseUp) = 0;
 	virtual void CALLBACK SetOnMouseDblClick(TOnMouseEvent onMouseDblClick) = 0;
 	virtual void CALLBACK SetOnMouseWheel(TOnMouseWheelEvent onMouseWheel) = 0;
-	virtual void CALLBACK SetOnWindowMove(TOnWindowMove onWindowMove) = 0;	
+	virtual void CALLBACK SetOnWindowMove(TOnWindowMove onWindowMove) = 0;
+    virtual void CALLBACK SetOnDeviceRestored(TOnEvent onDeviceRestored) = 0;
 };
 
 /* Quad Camera */

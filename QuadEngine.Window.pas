@@ -40,6 +40,7 @@ type
     FOnMouseDblClick: TOnMouseEvent;
     FOnMouseWheel: TOnMouseWheelEvent;
     FOnMove: TOnWindowMove;
+    FOnDeviceRestored: TOnEvent;
 
     FInput: TQuadInput;
 
@@ -70,6 +71,7 @@ type
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
     procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
+    procedure SetOnDeviceRestored(OnDeviceRestored: TOnEvent); stdcall;
   end;
 
 function WinMain(wnd: HWND; msg: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT; stdcall;
@@ -147,7 +149,11 @@ begin
       begin
         if Assigned(Device) then
           if Device.Render.IsInitialized then
+          begin
             Device.Render.ResetDevice;
+            if Assigned(Self) and Assigned(FOnDeviceRestored) then
+              FOnDeviceRestored;
+          end;
 
         if Assigned(Self) and Assigned(FOnActivate) then
           FOnActivate;
@@ -492,6 +498,11 @@ end;
 procedure TQuadWindow.SetOnActivate(OnActivate: TOnEvent);
 begin
   FOnActivate := OnActivate;
+end;
+
+procedure TQuadWindow.SetOnDeviceRestored(OnDeviceRestored: TOnEvent);
+begin
+  FOnDeviceRestored := OnDeviceRestored;
 end;
 
 procedure TQuadWindow.SetOnCreate(OnCreate: TOnEvent);

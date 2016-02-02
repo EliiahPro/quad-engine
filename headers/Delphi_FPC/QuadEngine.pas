@@ -531,6 +531,7 @@ type
     procedure SetOnMouseDblClick(OnMouseDblClick: TOnMouseEvent); stdcall;
     procedure SetOnMouseWheel(OnMouseWheel: TOnMouseWheelEvent); stdcall;
     procedure SetOnWindowMove(OnWindowMove: TOnWindowMove); stdcall;
+    procedure SetOnDeviceRestored(OnDeviceRestored: TOnEvent); stdcall;
   end;
 
   {Quad Camera}
