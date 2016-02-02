@@ -1579,6 +1579,7 @@ begin
     winrect.Bottom := FHeight;
     AdjustWindowRect(winrect, winstyle, False);
     SetWindowPos(FHandle, HWND_TOP, 0, 0, winrect.Right, winrect.Bottom, SWP_NOMOVE or SWP_SHOWWINDOW);
+    SetWindowLong(FHandle, GWL_STYLE, GetWindowLong(FHandle, GWL_STYLE) and not WS_BORDER and not WS_SIZEBOX and not WS_DLGFRAME)
   end;
 
   Device.LastResultCode := Device.D3D.GetAdapterDisplayMode(Device.ActiveMonitorIndex, FD3DDM);
