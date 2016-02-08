@@ -33,6 +33,7 @@ type
     FPatternSize: TVec2f;
     FIsLoaded: Boolean;
     FSync: TCriticalSection;
+    FIsLoadFromFile: Boolean;
     procedure SetTextureStages;
   public
     constructor Create(QuadRender: TQuadRender);
@@ -119,6 +120,7 @@ begin
   FPatternSize := TVec2f.Zero;
   FSync := TCriticalSection.Create;
   SetLength(FTextures, FQuadRender.MaxTextureStages);
+  FIsLoadFromFile := False;
 end;
 
 //=============================================================================
@@ -422,6 +424,8 @@ procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
 var
   Stream: TMemoryStream;
 begin
+  FIsLoadFromFile := True;
+
   if Assigned(Device.Log) then
   begin
     Device.Log.Write(PWideChar('Loading texture "' + AFilename + '"'));
@@ -439,6 +443,7 @@ begin
   LoadFromStream(ARegister, Stream.Memory, Stream.Size, APatternWidth, APatternHeight, AColorKey);
 
   FreeAndNil(Stream);
+  FIsLoadFromFile := False;
 end;
 
 //=============================================================================
@@ -523,7 +528,7 @@ var
 begin
   FIsLoaded := False;
 
-  if Assigned(Device.Log) then
+  if Assigned(Device.Log) and not FIsLoadFromFile then
   begin
     Device.Log.Write(PWideChar('Loading texture from stream'));
   end;
