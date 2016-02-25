@@ -453,7 +453,7 @@ DECLARE_INTERFACE_(IQuadWindow, IUnknown)
 
 DECLARE_INTERFACE_(IQuadCamera, IUnknown)
 {
-	virtual void CALLBACK Scale(float scale) = 0;
+	virtual void CALLBACK SetScale(float scale) = 0;
 	virtual void CALLBACK Rotate(float angle) = 0;
 	virtual void CALLBACK Translate(const Vec2f& distance) = 0;
 	virtual void CALLBACK Reset() = 0;

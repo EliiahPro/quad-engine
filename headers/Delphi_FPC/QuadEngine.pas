@@ -538,7 +538,7 @@ type
 
   IQuadCamera = interface(IUnknown)
   ['{BBC0BBF2-7602-489A-BE2A-37D681B7A242}']
-    procedure Scale(AScale: Single); stdcall;
+    procedure SetScale(AScale: Single); stdcall;
     procedure Rotate(AAngle: Single); stdcall;
     procedure Translate(const ADistance: TVec2f); stdcall;
     procedure Reset; stdcall;

@@ -588,7 +588,7 @@ namespace QuadEngine
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IQuadCamera
     {
-        void Scale(float scale);
+        void SetScale(float scale);
         void Rotate(float angle);
         void Translate(ref Vec2f distance);
         void Reset();

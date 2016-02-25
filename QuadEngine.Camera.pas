@@ -28,7 +28,7 @@ type
     FTranslation: TVec2f;
   public
     constructor Create(AQuadRender: TQuadRender);
-    procedure Scale(AScale: Single); stdcall;
+    procedure SetScale(AScale: Single); stdcall;
     procedure Rotate(AAngle: Single); stdcall;
     procedure Translate(const ADistance: TVec2f); stdcall;
     procedure Reset; stdcall;
@@ -200,7 +200,7 @@ begin
   FTranslation := FTranslation + ADistance;
 end;
 
-procedure TQuadCamera.Scale(AScale: Single);
+procedure TQuadCamera.SetScale(AScale: Single);
 begin
   FScale := AScale;
 end;
