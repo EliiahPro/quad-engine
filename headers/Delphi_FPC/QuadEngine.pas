@@ -228,10 +228,10 @@ type
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>
   IQuadRender = interface(IUnknown)
     ['{D9E9C42B-E737-4CF9-A92F-F0AE483BA39B}']
+    procedure GetClipRect(out ARect: TRect); stdcall;
     /// <summary>Retrieves the available texture memory.
     /// This will return all available texture memory including AGP aperture.</summary>
     /// <returns>Available memory size in bytes</returns>
-    procedure GetClipRect(out ARect: TRect); stdcall;
     function GetAvailableTextureMemory: Cardinal; stdcall;
     function GetMaxAnisotropy: Cardinal; stdcall;
     function GetMaxTextureHeight: Cardinal; stdcall;
