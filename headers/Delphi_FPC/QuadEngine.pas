@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.8.0 Diamond header file for Embarcadero™ Delphi® and FreePascal
+  Quad engine 0.8.1 Diamond header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -33,7 +33,7 @@ const
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
   QuadEngineMinorVersion: Byte = 0;
   QuadEngineMajorVersion: Byte = 8;
-  QuadEngineReleaseVersion: Byte = 0;
+  QuadEngineReleaseVersion: Byte = 1;
 
 type
   ///<summary>Blending mode types.</summary>

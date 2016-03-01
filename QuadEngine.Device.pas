@@ -22,7 +22,7 @@ uses
   QuadEngine.Render, System.IniFiles, QuadEngine, Classes;
 
 const
-  QuadVersion: PWideChar = 'Quad Engine v0.8.0 (Diamond)';
+  QuadVersion: PWideChar = 'Quad Engine v0.8.1 (Diamond)';
 
 type
   PRenderTarget = ^TRenderTarget;
