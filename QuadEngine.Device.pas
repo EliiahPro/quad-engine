@@ -433,6 +433,12 @@ begin
   if ((AWidth mod 4) > 0) or ((AHeight mod 4) > 0) then
     Exception.Create('RenderTarget size must be scale of 4.');
 
+  if not Assigned(FRender) then
+  begin
+    Log.Write('ERROR: CreateRenderTarget called before QuadRender was initialized');
+    Exit;
+  end;
+
   if AQuadTexture = nil then
   begin
     Device.CreateTexture(AQuadTexture);
@@ -463,21 +469,34 @@ end;
 
 procedure TQuadDevice.ShowCursor(Show: Boolean);
 begin
-  FIsHardwareCursor := Show;
+  if Assigned(FRender) then
+  begin
+    FIsHardwareCursor := Show;
 
-  if not IsHardwareCursor then
-    FRender.D3DDevice.ShowCursor(False);
+    if not IsHardwareCursor then
+      FRender.D3DDevice.ShowCursor(False);
+  end
+  else
+    Log.Write('ERROR: ShowCursor called before QuadRender was initialized');
 end;
 
 procedure TQuadDevice.SetCursorPosition(x, y: Integer);
 begin
-  FRender.D3DDevice.SetCursorPosition(x, y, D3DCURSOR_IMMEDIATE_UPDATE);
+  if Assigned(FRender) then
+    FRender.D3DDevice.SetCursorPosition(x, y, D3DCURSOR_IMMEDIATE_UPDATE)
+  else
+    Log.Write('ERROR: SetCursorPosition called before QuadRender was initialized');
 end;
 
 procedure TQuadDevice.SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture);
 begin
-  Image.GetTexture(0).GetSurfaceLevel(0, FCursorSurface);
-  FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
+  if Assigned(FRender) then
+  begin
+    Image.GetTexture(0).GetSurfaceLevel(0, FCursorSurface);
+    FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
+  end
+  else
+    Log.Write('ERROR: SetCursorProperties called before QuadRender was initialized');
 end;
 
 end.
