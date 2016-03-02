@@ -221,7 +221,8 @@ type
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
     procedure ShowCursor(Show: Boolean); stdcall;
-    procedure SetCursorPosition(x, y: integer); stdcall;
+    procedure SetCursorPosition(x, y: Integer); stdcall;
+    /// <summary>The dimensions Image must be a power of two in each direction, although not necessarily the same power of two. The alpha channel must be either 0.0 or 1.0. </summary>
     procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
   end;
 
