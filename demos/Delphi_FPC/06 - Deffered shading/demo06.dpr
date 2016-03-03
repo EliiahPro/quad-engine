@@ -54,13 +54,13 @@ begin
     Camera.Rotate(1);
 
   if QuadInput.IsKeyDown(VK_F5) then
-    Camera.Scale(0.5);
+    Camera.SetScale(0.5);
   if QuadInput.IsKeyDown(VK_F6) then
-    Camera.Scale(0.75);
+    Camera.SetScale(0.75);
   if QuadInput.IsKeyDown(VK_F7) then
-    Camera.Scale(1.0);
+    Camera.SetScale(1.0);
   if QuadInput.IsKeyDown(VK_F8) then
-    Camera.Scale(2.0);
+    Camera.SetScale(2.0);
 
 
   QuadRender.BeginRender;
