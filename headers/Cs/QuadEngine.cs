@@ -398,6 +398,7 @@ namespace QuadEngine
         /// <param name="textureFilename">Filename of texture file.</param>
         /// <param name="UVFilename">Filename of additional font data file.</param>
         void LoadFromFile(string textureFilename, string UVFilename);
+        void LoadFromStream(IntPtr AStream, AStreamSize int, IQuadTexture ATexture); stdcall;
         void SetSmartColor(string colorChar, UInt32 color);
         void SetDistanceFieldParams(ref TDistanceFieldParams distanceFieldParam);
         void SetIsSmartColoring(bool value);

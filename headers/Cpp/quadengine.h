@@ -338,6 +338,7 @@ DECLARE_INTERFACE_(IQuadFont, IUnknown)
 	virtual float CALLBACK GetSpacing() = 0;
 	virtual void CALLBACK SetSpacing(float value) = 0;
 	virtual void CALLBACK LoadFromFile(wchar_t* textureFilename, wchar_t* UVFilename) = 0;
+	virtual void CALLBACK LoadFromStream(void* AStream, int AStreamSize, IQuadTexture* ATexture) = 0;
 	virtual void CALLBACK SetSmartColor(wchar_t colorChar, unsigned int color) = 0;
 	virtual void CALLBACK SetDistanceFieldParams(const TDistanceFieldParams& distanceFieldParams) = 0;
 	virtual void CALLBACK SetIsSmartColoring(bool Value) = 0;
