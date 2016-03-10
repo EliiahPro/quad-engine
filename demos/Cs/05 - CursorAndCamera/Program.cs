@@ -35,7 +35,7 @@ namespace Demo05
             quadInput.GetMouseWheel(out mouseWheel);
             
             if (mouseWheel.Y != 0)
-                quadCamera.Scale(Math.Max(0.1f, Math.Min(3.0f, quadCamera.GetScale() + mouseWheel.Normalize().Y / 10)));
+                quadCamera.SetScale(Math.Max(0.1f, Math.Min(3.0f, quadCamera.GetScale() + mouseWheel.Normalize().Y / 10)));
 
             Vec2f cameraPosition;
             quadCamera.GetPosition(out cameraPosition);

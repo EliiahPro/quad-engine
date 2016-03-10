@@ -35,7 +35,7 @@ begin
   QuadInput.GetMouseVector(MouseVector);
   QuadInput.GetMouseWheel(MouseWheel);
 
-  Camera.Scale(max(0.1, min(3, Camera.GetScale + TVec2f(MouseWheel).Normalize.Y / 10)));
+  Camera.SetScale(max(0.1, min(3, Camera.GetScale + TVec2f(MouseWheel).Normalize.Y / 10)));
 
   Camera.Translate(MouseVector);
 
