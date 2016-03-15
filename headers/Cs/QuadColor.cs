@@ -39,17 +39,17 @@ namespace QuadEngine
         public static readonly QuadColor Maroon = new QuadColor(128, 0, 0);
         public static readonly QuadColor Green = new QuadColor(0, 128, 0);
         public static readonly QuadColor Navy = new QuadColor(0, 0, 128);
-        public static readonly QuadColor Yellow = new QuadColor(256, 256, 0);
-        public static readonly QuadColor Fuchsia = new QuadColor(256, 0, 256);
-        public static readonly QuadColor Aqua = new QuadColor(0, 256, 256);
+        public static readonly QuadColor Yellow = new QuadColor(255, 255, 0);
+        public static readonly QuadColor Fuchsia = new QuadColor(255, 0, 255);
+        public static readonly QuadColor Aqua = new QuadColor(0, 255, 255);
         public static readonly QuadColor Olive = new QuadColor(128, 128, 0);
         public static readonly QuadColor Purple = new QuadColor(128, 0, 128);
         public static readonly QuadColor Teal = new QuadColor(0, 128, 128);
         public static readonly QuadColor Gray = new QuadColor(128, 128, 128);
         public static readonly QuadColor Silver = new QuadColor(192, 192, 192);
-        public static readonly QuadColor Orange = new QuadColor(256, 128, 0);
+        public static readonly QuadColor Orange = new QuadColor(255, 128, 0);
         public static readonly QuadColor Brown = new QuadColor(128, 64, 0);
-        public static readonly QuadColor Violet = new QuadColor(128, 0, 256);
+        public static readonly QuadColor Violet = new QuadColor(128, 0, 255);
 
         public void ClampToMin()
         {
