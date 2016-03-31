@@ -239,7 +239,7 @@ namespace QuadEngine
         void DrawCircle(ref Vec2f Center, float Radius, float InnerRadius, UInt32 Color = 0xFFFFFFFF); 
         void DrawLine(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void DrawPoint(ref Vec2f Point, UInt32 Color);
-        void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, uint Color1, uint Color2);
+        void DrawQuadLine(ref Vec2f PointA, ref Vec2f PointB, float Width1, float Width2, UInt32 Color1, UInt32 Color2);
         /// <summary>End of render. Call this routine at the end of frame render.</summary>
         void EndRender();
         void Finalize();

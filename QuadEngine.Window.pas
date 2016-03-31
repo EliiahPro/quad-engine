@@ -138,7 +138,6 @@ begin
   WM_SETCURSOR:
     if Device.IsHardwareCursor then
     begin
-//      SetCursor(0);
       Device.Render.D3DDevice.ShowCursor(True);
       Result := 0;
     end;
@@ -178,8 +177,8 @@ begin
   FWndClass.cbClsExtra := 0;
   FWndClass.cbWndExtra := 4;
   FWndClass.hInstance := HInstance;
-  FWndClass.hIcon := LoadIcon (0, IDI_APPLICATION);
-  FWndClass.hCursor := LoadCursor (0, IDC_ARROW);
+  FWndClass.hIcon := LoadIcon(0, IDI_APPLICATION);
+  FWndClass.hCursor := LoadCursor(0, IDC_ARROW);
   FWndClass.hbrBackground := CreateSolidBrush(0);
   FWndClass.lpszMenuName := nil;
   FWndClass.lpszClassName := 'Main_Window';
@@ -191,9 +190,12 @@ begin
                             100, 100,
                             300, 300,
                             0, 0,
-                            Hinstance, nil);
+                            HInstance, nil);
 
   SetWindowLong(FHandle, 0, Integer(Self));
+
+  ShowWindow(Self.FHandle, CmdShow);
+  UpdateWindow(Self.FHandle);
 
   FOnKeyDown := nil;
   FOnKeyUp := nil;
@@ -256,7 +258,7 @@ begin
       if Assigned(FInput) then
         FInput.SetKeyState(wparam, True);
 
-      if Assigned(FOnKeyDown) {and (lparam and $FE = 0)} then
+      if Assigned(FOnKeyDown) then
         FOnKeyDown(wparam, GetPressedKeyButtons);
     end;
 
@@ -265,7 +267,7 @@ begin
       if Assigned(FInput) then
         FInput.SetKeyState(wparam, False);
 
-      if Assigned(FOnKeyUp) {and (lparam and $FE = 1)} then
+      if Assigned(FOnKeyUp) then
         FOnKeyUp(wparam, GetPressedKeyButtons);
     end;
 
@@ -459,7 +461,6 @@ begin
     FOnCreate;
 
   while GetMessage(Mmsg, 0, 0, 0) do
-//  if PeekMessage(Mmsg, FHandle, 0, 0, PM_NOREMOVE) then
   begin
     TranslateMessage(Mmsg);
     DispatchMessage(Mmsg);
@@ -487,7 +488,6 @@ begin
   end;
 
   MoveWindow(Self.FHandle, 0, 0, AWidth + Diff.X, AHeight + Diff.Y, True);
-//  SetWindowPos(FHandle, 0, 0, 0, NewWidth, NewHeight, SWP_NOMOVE or SWP_NOZORDER);
 end;
 
 procedure TQuadWindow.SetPosition(AXpos, AYPos: Integer);

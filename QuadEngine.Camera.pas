@@ -207,6 +207,7 @@ end;
 
 procedure TQuadCamera.Disable;
 begin
+  FRender.FlushBuffer;
   FRender.ChangeResolution(FRender.Width, FRender.Height);
 
   CurrentCamera := nil;
