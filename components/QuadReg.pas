@@ -15,7 +15,8 @@ uses
   Quad.GradientEdit,
   QuadIcon,
   QuadMemo,
-  QuadPageControl;
+  QuadPageControl,
+  Quad.ObjectInspector;
 
 procedure Register;
 begin
@@ -25,6 +26,7 @@ begin
   RegisterComponents('Quad', [TQuadGradientEdit]);
   RegisterComponents('Quad', [TQuadIcon]);
   RegisterComponents('Quad', [TQuadMemo]);
+  RegisterComponents('Quad', [Quad.ObjectInspector]);
 end;
 
 end.
