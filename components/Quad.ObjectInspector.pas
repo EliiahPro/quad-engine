@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, Vcl.Controls, Vcl.ComCtrls, CommCtrl, System.Rtti, System.TypInfo,
-  System.Types, Vcl.StdCtrls;
+  System.Types, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
   TQuadObjectInspectorNodeClass = class of TQuadObjectInspectorNode;
@@ -15,9 +15,9 @@ type
     FRttiProp: TRttiProperty;
     function GetControl: TControl; virtual; abstract;
     procedure Init(ARttiProp: TRttiProperty; AObject: TObject); virtual;
+    procedure UpdateParams(AControl: TControl);
   public
     property Control: TControl read GetControl;
-
   end;
 
   TQuadObjectInspectorNodeEdit = class(TQuadObjectInspectorNode)
@@ -40,8 +40,33 @@ type
     destructor Destroy; override;
   end;
 
+  TQuadObjectInspectorNodeSetItem = class(TQuadObjectInspectorNode)
+  private
+    FCheckBox: TCheckBox;
+    FValue: Integer;
+    function GetControl: TControl; override;
+    function GetChecked: Boolean;
+    procedure SetChecked(Value: Boolean);
+  public
+    constructor Create(AOwner: TTreeNodes); override;
+    destructor Destroy; override;
+    property Value: Integer read FValue;
+    property Checked: Boolean read GetChecked write SetChecked;
+  end;
+
+  TQuadObjectInspectorNodeSet = class(TQuadObjectInspectorNode)
+  private
+    FLabel: TLabel;
+    function GetControl: TControl; override;
+    procedure Init(ARttiProp: TRttiProperty; AObject: TObject); override;
+  public
+    destructor Destroy; override;
+  end;
+
   TQuadObjectInspector = class(TTreeView)
   private
+    FPanel: TPanel;
+    FSplitter: TSplitter;
     FRttiContext: TRttiContext;
     FObject: TObject;
     FNodeClass: TQuadObjectInspectorNodeClass;
@@ -65,9 +90,17 @@ implementation
 
 procedure TQuadObjectInspectorNode.Init(ARttiProp: TRttiProperty; AObject: TObject);
 begin
-  TreeView_SetItemHeight(Handle, 21);
+  TreeView_SetItemHeight(Handle, 22);
   FRttiProp := ARttiProp;
   FObject := AObject;
+end;
+
+procedure TQuadObjectInspectorNode.UpdateParams(AControl: TControl);
+begin
+  AControl.Parent := TQuadObjectInspector(Owner.Owner).FPanel;
+  AControl.Left := 0;
+  AControl.Width := AControl.Parent.Width;
+  AControl.Anchors := [akLeft, akRight, akTop];
 end;
 
 { TQuadObjectInspectorNodeEdit }
@@ -76,8 +109,9 @@ procedure TQuadObjectInspectorNodeEdit.Init(ARttiProp: TRttiProperty; AObject: T
 begin
   inherited;
   FEdit := TEdit.Create(Owner.Owner);
-  FEdit.Parent := Owner.Owner;
+  UpdateParams(FEdit);
   FEdit.OnChange := EditChange;
+  FEdit.Text := ARttiProp.Name;
 end;
 
 destructor TQuadObjectInspectorNodeEdit.Destroy;
@@ -109,9 +143,9 @@ var
 begin
   inherited;
   FComboBox := TComboBox.Create(Owner.Owner);
-  FComboBox.Parent := Owner.Owner;
+  UpdateParams(FComboBox);
   FComboBox.OnChange := ComboBoxChange;
-  FComboBox.Style := csDropDownList;
+  FComboBox.Text := ARttiProp.Name;
 
   Value := FRttiProp.GetValue(FObject);
   EnumTypeInfo := Value.TypeInfo;
@@ -143,6 +177,66 @@ begin
   Result := FComboBox;
 end;
 
+{ TQuadObjectInspectorNodeSetitem }
+
+constructor TQuadObjectInspectorNodeSetItem.Create(AOwner: TTreeNodes);
+begin
+  inherited;
+  FCheckBox := TCheckBox.Create(Owner.Owner);
+  UpdateParams(FCheckBox);
+  FCheckBox.Caption := 'False';
+end;
+
+destructor TQuadObjectInspectorNodeSetItem.Destroy;
+begin
+  if Assigned(FCheckBox) then
+    FCheckBox.Free;
+  inherited;
+end;
+
+function TQuadObjectInspectorNodeSetItem.GetControl: TControl;
+begin
+  Result := FCheckBox;
+end;
+
+function TQuadObjectInspectorNodeSetItem.GetChecked: Boolean;
+begin
+
+end;
+
+procedure TQuadObjectInspectorNodeSetItem.SetChecked(Value: Boolean);
+begin
+
+end;
+
+{ TQuadObjectInspectorNodeSet }
+
+procedure TQuadObjectInspectorNodeSet.Init(ARttiProp: TRttiProperty; AObject: TObject);
+var
+  EnumTypeInfo: PTypeInfo;
+  EnumTypeData: PTypeData;
+  Index, i: Integer;
+  Str: string;
+  Value: TValue;
+begin
+  inherited;
+  FLabel := TLabel.Create(Owner.Owner);
+  UpdateParams(FLabel);
+  FLabel.Caption := '[]';
+end;
+
+destructor TQuadObjectInspectorNodeSet.Destroy;
+begin
+  if Assigned(FLabel) then
+    FLabel.Free;
+  inherited;
+end;
+
+function TQuadObjectInspectorNodeSet.GetControl: TControl;
+begin
+  Result := FLabel;
+end;
+
 { TQuadObjectInspector }
 
 constructor TQuadObjectInspector.Create(AOwner: TComponent);
@@ -150,6 +244,14 @@ begin
   inherited Create(AOwner);
   FNodeClass := nil;
   FRttiContext := TRttiContext.Create;
+  FPanel := TPanel.Create(Self);
+  FPanel.Parent := Self;
+  FPanel.Align := alRight;
+  FPanel.Width := 85;
+  FSplitter := TSplitter.Create(Self);
+  FSplitter.Parent := Self;
+  FSplitter.Align := alRight;
+  FSplitter.Width := 4;
 end;
 
 destructor TQuadObjectInspector.Destroy;
@@ -197,8 +299,9 @@ begin
             FNodeClass := TQuadObjectInspectorNodeEdit;
           tkEnumeration:
             FNodeClass := TQuadObjectInspectorNodeEnum;
-
-          // tkSet, tkRecord, tkClass:
+          tkSet:
+            FNodeClass := TQuadObjectInspectorNodeSet;
+          // tkRecord, tkClass:
            //  Self.Items.AddChild(nil, RttiProp.Name);
         end;
 
@@ -238,9 +341,11 @@ begin
   begin
     Control := TQuadObjectInspectorNode(Node).Control;
     R := Node.DisplayRect(True);
+    Control.Visible := True;
     Control.Top := R.Top;
-    Control.Left := 100;
-    Control.Width := Self.Width - 123;
+   // Control.Left := 100;
+   // Control.Width := Self.Width - 123;
+   // Control.Invalidate;
   end;
 end;
 
@@ -261,7 +366,7 @@ end;
 procedure TQuadObjectInspector.Collapse(Node: TTreeNode);
 begin
   inherited;
-  HideNode(Node);
+ // HideNode(Node);
   Repaint;
 end;
 
