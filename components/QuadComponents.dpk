@@ -35,6 +35,7 @@ contains
   Quad.Diagram in 'Quad.Diagram.pas',
   Quad.EffectTimeLine in 'Quad.EffectTimeLine.pas',
   Quad.GradientEdit in 'Quad.GradientEdit.pas',
-  QuadReg in 'QuadReg.pas';
+  QuadReg in 'QuadReg.pas',
+  Quad.ObjectInspector in 'Quad.ObjectInspector.pas';
 
 end.

@@ -2,239 +2,490 @@ unit Quad.ObjectInspector;
 
 interface
 
+
 uses
-  System.SysUtils, System.Classes, Vcl.Controls, Vcl.ComCtrls, CommCtrl, System.Rtti, System.TypInfo,
-  System.Types, Vcl.StdCtrls, Vcl.ExtCtrls;
+  System.SysUtils, System.Classes, Vcl.Controls, Vcl.Forms, System.Rtti, System.TypInfo,
+  Vcl.ExtCtrls, Vcl.StdCtrls, Winapi.Messages, System.Generics.Collections, System.Generics.Defaults,
+  Vcl.CheckLst;
 
 type
-  TQuadObjectInspectorNodeClass = class of TQuadObjectInspectorNode;
+  TQuadObjectInspectorPanel = class;
+  TQuadObjectInspector = class;
 
-  TQuadObjectInspectorNode = class(TTreeNode)
-  private
-    FObject: TObject;
-    FRttiProp: TRttiProperty;
-    function GetControl: TControl; virtual; abstract;
-    procedure Init(ARttiProp: TRttiProperty; AObject: TObject); virtual;
-    procedure UpdateParams(AControl: TControl);
+  TQuadObjectInspectorItemType = (itNone, itProp, itField);
+
+  TQuadObjectInspectorItem = class(TPanel)
+  strict private
+    function GetOwnerPanel: TQuadObjectInspectorPanel;
+    function GetCaption: string;
+  strict protected
+    FType: TQuadObjectInspectorItemType;
+    FLabel: TLabel;
+    FRttiMember: TRttiMember;
+    function GetValue: TValue;
+    procedure SetValue(Value: TValue);
+    function GetType: TRttiType;
   public
-    property Control: TControl read GetControl;
+    constructor Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember); virtual;
+    property OwnerPanel: TQuadObjectInspectorPanel read GetOwnerPanel;
+    property Caption: string read GetCaption;
   end;
 
-  TQuadObjectInspectorNodeEdit = class(TQuadObjectInspectorNode)
-  private
+  TQuadObjectInspectorItemEdit = class(TQuadObjectInspectorItem)
+  strict protected
     FEdit: TEdit;
     procedure EditChange(Sender: TObject);
-    function GetControl: TControl; override;
-    procedure Init(ARttiProp: TRttiProperty; AObject: TObject); override;
   public
-    destructor Destroy; override;
+    constructor Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember); override;
   end;
 
-  TQuadObjectInspectorNodeEnum = class(TQuadObjectInspectorNode)
-  private
+  TQuadObjectInspectorItemBool = class(TQuadObjectInspectorItem)
+  strict private
+    FCheckBox: TCheckBox;
+    procedure CheckBoxClick(Sender: TObject);
+  public
+    constructor Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember); override;
+  end;
+
+  TQuadObjectInspectorItemEnum = class(TQuadObjectInspectorItem)
+  strict private
     FComboBox: TComboBox;
     procedure ComboBoxChange(Sender: TObject);
-    function GetControl: TControl; override;
-    procedure Init(ARttiProp: TRttiProperty; AObject: TObject); override;
   public
-    destructor Destroy; override;
+    constructor Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember); override;
   end;
 
-  TQuadObjectInspectorNodeSetItem = class(TQuadObjectInspectorNode)
-  private
-    FCheckBox: TCheckBox;
-    FValue: Integer;
-    function GetControl: TControl; override;
-    function GetChecked: Boolean;
-    procedure SetChecked(Value: Boolean);
+  TQuadObjectInspectorItemSet = class(TQuadObjectInspectorItemEdit)
+  strict private
+    FCheckListBox: TCheckListBox;
+    procedure CheckListBoxClickCheck(Sender: TObject);
   public
-    constructor Create(AOwner: TTreeNodes); override;
-    destructor Destroy; override;
-    property Value: Integer read FValue;
-    property Checked: Boolean read GetChecked write SetChecked;
+    constructor Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember); override;
   end;
 
-  TQuadObjectInspectorNodeSet = class(TQuadObjectInspectorNode)
-  private
-    FLabel: TLabel;
-    function GetControl: TControl; override;
-    procedure Init(ARttiProp: TRttiProperty; AObject: TObject); override;
+  TQuadObjectInspectorItemRecord = class(TQuadObjectInspectorItem)
+  strict private
+    FPanel: TQuadObjectInspectorPanel;
+    procedure PanelChange(Sender: TObject);
   public
-    destructor Destroy; override;
+    constructor Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember); override;
   end;
 
-  TQuadObjectInspector = class(TTreeView)
-  private
-    FPanel: TPanel;
-    FSplitter: TSplitter;
+  TQuadObjectInspectorPanel = class(TPanel)
+  strict private
+    FInspectedObject: Pointer;
     FRttiContext: TRttiContext;
-    FObject: TObject;
-    FNodeClass: TQuadObjectInspectorNodeClass;
-    procedure HideNode(Node : TTreeNode);
-  protected
-    procedure Collapse(Node: TTreeNode); override;
-    function CustomDrawItem(Node: TTreeNode; State: TCustomDrawState; Stage: TCustomDrawStage; var PaintImages: Boolean): Boolean; override;
-    function IsCustomDrawn(Target: TCustomDrawTarget; Stage: TCustomDrawStage): Boolean; override;
-    function CreateNode: TTreeNode; override;
+    FRttiType: TRttiType;
+    FOnChange: TNotifyEvent;
+    constructor Create(AOwner: TComponent); overload; override;
+    function IsBoolean(ARttiType: TRttiType): Boolean;
+    procedure Add(ARttiType: TRttiType; ARttiMember: TRttiMember);
+  public
+    constructor Create(AOwner: TQuadObjectInspector; AInspectedObject: TObject); overload;
+    constructor Create(AOwner: TQuadObjectInspectorItem; AInspectedObject: Pointer; ARecordType: TRttiType); overload;
+    procedure Change;
+    procedure SetChange(AOnChange: TNotifyEvent);
+    procedure Init;
+    procedure FieldsInit;
+    destructor Destroy; override;
+    property InspectedObject: Pointer read FInspectedObject;
+  end;
+
+  TQuadObjectInspector = class(TScrollBox)
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure SetObject(AObject: TObject);
-  published
-
+    procedure Clear;
+    function AddObject(AObject: TObject): TQuadObjectInspectorPanel;
   end;
 
 implementation
 
-{ TQuadObjectInspectorNode }
+{ TQuadObjectInspectorItem }
 
-procedure TQuadObjectInspectorNode.Init(ARttiProp: TRttiProperty; AObject: TObject);
+constructor TQuadObjectInspectorItem.Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember);
 begin
-  TreeView_SetItemHeight(Handle, 22);
-  FRttiProp := ARttiProp;
-  FObject := AObject;
+  inherited Create(AOwner);
+  FRttiMember := ARttiMember;
+  if ARttiMember is TRttiProperty then
+    FType := itProp
+  else
+    if ARttiMember is TRttiField then
+      FType := itField
+    else
+      FType := itNone;
+
+  Self.Parent := AOwner;
+  Self.BevelOuter := bvNone;
+  Self.Height := 21;
+  Self.Align := alTop;
+  FLabel := TLabel.Create(Self);
+  FLabel.Parent := Self;
+  FLabel.Left := 16;
+  FLabel.Top := 4;
+  FLabel.Caption := FRttiMember.Name;
 end;
 
-procedure TQuadObjectInspectorNode.UpdateParams(AControl: TControl);
+function TQuadObjectInspectorItem.GetOwnerPanel: TQuadObjectInspectorPanel;
 begin
-  AControl.Parent := TQuadObjectInspector(Owner.Owner).FPanel;
-  AControl.Left := 0;
-  AControl.Width := AControl.Parent.Width;
-  AControl.Anchors := [akLeft, akRight, akTop];
+  if Owner is TQuadObjectInspectorPanel then
+    Result := TQuadObjectInspectorPanel(Owner)
+  else
+    Result := nil;
 end;
 
-{ TQuadObjectInspectorNodeEdit }
-
-procedure TQuadObjectInspectorNodeEdit.Init(ARttiProp: TRttiProperty; AObject: TObject);
+function TQuadObjectInspectorItem.GetValue: TValue;
 begin
-  inherited;
-  FEdit := TEdit.Create(Owner.Owner);
-  UpdateParams(FEdit);
-  FEdit.OnChange := EditChange;
-  FEdit.Text := ARttiProp.Name;
+  Result := nil;
+  case FType of
+    itProp: Result := (FRttiMember as TRttiProperty).GetValue(OwnerPanel.InspectedObject);
+    itField: Result := (FRttiMember as TRttiField).GetValue(OwnerPanel.InspectedObject);
+  end;
 end;
 
-destructor TQuadObjectInspectorNodeEdit.Destroy;
+procedure TQuadObjectInspectorItem.SetValue(Value: TValue);
 begin
-  if Assigned(FEdit) then
-    FEdit.Free;
-  inherited;
+  case FType of
+    itProp: (FRttiMember as TRttiProperty).SetValue(OwnerPanel.InspectedObject, Value);
+    itField: (FRttiMember as TRttiField).SetValue(OwnerPanel.InspectedObject, Value);
+  end;
+  OwnerPanel.Change;
 end;
 
-procedure TQuadObjectInspectorNodeEdit.EditChange(Sender: TObject);
+function TQuadObjectInspectorItem.GetType: TRttiType;
 begin
-  //
+  Result := nil;
+  case FType of
+    itProp: Result := (FRttiMember as TRttiProperty).PropertyType;
+    itField: Result := (FRttiMember as TRttiField).FieldType;
+  end;
 end;
 
-function TQuadObjectInspectorNodeEdit.GetControl: TControl;
+function TQuadObjectInspectorItem.GetCaption: string;
 begin
-  Result := FEdit;
+  Result := FLabel.Caption;
 end;
 
-{ TQuadObjectInspectorNodeEnum }
+{ TQuadObjectInspectorItemEdit }
 
-procedure TQuadObjectInspectorNodeEnum.Init(ARttiProp: TRttiProperty; AObject: TObject);
+constructor TQuadObjectInspectorItemEdit.Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember);
 var
-  EnumTypeInfo: PTypeInfo;
-  EnumTypeData: PTypeData;
-  Index, i: Integer;
-  Str: string;
   Value: TValue;
 begin
   inherited;
-  FComboBox := TComboBox.Create(Owner.Owner);
-  UpdateParams(FComboBox);
-  FComboBox.OnChange := ComboBoxChange;
-  FComboBox.Text := ARttiProp.Name;
+  FEdit := TEdit.Create(Self);
+  FEdit.Parent := Self;
+  FEdit.Align := alRight;
+  FEdit.Width := 128;
+  Value := GetValue;
+  case GetType.TypeKind of
+    tkFloat: FEdit.Text := FormatFloat('0.0#####', Value.AsExtended );
+    else FEdit.Text := Value.ToString;
+  end;
+  FEdit.OnChange := EditChange;
+end;
 
-  Value := FRttiProp.GetValue(FObject);
-  EnumTypeInfo := Value.TypeInfo;
+procedure TQuadObjectInspectorItemEdit.EditChange(Sender: TObject);
+begin
+  if Assigned(OwnerPanel) then
+    case GetType.TypeKind of
+      tkInteger:
+        SetValue(StrToIntDef(FEdit.Text, 0));
+      tkFloat:
+        SetValue(StrToFloatDef(FEdit.Text, 0));
+      tkString, tkLString, tkWString, tkUString, tkWChar, tkChar:
+        SetValue(FEdit.Text);
+    end;
+end;
+
+{ TQuadObjectInspectorItemBool }
+
+constructor TQuadObjectInspectorItemBool.Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember);
+var
+  Value: TValue;
+begin
+  inherited;
+  FCheckBox := TCheckBox.Create(Self);
+  FCheckBox.Parent := Self;
+  FCheckBox.Align := alRight;
+  FCheckBox.Width := 128;
+  Value := GetValue;
+  FCheckBox.Caption := Value.ToString;
+  FCheckBox.OnClick := CheckBoxClick;
+  FCheckBox.Checked := Value.AsOrdinal = 1;
+end;
+
+procedure TQuadObjectInspectorItemBool.CheckBoxClick(Sender: TObject);
+begin
+  SetValue(FCheckBox.Checked);
+  FCheckBox.Caption := GetValue.ToString;
+end;
+
+{ TQuadObjectInspectorItemEnum }
+
+constructor TQuadObjectInspectorItemEnum.Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember);
+var
+  Value: TValue;
+  EnumTypeInfo: PTypeInfo;
+  EnumTypeData: PTypeData;
+  i: Integer;
+  Str: string;
+begin
+  inherited;
+  FComboBox := TComboBox.Create(Self);
+  FComboBox.Parent := Self;
+  FComboBox.Align := alRight;
+  FComboBox.Width := 128;
+  Value := GetValue;
+  EnumTypeInfo := GetType.Handle;
   EnumTypeData := GetTypeData(EnumTypeInfo);
   for i := EnumTypeData.MinValue to EnumTypeData.MaxValue do
   begin
     Str := GetEnumName(EnumTypeInfo, i);
     if Str <> '' then
+      FComboBox.Items.AddObject(Str, TObject(i));
+  end;
+  FComboBox.Text := Value.ToString;
+  FComboBox.OnChange := ComboBoxChange;
+end;
+
+procedure TQuadObjectInspectorItemEnum.ComboBoxChange(Sender: TObject);
+begin
+  SetValue(TValue.FromOrdinal(GetType.Handle, Integer(FComboBox.Items.Objects[FComboBox.ItemIndex])));
+end;
+
+{ TQuadObjectInspectorItemSet }
+
+constructor TQuadObjectInspectorItemSet.Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember);
+var
+  Value: TValue;
+  TypeInfo, TypeInfo1: PTypeInfo;
+  TypeData, TypeData1: PTypeData;
+  i, Index: Integer;
+  Str: string;
+begin
+  inherited;
+  FEdit.Align := alCustom;
+  FEdit.Width := 128;
+  FEdit.Top := 0;
+  FEdit.Left := Width - FEdit.Width;
+  FEdit.Anchors := [akTop, akRight];
+
+  FCheckListBox := TCheckListBox.Create(Self);
+  FCheckListBox.Parent := Self;
+  //FCheckListBox.Align := alRight;
+  FCheckListBox.OnClickCheck := CheckListBoxClickCheck;
+  Value := GetValue;
+  FEdit.ReadOnly := True;
+  FEdit.Text := Value.ToString;
+  TypeInfo := Value.TypeInfo;
+  TypeData := GetTypeData(TypeInfo);
+
+  TypeInfo1 := TypeData.CompType^;
+  TypeData1 := GetTypeData(TypeInfo1);
+  for i := TypeData1.MinValue to TypeData1.MaxValue do
+  begin
+    Str := GetEnumName(TypeInfo1, i);
+    if Str <> '' then
     begin
-      Index := FComboBox.Items.AddObject(Str, TObject(i));
+      Index := FCheckListBox.Items.AddObject(Str, TObject(i));
+      FCheckListBox.Checked[Index] := Pos(Str, FEdit.Text) > 0;
     end;
+  end;
+  FCheckListBox.Height := FCheckListBox.Count * FCheckListBox.ItemHeight + 4;
+  FCheckListBox.Width := 128;
+  FCheckListBox.Top := 21;
+  FCheckListBox.Left := Width - FCheckListBox.Width;
+  FCheckListBox.Anchors := [akTop, akRight];
+  Height := FCheckListBox.Height + FEdit.Height;
+end;
+
+procedure TQuadObjectInspectorItemSet.CheckListBoxClickCheck(Sender: TObject);
+var
+  i: Integer;
+  Str: String;
+  Value: TValue;
+begin
+  Str := '[';
+  for i := 0 to FCheckListBox.Count - 1 do
+    if FCheckListBox.Checked[i] then
+    begin
+      if Str <> '[' then
+        Str := Str + ',';
+      Str := Str + FCheckListBox.Items[i];
+    end;
+  Str := Str + ']';
+  Value := GetValue;
+  i := StringToSet(Value.TypeInfo, Str);
+  TValue.Make(@i, Value.TypeInfo, Value);
+  SetValue(Value);
+  FEdit.Text := Str;
+end;
+
+{ TQuadObjectInspectorItemRecord }
+
+constructor TQuadObjectInspectorItemRecord.Create(AOwner: TQuadObjectInspectorPanel; ARttiMember: TRttiMember);
+begin
+  inherited;
+
+  FPanel := TQuadObjectInspectorPanel.Create(Self, GetValue.GetReferenceToRawData, GetType.AsRecord);
+  FPanel.Align := alCustom;
+  FPanel.Anchors := [akTop, akLeft, akRight];
+  FPanel.Width := Width - 16;
+  FPanel.Top := 21;
+  FPanel.Left := Width - FPanel.Width;
+  Height := FPanel.Height + 21;
+  FPanel.SetChange(PanelChange);
+end;
+
+procedure TQuadObjectInspectorItemRecord.PanelChange(Sender: TObject);
+var
+  Value: TValue;
+begin
+  TValue.Make(FPanel.InspectedObject, GetType.Handle, Value);
+  SetValue(Value);
+end;
+
+{ TQuadObjectInspectorPanel }
+
+constructor TQuadObjectInspectorPanel.Create(AOwner: TComponent);
+begin
+  inherited;
+  Parent := TWinControl(AOwner);
+  Top := MaxInt;
+  Align := alTop;
+  AutoSize := True;
+  BevelOuter := bvNone;
+  FInspectedObject := nil;
+  FRttiContext := TRttiContext.Create;
+end;
+
+constructor TQuadObjectInspectorPanel.Create(AOwner: TQuadObjectInspector; AInspectedObject: TObject);
+begin
+  Create(AOwner);
+  FInspectedObject := AInspectedObject;
+  FRttiType := FRttiContext.GetType(AInspectedObject.ClassInfo);
+  Init;
+end;
+
+constructor TQuadObjectInspectorPanel.Create(AOwner: TQuadObjectInspectorItem; AInspectedObject: Pointer; ARecordType: TRttiType);
+begin
+  Create(AOwner);
+  FInspectedObject := AInspectedObject;
+  FRttiType := ARecordType;
+  FieldsInit;
+end;
+
+destructor TQuadObjectInspectorPanel.Destroy;
+begin
+  FRttiContext.Free;
+  inherited;
+end;
+
+procedure TQuadObjectInspectorPanel.Change;
+begin
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+procedure TQuadObjectInspectorPanel.Init;
+
+  procedure PropListSort(var APropList: TArray<TRttiProperty>);
+  var
+    i, k: Integer;
+    Prop: TRttiProperty;
+  begin
+    for k := 1 to High(APropList) do
+      for i := 1 to High(APropList) do
+        if CompareText(APropList[i - 1].Name, APropList[i].Name) < 0 then
+        begin
+          Prop := APropList[i - 1];
+          APropList[i - 1] := APropList[i];
+          APropList[i] := Prop;
+        end;
+  end;
+
+var
+  RttiProp: TRttiProperty;
+  PropList: TArray<TRttiProperty>;
+begin
+  PropList := FRttiType.GetProperties;
+  PropListSort(PropList);
+  for RttiProp in PropList do
+    if Assigned(RttiProp) and RttiProp.IsWritable and RttiProp.IsReadable then
+      Add(RttiProp.PropertyType, RttiProp);
+end;
+
+procedure TQuadObjectInspectorPanel.FieldsInit;
+
+  procedure FieldListSort(var AFieldList: TArray<TRttiField>);
+  var
+    i, k: Integer;
+    Field: TRttiField;
+  begin
+    for k := 1 to High(AFieldList) do
+      for i := 1 to High(AFieldList) do
+        if CompareText(AFieldList[i - 1].Name, AFieldList[i].Name) < 0 then
+        begin
+          Field := AFieldList[i - 1];
+          AFieldList[i - 1] := AFieldList[i];
+          AFieldList[i] := Field;
+        end;
+  end;
+
+var
+  RttiField: TRttiField;
+  FieldList: TArray<TRttiField>;
+begin
+  FieldList := FRttiType.GetFields;
+  FieldListSort(FieldList);
+  for RttiField in FieldList do
+    if Assigned(RttiField) and Assigned(RttiField.FieldType) then
+      Add(RttiField.FieldType, RttiField);
+end;
+
+procedure TQuadObjectInspectorPanel.Add(ARttiType: TRttiType; ARttiMember: TRttiMember);
+var
+  i: Integer;
+begin
+  for i := 0 to ComponentCount - 1 do
+    if (Components[i] is TQuadObjectInspectorItem) and ((Components[i] as TQuadObjectInspectorItem).Caption = ARttiMember.Name) then
+      Exit;
+
+  case ARttiType.TypeKind of
+    tkInteger, tkFloat, tkString, tkLString, tkWString, tkUString, tkWChar, tkChar:
+      TQuadObjectInspectorItemEdit.Create(Self, ARttiMember);
+    tkEnumeration:
+      if IsBoolean(ARttiType) then
+        TQuadObjectInspectorItemBool.Create(Self, ARttiMember)
+      else
+        TQuadObjectInspectorItemEnum.Create(Self, ARttiMember);
+    tkSet:
+      TQuadObjectInspectorItemSet.Create(Self, ARttiMember);
+    tkRecord:
+      TQuadObjectInspectorItemRecord.Create(Self, ARttiMember);
+    tkProcedure, tkClass: ;
+    else
+      TQuadObjectInspectorItem.Create(Self, ARttiMember);
   end;
 end;
 
-destructor TQuadObjectInspectorNodeEnum.Destroy;
-begin
-  if Assigned(FComboBox) then
-    FComboBox.Free;
-  inherited;
-end;
-
-procedure TQuadObjectInspectorNodeEnum.ComboBoxChange(Sender: TObject);
-begin
-  //
-end;
-
-function TQuadObjectInspectorNodeEnum.GetControl: TControl;
-begin
-  Result := FComboBox;
-end;
-
-{ TQuadObjectInspectorNodeSetitem }
-
-constructor TQuadObjectInspectorNodeSetItem.Create(AOwner: TTreeNodes);
-begin
-  inherited;
-  FCheckBox := TCheckBox.Create(Owner.Owner);
-  UpdateParams(FCheckBox);
-  FCheckBox.Caption := 'False';
-end;
-
-destructor TQuadObjectInspectorNodeSetItem.Destroy;
-begin
-  if Assigned(FCheckBox) then
-    FCheckBox.Free;
-  inherited;
-end;
-
-function TQuadObjectInspectorNodeSetItem.GetControl: TControl;
-begin
-  Result := FCheckBox;
-end;
-
-function TQuadObjectInspectorNodeSetItem.GetChecked: Boolean;
-begin
-
-end;
-
-procedure TQuadObjectInspectorNodeSetItem.SetChecked(Value: Boolean);
-begin
-
-end;
-
-{ TQuadObjectInspectorNodeSet }
-
-procedure TQuadObjectInspectorNodeSet.Init(ARttiProp: TRttiProperty; AObject: TObject);
+function TQuadObjectInspectorPanel.IsBoolean(ARttiType: TRttiType): Boolean;
 var
   EnumTypeInfo: PTypeInfo;
   EnumTypeData: PTypeData;
-  Index, i: Integer;
-  Str: string;
-  Value: TValue;
 begin
-  inherited;
-  FLabel := TLabel.Create(Owner.Owner);
-  UpdateParams(FLabel);
-  FLabel.Caption := '[]';
+  EnumTypeInfo := ARttiType.Handle;
+  EnumTypeData := GetTypeData(EnumTypeInfo);
+
+  Result := (EnumTypeData.MinValue = 0) and (EnumTypeData.MaxValue = 1)
+    and (CompareText(GetEnumName(EnumTypeInfo, 0), 'false') = 0)
+    and (CompareText(GetEnumName(EnumTypeInfo, 1), 'true') = 0);
 end;
 
-destructor TQuadObjectInspectorNodeSet.Destroy;
+procedure TQuadObjectInspectorPanel.SetChange(AOnChange: TNotifyEvent);
 begin
-  if Assigned(FLabel) then
-    FLabel.Free;
-  inherited;
-end;
-
-function TQuadObjectInspectorNodeSet.GetControl: TControl;
-begin
-  Result := FLabel;
+  FOnChange := AOnChange;
 end;
 
 { TQuadObjectInspector }
@@ -242,132 +493,26 @@ end;
 constructor TQuadObjectInspector.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FNodeClass := nil;
-  FRttiContext := TRttiContext.Create;
-  FPanel := TPanel.Create(Self);
-  FPanel.Parent := Self;
-  FPanel.Align := alRight;
-  FPanel.Width := 85;
-  FSplitter := TSplitter.Create(Self);
-  FSplitter.Parent := Self;
-  FSplitter.Align := alRight;
-  FSplitter.Width := 4;
 end;
 
 destructor TQuadObjectInspector.Destroy;
 begin
-  FRttiContext.Free;
   inherited;
 end;
 
-function TQuadObjectInspector.CreateNode: TTreeNode;
+procedure TQuadObjectInspector.Clear;
 var
-  LClass: TTreeNodeClass;
-begin
-  if not Assigned(FNodeClass) then
-  begin
-    LClass := TTreeNode;
-    if Assigned(OnCreateNodeClass) then
-      OnCreateNodeClass(Self, LClass);
-    Result := LClass.Create(Items);
-  end
-  else
-    Result := FNodeClass.Create(Items);
-end;
-
-procedure TQuadObjectInspector.SetObject(AObject: TObject);
-var
-  RttiType: TRttiType;
-  RttiProp: TRttiProperty;
-  Value: TValue;
-  Node, MainNode: TTreeNode;
-begin
-  if FObject = AObject then
-    Exit;
-  FObject := AObject;
-  Items.Clear;
-
-  RttiType := FRttiContext.GetType(ClassInfo);
-
-  Items.BeginUpdate;
-  try
-    for RttiProp in RttiType.GetProperties do
-      if Assigned(RttiProp) then
-      begin
-        case RttiProp.PropertyType.TypeKind of
-          tkInteger, tkString, tkFloat, tkLString, tkWString:
-            FNodeClass := TQuadObjectInspectorNodeEdit;
-          tkEnumeration:
-            FNodeClass := TQuadObjectInspectorNodeEnum;
-          tkSet:
-            FNodeClass := TQuadObjectInspectorNodeSet;
-          // tkRecord, tkClass:
-           //  Self.Items.AddChild(nil, RttiProp.Name);
-        end;
-
-        if Assigned(FNodeClass) then
-        begin
-          Node := Items.AddChild(nil, RttiProp.Name);
-          TQuadObjectInspectorNodeEdit(Node).Init(RttiProp, FObject);
-        end;
-
-        FNodeClass := nil;
-      end;
-  finally
-    Items.EndUpdate;
-  end;
-end;
-
-function TQuadObjectInspector.IsCustomDrawn(Target: TCustomDrawTarget; Stage: TCustomDrawStage): Boolean;
-begin
-  Result := True;
-end;
-
-function TQuadObjectInspector.CustomDrawItem(Node: TTreeNode; State: TCustomDrawState; Stage: TCustomDrawStage; var PaintImages: Boolean): Boolean;
-var
-  Control: TControl;
-  R: TRect;
   i: Integer;
 begin
-  inherited;
-  Result := True;
-  PaintImages := False;
-
-  for i := 0 to Node.Count - 1 do
-    if Node.Item[i] is TQuadObjectInspectorNode then
-      TQuadObjectInspectorNode(Node.Item[i]).Control.Visible := Node.Expanded;
-
-  if Node is TQuadObjectInspectorNode then
-  begin
-    Control := TQuadObjectInspectorNode(Node).Control;
-    R := Node.DisplayRect(True);
-    Control.Visible := True;
-    Control.Top := R.Top;
-   // Control.Left := 100;
-   // Control.Width := Self.Width - 123;
-   // Control.Invalidate;
-  end;
+  for i := ComponentCount - 1 downto 0 do
+    if Components[i] is TQuadObjectInspectorPanel then
+      Components[i].Free;
 end;
 
-procedure TQuadObjectInspector.HideNode(Node : TTreeNode);
+function TQuadObjectInspector.AddObject(AObject: TObject): TQuadObjectInspectorPanel;
 begin
-  while Node <> nil do
-  begin
-    if Node.HasChildren then
-      HideNode(node.GetFirstChild);
-
-    if Assigned(Node.Data) then
-      TControl(Node.Data).Visible := False;
-
-    Node := Node.GetNextSibling;
-  end;
-end;
-
-procedure TQuadObjectInspector.Collapse(Node: TTreeNode);
-begin
-  inherited;
- // HideNode(Node);
-  Repaint;
+  Result := TQuadObjectInspectorPanel.Create(Self, AObject);
 end;
 
 end.
+
