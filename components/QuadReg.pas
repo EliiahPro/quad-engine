@@ -26,7 +26,7 @@ begin
   RegisterComponents('Quad', [TQuadGradientEdit]);
   RegisterComponents('Quad', [TQuadIcon]);
   RegisterComponents('Quad', [TQuadMemo]);
-  RegisterComponents('Quad', [Quad.ObjectInspector]);
+  RegisterComponents('Quad', [TQuadObjectInspector]);
 end;
 
 end.
