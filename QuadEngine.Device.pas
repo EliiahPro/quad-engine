@@ -160,9 +160,13 @@ begin
 end;
 
 destructor TQuadDevice.Destroy;
+var
+  RenderTarget: PRenderTarget;
 begin
-  FLog := nil;
+  for RenderTarget in FRenderTargets do
+    Dispose(RenderTarget);
   FRenderTargets.Free;
+  FLog := nil;
   FD3D := nil;
 end;
 
