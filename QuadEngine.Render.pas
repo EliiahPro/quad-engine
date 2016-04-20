@@ -335,6 +335,8 @@ begin
   FWidth := aWidth;
   FHeight := aHeight;
 
+  SkipClipRect;
+
   if not isVirtual then
   begin
     FD3DPP.BackBufferWidth := FWidth;
