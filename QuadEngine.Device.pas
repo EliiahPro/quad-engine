@@ -434,8 +434,8 @@ var
   Target: IDirect3DTexture9;
   RenderTarget : PRenderTarget;
 begin
-  if ((AWidth mod 4) > 0) or ((AHeight mod 4) > 0) then
-    Exception.Create('RenderTarget size must be scale of 4.');
+//  if ((AWidth mod 4) > 0) or ((AHeight mod 4) > 0) then
+//    Log.Write('HINT: RenderTarget size must be scale of 4.');
 
   if not Assigned(FRender) then
   begin
