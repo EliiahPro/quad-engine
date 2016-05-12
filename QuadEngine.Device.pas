@@ -31,6 +31,7 @@ type
     Reg: Byte;
     Width: Word;
     Height: Word;
+    IsAlive: Boolean;
   end;
 
   TQuadDevice = class(TInterfacedObject, IQuadDevice)
@@ -175,7 +176,12 @@ var
   RenderTarget: PRenderTarget;
 begin
   for RenderTarget in FRenderTargets do
-    RenderTarget.Texture.AddTexture(RenderTarget.Reg, nil);
+  begin
+    if TInterfacedObject(RenderTarget.Texture).RefCount = 0 then
+       RenderTarget.IsAlive := False
+     else
+      RenderTarget.Texture.AddTexture(RenderTarget.Reg, nil);
+  end;
 end;
 
 procedure TQuadDevice.ReInitializeRenderTargets;
@@ -183,7 +189,8 @@ var
   RenderTarget: PRenderTarget;
 begin
   for RenderTarget in FRenderTargets do
-    CreateRenderTarget(RenderTarget.Width, RenderTarget.Height, RenderTarget.Texture, RenderTarget.Reg);
+    if RenderTarget.IsAlive then
+      CreateRenderTarget(RenderTarget.Width, RenderTarget.Height, RenderTarget.Texture, RenderTarget.Reg);
 end;
 
 function TQuadDevice.GetMonitorsCount: Byte;
@@ -456,6 +463,7 @@ begin
     RenderTarget.Reg := ARegister;
     RenderTarget.Width := AWidth;
     RenderTarget.Height := AHeight;
+    RenderTarget.IsAlive := True;
     FRenderTargets.Add(RenderTarget);
   end;
 

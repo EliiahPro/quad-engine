@@ -361,6 +361,7 @@ begin
   if Assigned(FProfilerTags.Clear) then
     FProfilerTags.Clear.BeginCount;
   {$ENDIF}
+  FlushBuffer;
   Device.LastResultCode := FD3DDevice.Clear(0, nil, D3DCLEAR_TARGET, AColor, 1.0, 0);
   {$IFDEF DEBUG}
   if Assigned(FProfilerTags.Clear) then
@@ -1300,8 +1301,6 @@ begin
   if FIsDeviceLost then
     Exit;
 
-  FlushBuffer;
-
   {$IFDEF DEBUG}
   if Assigned(FProfilerTags.SwitchRenderTarget) then
     FProfilerTags.SwitchRenderTarget.BeginCount;
@@ -1309,6 +1308,8 @@ begin
 
   if (AQuadTexture = nil) and AIsRenderToTexture then
     Exit;
+
+  FlushBuffer;
 
   FIsRenderIntoTexture := AIsRenderToTexture;
 
@@ -1634,9 +1635,9 @@ begin
   {$ENDREGION}
 
   if ARenderInit.SoftwareVertexProcessing then
-    BehaviorFlag := D3DCREATE_SOFTWARE_VERTEXPROCESSING
+    BehaviorFlag := D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE
   else
-    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING;
+    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE;
 
   if ARenderInit.MultiThreaded then
     BehaviorFlag := BehaviorFlag or D3DCREATE_MULTITHREADED;
