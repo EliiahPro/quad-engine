@@ -505,7 +505,10 @@ begin
   if Assigned(FRender) then
   begin
     Image.GetTexture(0).GetSurfaceLevel(0, FCursorSurface);
-    FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
+    LastResultCode := FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
+
+    if LastResultCode <> D3D_OK then
+      Log.Write('Failed to set hardware cursor');
   end
   else
     Log.Write('ERROR: SetCursorProperties called before QuadRender was initialized');
