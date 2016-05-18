@@ -91,12 +91,18 @@ type
     property InspectedObject: Pointer read FInspectedObject;
   end;
 
+  TQuadObjectInspectorChangeEvent = procedure(AObjectInspector: TQuadObjectInspector; AObject: TObject) of object;
+
   TQuadObjectInspector = class(TScrollBox)
+  private
+    FOnChange: TQuadObjectInspectorChangeEvent;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Clear;
     function AddObject(AObject: TObject): TQuadObjectInspectorPanel;
+  published
+    property OnChange: TQuadObjectInspectorChangeEvent read FOnChange write FOnChange;
   end;
 
 implementation
@@ -386,6 +392,9 @@ procedure TQuadObjectInspectorPanel.Change;
 begin
   if Assigned(FOnChange) then
     FOnChange(Self);
+
+  if (Owner is TQuadObjectInspector) and Assigned(TQuadObjectInspector(Owner).FOnChange) then
+    TQuadObjectInspector(Owner).FOnChange(TQuadObjectInspector(Owner), FInspectedObject);
 end;
 
 procedure TQuadObjectInspectorPanel.Init;
