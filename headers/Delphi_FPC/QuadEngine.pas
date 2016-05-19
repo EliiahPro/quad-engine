@@ -223,7 +223,7 @@ type
     procedure ShowCursor(Show: Boolean); stdcall;
     procedure SetCursorPosition(x, y: Integer); stdcall;
     /// <summary>The dimensions Image must be a power of two in each direction, although not necessarily the same power of two. The alpha channel must be either 0.0 or 1.0. </summary>
-    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
+    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; const Image: IQuadTexture); stdcall;
   end;
 
   /// <summary>Main Quad-engine interface used for drawing. This object is singleton and cannot be created more than once.</summary>

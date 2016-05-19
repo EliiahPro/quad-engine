@@ -78,8 +78,8 @@ type
     procedure SetActiveMonitor(AMonitorIndex: Byte); stdcall;
     procedure SetOnErrorCallBack(Proc: TOnErrorFunction); stdcall;
     procedure ShowCursor(Show: Boolean); stdcall;
-    procedure SetCursorPosition(x, y: integer); stdcall;
-    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture); stdcall;
+    procedure SetCursorPosition(x, y: Integer); stdcall;
+    procedure SetCursorProperties(XHotSpot, YHotSpot: Cardinal; const Image: IQuadTexture); stdcall;
 
     property ActiveMonitorIndex: Byte read FActiveMonitorIndex;
     property D3D: IDirect3D9 read FD3D;
@@ -500,12 +500,17 @@ begin
     Log.Write('ERROR: SetCursorPosition called before QuadRender was initialized');
 end;
 
-procedure TQuadDevice.SetCursorProperties(XHotSpot, YHotSpot: Cardinal; Image: IQuadTexture);
+procedure TQuadDevice.SetCursorProperties(XHotSpot, YHotSpot: Cardinal; const Image: IQuadTexture);
 begin
   if Assigned(FRender) then
   begin
-    Image.GetTexture(0).GetSurfaceLevel(0, FCursorSurface);
-    LastResultCode := FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
+    if Assigned(Image) then
+    begin
+      Image.GetTexture(0).GetSurfaceLevel(0, FCursorSurface);
+      LastResultCode := FRender.D3DDevice.SetCursorProperties(XHotSpot, YHotSpot, FCursorSurface);
+    end
+    else
+      FRender.D3DDevice.ShowCursor(False);
 
     if LastResultCode <> D3D_OK then
       Log.Write('Failed to set hardware cursor');

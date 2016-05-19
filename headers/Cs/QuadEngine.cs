@@ -178,7 +178,7 @@ namespace QuadEngine
         void ShowCursor(bool Show);
         void SetCursorPosition(int x, int y); 
         /// <summary>The dimensions Image must be a power of two in each direction, although not necessarily the same power of two. The alpha channel must be either 0.0 or 1.0. </summary>        
-        void SetCursorProperties(UInt32 XHotSpot, UInt32 YHotSpot, IQuadTexture Image);
+        void SetCursorProperties(UInt32 XHotSpot, UInt32 YHotSpot, ref IQuadTexture Image);
     }
  
     /* Quad Render */
