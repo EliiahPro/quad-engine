@@ -486,7 +486,7 @@ begin
 
     case AAlign of
       qfaLeft   : sx := Position.X;
-      qfaRight  : sx := Position.X - Trunc(MaxLineWidth);
+      qfaRight  : sx := Position.X - Trunc(FStrings[line].Width);
       qfaCenter : sx := Position.X - Trunc(FStrings[line].Width / 2);
       qfaJustify: sx := Position.X;
     else
