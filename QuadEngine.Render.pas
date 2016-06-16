@@ -907,8 +907,8 @@ end;
 //=============================================================================
 function TQuadRender.GetIsSupportedNonPow2: Boolean;
 begin
-  Result := ((FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2) = D3DPTEXTURECAPS_POW2) and
-            ((FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL) <>D3DPTEXTURECAPS_NONPOW2CONDITIONAL);
+  Result := ((FD3DCaps.TextureCaps and D3DPTEXTURECAPS_POW2) <> D3DPTEXTURECAPS_POW2) and
+            ((FD3DCaps.TextureCaps and D3DPTEXTURECAPS_NONPOW2CONDITIONAL) <> D3DPTEXTURECAPS_NONPOW2CONDITIONAL);
 end;
 
 //=============================================================================
