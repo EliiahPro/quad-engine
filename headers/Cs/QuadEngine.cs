@@ -43,7 +43,9 @@ namespace QuadEngine
                                ///<summary>Blend source with color weight and alpha to destination</summary>
                                qbmSrcColorAdd = 8,
                                ///<summary>Blend inverted source color</summary>
-                               qbmInvertSrcColor = 9};
+                               qbmInvertSrcColor = 9,
+                               ///<summary>Copy destination alpha to source</summary>
+                               qbmDstAlpha = 10};
 
     ///<summary>Texture adressing mode</summary>
     public enum TQuadTextureAdressing{qtaInvalid    = 0,

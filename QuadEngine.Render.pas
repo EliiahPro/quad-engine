@@ -1484,7 +1484,7 @@ begin
       begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
         FIsEnabledBlending := True;
-      end;        
+      end;
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCCOLOR);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
@@ -1496,6 +1496,21 @@ begin
     FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iTrue);
     FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
     FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
+  end;
+
+  if qbm = qbmDstAlpha then
+  begin
+    if not FIsEnabledBlending then
+    begin
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+      FIsEnabledBlending := True;
+    end;
+
+    Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+    Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+
+    FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ZERO);
+    FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_SRCALPHA);
   end;
 
   {$IFDEF DEBUG}
