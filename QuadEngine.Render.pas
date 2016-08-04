@@ -255,7 +255,7 @@ begin
   normalize(n);
 end;
 
-procedure TQuadRender.GetClipRect(out ARect: TRect); stdcall;
+procedure TQuadRender.GetClipRect(out ARect: TRect);
 begin
   ARect := FViewport;
 end;
@@ -265,7 +265,7 @@ end;
 //=============================================================================
 procedure TQuadRender.AddQuadToBuffer;
 begin
-  if FIsAutoCalculateTBN then
+  if FIsAutoCalculateTBN and TQuadShader.AutoCalcTBN then
   begin
     {$IFDEF DEBUG}
     if Assigned(FProfilerTags.CalculateTBN) then
@@ -1484,7 +1484,7 @@ begin
       begin
         Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
         FIsEnabledBlending := True;
-      end;        
+      end;
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCCOLOR);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
@@ -1496,6 +1496,21 @@ begin
     FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iTrue);
     FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
     FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
+  end;
+
+  if qbm = qbmDstAlpha then
+  begin
+    if not FIsEnabledBlending then
+    begin
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+      FIsEnabledBlending := True;
+    end;
+
+    Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+    Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+
+    FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ZERO);
+    FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_SRCALPHA);
   end;
 
   {$IFDEF DEBUG}
@@ -1699,6 +1714,7 @@ begin
       Shader.LoadFromResource('mrtPS20');
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
       TQuadShader.mrtShader := Shader;
+      TQuadShader.mrtShader.SetAutoCalculateTBN(True);
 
       Shader := TQuadShader.Create(Self);
       Shader.LoadFromResource('deferredVS20', False);

@@ -170,7 +170,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadFont.SetKerning(AValue : Single); stdcall;
+procedure TQuadFont.SetKerning(AValue : Single);
 begin
   FKerning := AValue;
 end;
@@ -178,7 +178,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadFont.GetKerning: Single; stdcall;
+function TQuadFont.GetKerning: Single;
 begin
   Result := FKerning;
 end;
@@ -434,7 +434,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadFont.SetIsSmartColoring(Value: Boolean); stdcall;
+procedure TQuadFont.SetIsSmartColoring(Value: Boolean);
 begin
   FIsSmartColoring := Value;
 end;

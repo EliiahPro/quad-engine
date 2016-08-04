@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.8.1 Diamond header file for Embarcadero™ Delphi® and FreePascal
+  Quad engine 0.8.2 Diamond header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -33,7 +33,7 @@ const
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
   QuadEngineMinorVersion: Byte = 0;
   QuadEngineMajorVersion: Byte = 8;
-  QuadEngineReleaseVersion: Byte = 1;
+  QuadEngineReleaseVersion: Byte = 2;
 
 type
   ///<summary>Blending mode types.</summary>
@@ -46,6 +46,7 @@ type
   ///<param name="qbmSrcColor">Blend source with color weight to destination</param>
   ///<param name="qbmSrcColorAdd">Blend source with color weight and alpha to destination</param>
   ///<param name="qbmInvertSrcColor">Blend inverted source color</param>
+  ///<param name="qbmDstAlpha">Copy destination alpha to source</param>
   TQuadBlendMode = (qbmInvalid        = 0,
                     qbmNone           = 1,
                     qbmAdd            = 2,
@@ -55,7 +56,8 @@ type
                     qbmMul            = 6,
                     qbmSrcColor       = 7,
                     qbmSrcColorAdd    = 8,
-                    qbmInvertSrcColor = 9);
+                    qbmInvertSrcColor = 9,
+                    qbmDstAlpha       = 10);
 
   ///<summary>Texture adressing mode</summary>
   ///<param name="qtaWrap">Repeat UV</param>
@@ -349,6 +351,7 @@ type
     procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
+    procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
   end;
 
   { Quad Font }

@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.8.0 Diamond header file for Visual C#
+  Quad engine 0.8.2 Diamond header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -43,7 +43,9 @@ namespace QuadEngine
                                ///<summary>Blend source with color weight and alpha to destination</summary>
                                qbmSrcColorAdd = 8,
                                ///<summary>Blend inverted source color</summary>
-                               qbmInvertSrcColor = 9};
+                               qbmInvertSrcColor = 9,
+                               ///<summary>Copy destination alpha to source</summary>
+                               qbmDstAlpha = 10};
 
     ///<summary>Texture adressing mode</summary>
     public enum TQuadTextureAdressing{qtaInvalid    = 0,
@@ -334,6 +336,7 @@ namespace QuadEngine
         void LoadPixelShader(string APixelShaderFilename);
         void LoadComplexShader(string AVertexShaderFilename, string APixelShaderFilename);
         void SetShaderState(bool AIsEnabled);
+        void SetAutoCalculateTBN(bool Value);
     }
 
 

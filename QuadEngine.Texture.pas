@@ -185,14 +185,14 @@ begin
 
   SetTextureStages;
 
-  FQuadRender.Drawrect(PointA -0.5, PointB - 0.5, UVA, UVB, Color);
+  FQuadRender.Drawrect(PointA - 0.5, PointB - 0.5, UVA, UVB, Color);
 end;
 
 //=============================================================================
 //
 //=============================================================================
 procedure TQuadTexture.DrawMapRotAxis(const PointA, PointB, UVA, UVB, Axis: TVec2f;
-  angle, Scale: Double; Color: Cardinal); stdcall;
+  angle, Scale: Double; Color: Cardinal);
 begin
   if not FIsLoaded then
     Exit;
@@ -206,7 +206,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.DrawPart(const Position: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+procedure TQuadTexture.DrawPart(const Position: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF);
 begin
   if not FIsLoaded then
     Exit;
@@ -221,7 +221,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.DrawPartRot(const Center: TVec2f; angle, Scale: Double; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+procedure TQuadTexture.DrawPartRot(const Center: TVec2f; angle, Scale: Double; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF);
 begin
   if not FIsLoaded then
     Exit;
@@ -236,7 +236,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.DrawPartRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+procedure TQuadTexture.DrawPartRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF);
 begin
   if not FIsLoaded then
     Exit;
@@ -378,7 +378,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: Byte): Cardinal; stdcall;
+function TQuadTexture.GetPixelColor(x, y: Integer; ARegister: Byte): Cardinal;
 var
   aData : TD3DLockedRect;
 begin
@@ -521,7 +521,7 @@ end;
 //
 //=============================================================================
 procedure TQuadTexture.LoadFromStream(ARegister: Byte; AStream: Pointer; AStreamSize: Integer;
-  APatternWidth, APatternHeight, AColorKey: Integer); stdcall;
+  APatternWidth, APatternHeight, AColorKey: Integer);
 var
   TextureResult: TTextureResult;
   Stream: TMemoryStream;
@@ -568,7 +568,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.SetIsLoaded(AWidth, AHeight: Word); stdcall;
+procedure TQuadTexture.SetIsLoaded(AWidth, AHeight: Word);
 begin
   FWidth := AWidth;
   FHeight := AHeight;
@@ -577,6 +577,9 @@ begin
   FIsLoaded := True;
 end;
 
+//=============================================================================
+//
+//=============================================================================
 procedure TQuadTexture.SetTextureStages;
 var
   i: Integer;
