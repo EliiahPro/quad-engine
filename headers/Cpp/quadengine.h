@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.8.0 Diamond header file for Visual C++
+  Quad engine 0.8.2 Diamond header file for Visual C++
 
 	 ╔═══════════╦═╗
 	 ║           ║ ║
@@ -33,7 +33,7 @@ static const char* CheckLibraryVersionProcName = "IsSameVersion";
 static const char* SecretMagicFunctionProcName = "SecretMagicFunction";
 static const unsigned char QuadEngineMinorVersion = 0;
 static const unsigned char QuadEngineMajorVersion = 8;
-static const unsigned char QuadEngineReleaseVersion = 1;
+static const unsigned char QuadEngineReleaseVersion = 2;
 
 interface __declspec(uuid("E28626FF-738F-43B0-924C-1AFC7DEC26C7")) IQuadDevice;
 interface __declspec(uuid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")) IQuadRender;
@@ -289,6 +289,7 @@ DECLARE_INTERFACE_(IQuadShader, IUnknown)
 	virtual void CALLBACK LoadPixelShader(wchar_t* pixelShaderFilename) = 0;
 	virtual void CALLBACK LoadComplexShader(wchar_t* vertexShaderFilename, wchar_t* pixelShaderFilename) = 0;
 	virtual void CALLBACK SetShaderState(bool isEnabled) = 0;
+	virtual void CALLBACK SetAutoCalculateTBN(bool Value) = 0;
 };
 
 /* Quad Font */

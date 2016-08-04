@@ -33,6 +33,7 @@ type
     FQuadRender: TQuadRender;
     FBindedVariables: array of TBindedVariable;
     FBindedVariableCount: Byte;
+    FAutoCalcTBN: Boolean;
   public
     constructor Create(AQuadRender: TQuadRender); reintroduce;
     procedure LoadFromResource(AResourceName: PWideChar; AIsPixelShader: Boolean = True);
@@ -45,11 +46,13 @@ type
     procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
+    procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
   class var
     DistanceField: IQuadShader;
     CircleShader: IQuadShader;
     MRTShader: IQuadShader;
     DeferredShading: IQuadShader;
+    AutoCalcTBN: Boolean;
   end;
 
 implementation
@@ -129,6 +132,7 @@ end;
 constructor TQuadShader.Create(AQuadRender : TQuadRender);
 begin
   FQuadRender := AQuadRender;
+  FAutoCalcTBN := False;
 
   FBindedVariableCount := 0;
   SetLength(FBindedVariables, FBindedVariableCount);
@@ -146,7 +150,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadShader.GetVertexShader(out Shader: IDirect3DVertexShader9): HResult; stdcall;
+function TQuadShader.GetVertexShader(out Shader: IDirect3DVertexShader9): HResult;
 begin
   Shader := Fvs;
   Result := D3D_OK;
@@ -258,6 +262,14 @@ end;
 //=============================================================================
 //
 //=============================================================================
+procedure TQuadShader.SetAutoCalculateTBN(Value: Boolean);
+begin
+  FAutoCalcTBN := Value;
+end;
+
+//=============================================================================
+//
+//=============================================================================
 procedure TQuadShader.SetShaderState(AIsEnabled: Boolean);
 var
   i: Integer;
@@ -276,12 +288,19 @@ begin
       else
         Device.LastResultCode := FQuadRender.D3DDevice.SetPixelShaderConstantF(FBindedVariables[i].RegisterIndex, FBindedVariables[i].Variable, FBindedVariables[i].Size);
     end;
+    TQuadShader.AutoCalcTBN := FAutoCalcTBN;
   end
   else
   begin
     Device.LastResultCode := FQuadRender.D3DDevice.SetVertexShader(nil);
     Device.LastResultCode := FQuadRender.D3DDevice.SetPixelShader(nil);
+    TQuadShader.AutoCalcTBN := False;
   end;
 end;
+
+initialization
+  TQuadShader.AutoCalcTBN := False;
+
+finalization
 
 end.

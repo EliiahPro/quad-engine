@@ -255,7 +255,7 @@ begin
   normalize(n);
 end;
 
-procedure TQuadRender.GetClipRect(out ARect: TRect); stdcall;
+procedure TQuadRender.GetClipRect(out ARect: TRect);
 begin
   ARect := FViewport;
 end;
@@ -265,7 +265,7 @@ end;
 //=============================================================================
 procedure TQuadRender.AddQuadToBuffer;
 begin
-  if FIsAutoCalculateTBN then
+  if FIsAutoCalculateTBN and TQuadShader.AutoCalcTBN then
   begin
     {$IFDEF DEBUG}
     if Assigned(FProfilerTags.CalculateTBN) then
@@ -1714,6 +1714,7 @@ begin
       Shader.LoadFromResource('mrtPS20');
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
       TQuadShader.mrtShader := Shader;
+      TQuadShader.mrtShader.SetAutoCalculateTBN(True);
 
       Shader := TQuadShader.Create(Self);
       Shader.LoadFromResource('deferredVS20', False);

@@ -1,6 +1,6 @@
 ﻿{==============================================================================
 
-  Quad engine 0.8.1 Diamond header file for Embarcadero™ Delphi® and FreePascal
+  Quad engine 0.8.2 Diamond header file for Embarcadero™ Delphi® and FreePascal
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -33,7 +33,7 @@ const
   SecretMagicFunctionProcName: PChar = 'SecretMagicFunction';
   QuadEngineMinorVersion: Byte = 0;
   QuadEngineMajorVersion: Byte = 8;
-  QuadEngineReleaseVersion: Byte = 1;
+  QuadEngineReleaseVersion: Byte = 2;
 
 type
   ///<summary>Blending mode types.</summary>
@@ -351,6 +351,7 @@ type
     procedure LoadPixelShader(APixelShaderFilename: PWideChar); stdcall;
     procedure LoadComplexShader(AVertexShaderFilename, APixelShaderFilename: PWideChar); stdcall;
     procedure SetShaderState(AIsEnabled: Boolean); stdcall;
+    procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
   end;
 
   { Quad Font }
