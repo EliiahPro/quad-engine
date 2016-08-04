@@ -94,10 +94,9 @@ end;
 
 procedure TfDiagramFrame.Draw(Sender: TObject);
 var
-  DC: HDC;
   memDC: HDC;
   hBMP : HBITMAP;
-  i, j, k, count: Integer;
+  i, j, k: Integer;
   Points: array of TGPPointF;
   ScaleY, MaxTime, MaxValue: Double;
   Ruler: Single;

@@ -70,10 +70,4 @@ object fMain: TfMain
     ViewStyle = vsReport
     OnCreateItemClass = lvLogCreateItemClass
   end
-  object Timer: TTimer
-    Interval = 16
-    OnTimer = TimerTimer
-    Left = 344
-    Top = 225
-  end
 end

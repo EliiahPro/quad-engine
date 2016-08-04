@@ -65,6 +65,7 @@ type
 
   TQuadProfiler = class(TInterfacedObject, IQuadProfiler)
   private
+    FConnected: Boolean;
     FGUID: TGUID;
     FName: WideString;
     FIsSend: Boolean;
@@ -74,21 +75,22 @@ type
     FTags: TList<TQuadProfilerTag>;
 
     FMemory: TMemoryStream;
-    FSocket: TQuadSocket;
-    FSocketAddress: PQuadSocketAddressItem;
+    FClientSocket: TQuadClientSocket;
 
     FMessages: TQueue<TQuadProfilerMessage>;
 
     procedure LoadFromIniFile;
-    procedure Recv;
     procedure AddMessage(ATag: TQuadProfilerTag; AMessage: PWideChar; AMessageType: TQuadProfilerMessageType);
+    procedure ClientSocketRead(AClient: TQuadClientSocket);
+    procedure ClientSocketConnect(AClient: TQuadClientSocket);
+    procedure ClientSocketDisconnect(AClient: TQuadClientSocket);
   public
     constructor Create(AName: PWideChar);
     destructor Destroy; override;
     function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
     procedure BeginTick; stdcall;
     procedure EndTick; stdcall;
-    procedure SetAdress(AAdress: PAnsiChar; APort: Word = 17788); stdcall;
+    procedure SetAdress(AAddress: PAnsiChar; APort: Word = 17788); stdcall;
     procedure SetGUID(const AGUID: TGUID); stdcall;
     procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
@@ -204,34 +206,36 @@ end;
 constructor TQuadProfiler.Create(AName: PWideChar);
 begin
   inherited Create;
+  FConnected := False;
   FName := AName;
   FTags := TList<TQuadProfilerTag>.Create;
   FIsSend := False;
   CreateGUID(FGUID);
   FMemory := TMemoryStream.Create;
   FMessages := TQueue<TQuadProfilerMessage>.Create;
-
+  FClientSocket := nil;
   LoadFromIniFile;
   if FIsSend then
     SetAdress(PAnsiChar(FServerAdress), FServerPort);
 end;
 
-procedure TQuadProfiler.SetAdress(AAdress: PAnsiChar; APort: Word = 17788);
+procedure TQuadProfiler.SetAdress(AAddress: PAnsiChar; APort: Word = 17788);
 begin
-  if not Assigned(FSocket) then
-    FSocket := TQuadSocket.Create;
-
   FIsSend := True;
-  FServerAdress := AAdress;
-  FServerPort := APort;
-  FSocket.InitSocket;
-  FSocketAddress := FSocket.CreateAddress(PAnsiChar(FServerAdress), FServerPort);
+  if not Assigned(FClientSocket) then
+  begin
+    FClientSocket := TQuadClientSocket.Create(FServerAdress, FServerPort);
+    FClientSocket.OnConnect := ClientSocketConnect;
+    FClientSocket.OnDisconnect := ClientSocketDisconnect;
+    FClientSocket.OnRead := ClientSocketRead;
+    FClientSocket.Open;
+  end;
 end;
 
 destructor TQuadProfiler.Destroy;
 begin
-  if Assigned(FSocket) then
-    FSocket.Free;
+  if Assigned(FClientSocket) then
+    FClientSocket.Free;
   if Assigned(FMessages) then
     FMessages.Free;
   if Assigned(FMemory) then
@@ -268,48 +272,71 @@ begin
     Tag.Refresh;
 end;
 
-procedure TQuadProfiler.Recv;
+procedure TQuadProfiler.ClientSocketConnect(AClient: TQuadClientSocket);
 var
-  Address: PQuadSocketAddressItem;
+  Mem: TMemoryStream;
+  Code: Word;
+begin
+  Mem := TMemoryStream.Create;
+  try
+    Code := 2;
+    Mem.Write(Code, SizeOf(Code));
+    Mem.Write(FGUID, SizeOf(FGUID));
+    AClient.SendStream(Mem);
+  finally
+    Mem.Free;
+  end;
+  FConnected := True;
+end;
+
+procedure TQuadProfiler.ClientSocketDisconnect(AClient: TQuadClientSocket);
+begin
+  FConnected := False;
+end;
+
+procedure TQuadProfiler.ClientSocketRead(AClient: TQuadClientSocket);
+var
   Code, ID: Word;
   StrLength: Byte;
   Tag: TQuadProfilerTag;
+  Mem: TMemoryStream;
 begin
-  while FSocket.Recv(Address, FMemory) do
-    if FMemory.Size > 0 then
-    begin
+  if AClient.ReceiveStream(FMemory) <= 0 then
+    Exit;
 
-      FMemory.Read(Code, SizeOf(Code));
-      case Code of
-        2: // return profiler info
-          begin
-            FSocket.Clear;
-            FSocket.SetCode(Code);
-            FSocket.Write(FGUID, SizeOf(FGUID));
-            StrLength := Length(FName);
-            FSocket.Write(StrLength, SizeOf(StrLength));
-            FSocket.Write(FName[1], StrLength * 2);
-            FSocket.Send(Address);
-          end;
-        3: // return tag name
-          begin
-            FMemory.Read(ID, SizeOf(ID));
-            for Tag in FTags do
-              if Tag.ID = ID then
-              begin
-                FSocket.Clear;
-                FSocket.SetCode(Code);
-                FSocket.Write(FGUID, SizeOf(FGUID));
-                FSocket.Write(ID, SizeOf(ID));
-                StrLength := Length(Tag.Name);
-                FSocket.Write(StrLength, SizeOf(StrLength));
-                FSocket.Write(Tag.Name[1], StrLength * 2);
-                FSocket.Send(Address);
-                Break;
-              end;
-          end;
-      end;
+  Mem := TMemoryStream.Create;
+  try
+    FMemory.Read(Code, SizeOf(Code));
+    case Code of
+      2: // return profiler info
+        begin
+          Mem.Write(Code, SizeOf(Code));
+          Mem.Write(FGUID, SizeOf(FGUID));
+          StrLength := Length(FName);
+          Mem.Write(StrLength, SizeOf(StrLength));
+          Mem.Write(FName[1], StrLength * 2);
+          AClient.SendStream(Mem);
+        end;
+      3: // return tag name
+        begin
+          FMemory.Read(ID, SizeOf(ID));
+          for Tag in FTags do
+            if Tag.ID = ID then
+            begin
+              Mem.Write(Code, SizeOf(Code));
+              Mem.Write(FGUID, SizeOf(FGUID));
+              Mem.Write(ID, SizeOf(ID));
+              StrLength := Length(Tag.Name);
+              Mem.Write(StrLength, SizeOf(StrLength));
+              Mem.Write(Tag.Name[1], StrLength * 2);
+              AClient.SendStream(Mem);
+              Break;
+            end;
+        end;
     end;
+  finally
+    Mem.Free;
+  end;
 end;
 
 procedure TQuadProfiler.EndTick;
@@ -320,42 +347,50 @@ var
   i: Integer;
   Msg: TQuadProfilerMessage;
   StrLength: Byte;
+  Mem: TMemoryStream;
 begin
-  if FIsSend and Assigned(FSocket) then
+  if not FConnected then
+    Exit;
+
+  if FIsSend and Assigned(FClientSocket) then
   begin
-    Recv;
+    Mem := TMemoryStream.Create;
+    try
+      Code := 1;
+      Mem.Write(Code, SizeOf(Code));
+      Mem.Write(FGUID, SizeOf(FGUID));
+      TagsCount := FTags.Count;
+      Mem.Write(TagsCount, SizeOf(TagsCount));
 
-    FSocket.Clear;
-    FSocket.SetCode(1);
-    FSocket.Write(FGUID, SizeOf(FGUID));
-    TagsCount := FTags.Count;
-    FSocket.Write(TagsCount, SizeOf(TagsCount));
+      for Tag in FTags do
+      begin
+        Tag.SetTime(Now);
+        Mem.Write(Tag.ID, SizeOf(Tag.ID));
+        Mem.Write(Tag.Call, SizeOf(Tag.Call));
+      end;
 
-    for Tag in FTags do
-    begin
-      Tag.SetTime(Now);
-      FSocket.Write(Tag.ID, SizeOf(Tag.ID));
-      FSocket.Write(Tag.Call, SizeOf(Tag.Call));
-    end;
+      FClientSocket.SendStream(Mem);
 
-    FSocket.Send(FSocketAddress);
+      for i := 0 to FMessages.Count - 1 do
+      begin
+        Code := 4;
+        Msg := FMessages.Dequeue;
 
-    for i := 0 to FMessages.Count - 1 do
-    begin
-      Msg := FMessages.Dequeue;
+        Mem.Clear;
+        Mem.Write(Code, SizeOf(Code));
+        Mem.Write(FGUID, SizeOf(FGUID));
+        Mem.Write(Msg.ID, SizeOf(Msg.ID));
+        Mem.Write(Msg.DateTime, SizeOf(Msg.DateTime));
+        Mem.Write(Msg.MessageType, SizeOf(Msg.MessageType));
 
-      FSocket.Clear;
-      FSocket.SetCode(4);
-      FSocket.Write(FGUID, SizeOf(FGUID));
-      FSocket.Write(Msg.ID, SizeOf(Msg.ID));
-      FSocket.Write(Msg.DateTime, SizeOf(Msg.DateTime));
-      FSocket.Write(Msg.MessageType, SizeOf(Msg.MessageType));
+        StrLength := Length(Msg.MessageText);
+        Mem.Write(StrLength, SizeOf(StrLength));
+        Mem.Write(Msg.MessageText[1], StrLength * 2);
 
-      StrLength := Length(Msg.MessageText);
-      FSocket.Write(StrLength, SizeOf(StrLength));
-      FSocket.Write(Msg.MessageText[1], StrLength * 2);
-
-      FSocket.Send(FSocketAddress);
+        FClientSocket.SendStream(Mem);
+      end;
+    finally
+      Mem.Free;
     end;
   end;
 end;

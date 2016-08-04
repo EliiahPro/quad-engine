@@ -3,339 +3,421 @@ unit QuadEngine.Socket;
 interface
 
 uses
-  Winapi.Windows, System.SyncObjs, winapi.WinSock, System.Classes,
-  System.SysUtils, System.Generics.Collections, System.DateUtils;
+  Winapi.Windows, Winapi.Winsock2,  System.Generics.Collections, Winapi.Messages,
+  System.Classes, System.SyncObjs, System.SysUtils;
 
 const
-  BUFFER_SIZE = 1024;
+  WM_SOCKETMESSAGE = WM_USER + 1;
 
 type
-  TQuadSocketType = (
-    qstServer = 0,
-    qstClient = 1
-  );
-
-  TQuadSocketPackedType = (
-    qsptNone = 0,
-    qsptConnect = 1,
-    qsptDisconnect = 2,
-    qsptPing = 3,
-    qsptOutPing = 4,
-    qsptData = 5
-  );
-
-  PByteArray = ^TByteArray;
-  TByteArray = array [0..(BUFFER_SIZE - 1)] of Byte;
-
-  PQuadSocketAddressItem = ^TQuadSocketAddressItem;
-  TQuadSocketAddressItem = packed record
-    Addr: TSockAddrIn;
-    Time: TDateTime;
-  end;
-
   TQuadSocket = class
   private
-    class var FActiveCount: Integer;
-    class var FGlobalGUID: TGUID;
-    FAddressList: TList<PQuadSocketAddressItem>;
+    class var FWSAData: TWSAData;
+    class procedure Startup;
+    class procedure Cleanup;
+  private
+    FSocket: TSocket;
+    FCriticalSection: TCriticalSection;
+    FConnected: Boolean;
+  public
+    constructor Create(ASocket: TSocket);
+    destructor Destroy; override;
+    function ReceiveBuf(var ABuf; ACount: Integer): Integer;
+    function ReceiveLength: Integer;
+    function ReceiveText: AnsiString;
+    function ReceiveStream(AMemory: TMemoryStream): Integer;
+    function SendBuf(var ABuf; ACount: Integer): Integer;
+    function SendText(const AText: AnsiString): Integer;
+    function SendStream(AMemory: TMemoryStream): Integer;
 
-    FSocket: Integer;
-    FMemory: TMemoryStream;
-    FtmpBuf: PByteArray;
-    FType: TQuadSocketType;
+    property Connected: Boolean read FConnected;
+  end;
 
-    class procedure Connect;
-    class procedure Disconnect;
-    function FindAddress(const AAddr: TSockAddrIn; out AAddress: PQuadSocketAddressItem): Boolean;
-    function AddressAdd(const AAddr: TSockAddrIn): PQuadSocketAddressItem;
-    procedure SetPackedType(AType: TQuadSocketPackedType);
-    function GetAddress(Index: Integer): PQuadSocketAddressItem;
-    function GetAddressCount: Integer;
-    procedure SendConnect(AAddress: PQuadSocketAddressItem);
-    function Send(Addr: TSockAddrIn): Integer; overload;
+  TQuadCustomSocket = class(TQuadSocket)
+  private
+    FHandle: HWnd;
+    FAddr: TSockAddrIn;
+    procedure WndProc(var Message: TMessage);
+    procedure WMSocketMessage(var Msg: TMessage); message WM_SOCKETMESSAGE;
+    procedure DoRead(ASocket: TSocket); virtual;
+    procedure DoWrite(ASocket: TSocket); virtual;
+    procedure DoAccept(ASocket: TSocket); virtual;
+    procedure DoConnect(ASocket: TSocket); virtual;
+    procedure DoClose(ASocket: TSocket); virtual;
+  protected
+    procedure InitSocket(const AAddress: string; APort: Word);
   public
     constructor Create;
     destructor Destroy; override;
-    function CreateAddress(const AIP: PAnsiChar; APort: Word): PQuadSocketAddressItem;
-    procedure InitSocket(APort: Word = 0);
-    procedure Close;
-    procedure Clear;
-    procedure SetCode(ACode: Word);
-    function Write(const ABuf; ACount: Integer): Boolean;
-    function Send(AAddress: PQuadSocketAddressItem): Integer; overload;
-    function Recv(out AAddress: PQuadSocketAddressItem; AMemory: TMemoryStream): Boolean;
+    procedure Open; virtual;
+  end;
 
-    property Address[Index: integer]: PQuadSocketAddressItem read GetAddress;
-    property AddressCount: Integer read GetAddressCount;
+  TQuadServerSocket = class;
+  TQuadServerNotifyEvent = reference to procedure(AServer: TQuadServerSocket; AClient: TQuadSocket);
+
+  TQuadServerSocket = class(TQuadCustomSocket)
+  private
+    FClients: TObjectList<TQuadSocket>;
+
+    FOnClientConnect: TQuadServerNotifyEvent;
+    FOnClientDisconnect: TQuadServerNotifyEvent;
+    FOnRead: TQuadServerNotifyEvent;
+    FOnWrite: TQuadServerNotifyEvent;
+
+    function GetClient(Index: Integer): TQuadSocket;
+    function GetClientCount: Integer;
+    function FindClientBySocket(ASocket: TSocket): TQuadSocket;
+
+    procedure DoRead(ASocket: TSocket); override;
+   // procedure DoWrite(ASocket: TSocket); override;
+    procedure DoAccept(ASocket: TSocket); override;
+    procedure DoClose(ASocket: TSocket); override;
+  public
+    constructor Create(APort: Word);
+    destructor Destroy; override;
+    procedure Open; override;
+
+    property Clients[Index: Integer]: TQuadSocket read GetClient;
+    property ClientCount: Integer read GetClientCount;
+
+    property OnClientConnect: TQuadServerNotifyEvent read FOnClientConnect write FOnClientConnect;
+    property OnClientDisconnect: TQuadServerNotifyEvent read FOnClientDisconnect write FOnClientDisconnect;
+    property OnRead: TQuadServerNotifyEvent read FOnRead write FOnRead;
+    property OnWrite: TQuadServerNotifyEvent read FOnWrite write FOnWrite;
+  end;
+
+  TQuadClientSocket = class;
+  TQuadClientNotifyEvent = reference to procedure(AClient: TQuadClientSocket);
+
+  TQuadClientSocket = class(TQuadCustomSocket)
+  private
+    FOnConnect: TQuadClientNotifyEvent;
+    FOnDisconnect: TQuadClientNotifyEvent;
+    FOnRead: TQuadClientNotifyEvent;
+    FOnWrite: TQuadClientNotifyEvent;
+
+    procedure DoRead(ASocket: TSocket); override;
+   // procedure DoWrite(ASocket: TSocket); override;
+    procedure DoConnect(ASocket: TSocket); override;
+    procedure DoClose(ASocket: TSocket); override;
+  public
+    constructor Create(const AAddress: string; APort: Word);
+    destructor Destroy; override;
+    procedure Open; override;
+
+    property OnConnect: TQuadClientNotifyEvent read FOnConnect write FOnConnect;
+    property OnDisconnect: TQuadClientNotifyEvent read FOnDisconnect write FOnDisconnect;
+    property OnRead: TQuadClientNotifyEvent read FOnRead write FOnRead;
+    property OnWrite: TQuadClientNotifyEvent read FOnWrite write FOnWrite;
   end;
 
 implementation
 
-constructor TQuadSocket.Create;
+uses
+  QuadEngine.Device;
+
+{ TQuadSocket }
+
+class procedure TQuadSocket.Startup;
 begin
-  FSocket := -1;
-  Connect;
+  WSAStartup(MakeWord(2, 2), FWSAData);
+end;
 
-  FAddressList := TList<PQuadSocketAddressItem>.Create;
+class procedure TQuadSocket.Cleanup;
+begin
+  WSACleanup;
+end;
 
-  FMemory := TMemoryStream.Create;
-  if FtmpBuf = nil then
-    GetMem(FtmpBuf, BUFFER_SIZE);
+constructor TQuadSocket.Create(ASocket: TSocket);
+begin
+  FCriticalSection := TCriticalSection.Create;
+  FSocket := ASocket;
 end;
 
 destructor TQuadSocket.Destroy;
 begin
-  if FSocket > 0 then
-    CloseSocket(FSocket);
-  FAddressList.Free;
-  FSocket := -1;
-  FreeMem(FtmpBuf);
-  FtmpBuf := nil;
-  FMemory.Free;
-  Disconnect;
+  FCriticalSection.Free;
   inherited;
 end;
 
-procedure TQuadSocket.Clear;
+function TQuadSocket.SendBuf(var ABuf; ACount: Integer): Integer;
 begin
-  FMemory.Clear;
-  SetPackedType(qsptData);
-end;
-
-procedure TQuadSocket.SetCode(ACode: Word);
-begin
-  Clear;
-  Write(ACode, SizeOf(ACode));
-end;
-
-class procedure TQuadSocket.Connect;
-var
-  Data: WSAData;
-  Error: integer;
-begin
-  if FActiveCount = 0 then
-    Error := WSAStartup(MakeWord(2, 2), Data);
-  Inc(FActiveCount);
-end;
-
-class procedure TQuadSocket.Disconnect;
-begin
-  if FActiveCount = 1 then
-    WSACleanup;
-  Dec(FActiveCount);
-end;
-
-procedure TQuadSocket.InitSocket(APort: Word = 0);
-var
-  flag: integer;
-  i: integer;
-  Address: TSockAddrIn;
-begin
-  i := 1;
-  flag := 1;
-
-  if APort > 0 then
-    FType := qstServer
-  else
-    FType := qstClient;
-
-  if FSocket > 0 then
-    CloseSocket(FSocket);
-
-  FSocket := socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  if FSocket = SOCKET_ERROR then
-    Exit;
-
-  if ioctlsocket(FSocket, FIONBIO, flag) = SOCKET_ERROR then
-    Exit;
-
-  setsockopt(FSocket, SOL_SOCKET, SO_BROADCAST, PAnsiChar(@i), SizeOf(i));
-
-  Address.sin_addr.S_addr := INADDR_ANY;
-  Address.sin_port        := htons(APort);
-  Address.sin_family      := AF_INET;
-
-  if bind(FSocket, Address, sizeof(Address)) = SOCKET_ERROR then
-  begin
-    CloseSocket(FSocket);
-    FSocket := -1;
+  FCriticalSection.Enter;
+  try
+    Result := send(FSocket, Pointer(@ABuf)^, ACount, 0);
+  finally
+    FCriticalSection.Leave;
   end;
 end;
 
-procedure TQuadSocket.Close;
+function TQuadSocket.SendText(const AText: AnsiString): Integer;
 begin
-  if FSocket > 0 then
-    CloseSocket(FSocket);
+  Result := SendBuf(Pointer(AText)^, Length(AText) * SizeOf(AnsiChar));
 end;
 
-function TQuadSocket.Write(const ABuf; ACount: Integer): Boolean;
+function TQuadSocket.SendStream(AMemory: TMemoryStream): Integer;
 var
-  i: integer;
+  Len: Integer;
 begin
-  Result := False;
-  if (FActiveCount = 0) or (FSocket <= 0) or (ACount <= 0) then
-    Exit;
-
-  if FMemory.Size + ACount < BUFFER_SIZE then
-    Result := FMemory.Write(ABuf, ACount) > 0;
+  if Assigned(AMemory) and (AMemory.Size > 0) then
+    Result := SendBuf(PByteArray(AMemory.Memory)[0], AMemory.Size);
 end;
 
-function TQuadSocket.Recv(out AAddress: PQuadSocketAddressItem; AMemory: TMemoryStream): Boolean;
+function TQuadSocket.ReceiveBuf(var ABuf; ACount: Integer): Integer;
 var
-  Addr: TSockAddrIn;
-  i: integer;
-  GUID: TGUID;
-  PackedType: TQuadSocketPackedType;
-  Length: Integer;
+  Cnt: Cardinal;
+  ErrorCode: Integer;
 begin
-  if not Assigned(AMemory) then
-    Exit;
-
-  AMemory.Clear;
-  Result := False;
-  if (FActiveCount = 0) or (FSocket <= 0) then
-    Exit;
-
-  repeat
-    i := SizeOf(Addr);
-    Length := recvfrom(FSocket, FtmpBuf[0], BUFFER_SIZE, 0, Addr, i);
-    if Length <= 0 then
-      Exit;
-
-    PackedType := TQuadSocketPackedType(FtmpBuf[0]);
-    if FindAddress(Addr, AAddress) then
+  Result := 0;
+  FCriticalSection.Enter;
+  try
+    if ACount >= 0 then
     begin
-      case PackedType of
-        qsptConnect:
-          if FType = qstClient then
-            SendConnect(AAddress);
-        qsptDisconnect: FAddressList.Remove(AAddress);
-        qsptPing:
-          begin
-            Clear;
-            SetPackedType(qsptOutPing);
-            Send(AAddress);
-          end;
-        qsptOutPing:
-          begin
-          end;
-        qsptData:
-          begin
-            AMemory.Write(FtmpBuf[1], Length - 1);
-            AMemory.Position := 0;
-            Result := True;
-          end;
+      if ioctlsocket(FSocket, FIONREAD, Cnt) = 0 then
+      begin
+        if (Cnt > 0) and (Integer(Cnt) < ACount) then
+          ACount := Cnt;
+      end;
+
+      Result := recv(FSocket, ABuf, ACount, 0);
+      if Result = SOCKET_ERROR then
+      begin
+        ErrorCode := WSAGetLastError; //Form2.AddLog(Format('Error %d', [ErrorCode]));
       end;
     end
     else
-      if PackedType = qsptConnect then
-      begin
-        Move(FtmpBuf[1], PByteArray(@GUID)[0], SizeOf(GUID));
-        if IsEqualGUID(FGlobalGUID, GUID) then
-        begin
-          Clear;
-          SetPackedType(qsptConnect);
-          Send(AddressAdd(Addr));
-        end;
-      end
-      else
-        if FType = qstServer then
-        begin
-          Clear;
-          SetPackedType(qsptConnect);
-          Write(FGlobalGUID, SizeOf(FGlobalGUID));
-          Send(Addr);
-        end;
-
-  until Result;
-end;
-
-function TQuadSocket.Send(AAddress: PQuadSocketAddressItem): Integer;
-begin
-  Result := Send(AAddress.Addr);
-end;
-
-function TQuadSocket.Send(Addr: TSockAddrIn): Integer;
-begin
-  Result := 0;
-  if (FActiveCount = 0) or (FSocket <= 0) or (FMemory.Size <= 0) then
-    Exit;
-  Result := SendTo(FSocket, PByteArray(FMemory.Memory)[0], FMemory.Size, 0, Addr, SizeOf(Addr));
-end;
-
-function TQuadSocket.FindAddress(const AAddr: TSockAddrIn; out AAddress: PQuadSocketAddressItem): Boolean;
-var
-  i: Integer;
-begin
-  for i := FAddressList.Count - 1 downto 0 do
-  begin
-    AAddress := FAddressList[i];
-    if (AAddress.Addr.sin_port = AAddr.sin_port) and (AAddress.Addr.sin_addr.S_addr = AAddr.sin_addr.S_addr) then
-    begin
-      AAddress.Time := Now;
-      Exit(True);
-    end
-    else
-      if IncSecond(AAddress.Time, 3) < Now then
-        FAddressList.Delete(i);
+      ioctlsocket(FSocket, FIONREAD, Cardinal(Result));
+  finally
+    FCriticalSection.Leave;
   end;
-  Result := False;
-  AAddress := nil;
 end;
 
-function TQuadSocket.AddressAdd(const AAddr: TSockAddrIn): PQuadSocketAddressItem;
-begin
-  New(Result);
-  Result.Addr.sin_port := AAddr.sin_port;
-  Result.Addr.sin_addr := AAddr.sin_addr;
-
-  Result.Addr.sin_family := AF_INET;
-  FillChar(Result.Addr.sin_zero, SizeOf(Result.Addr.sin_zero), 0);
-  Result.Time := Now;
-
-  FAddressList.Add(Result);
-end;
-
-procedure TQuadSocket.SetPackedType(AType: TQuadSocketPackedType);
-begin
-  FMemory.Position := 0;
-  FMemory.Write(Byte(AType), SizeOf(Byte));
-end;
-
-function TQuadSocket.CreateAddress(const AIP: PAnsiChar; APort: Word): PQuadSocketAddressItem;
+function TQuadSocket.ReceiveStream(AMemory: TMemoryStream): Integer;
 var
+  Len: Integer;
+begin
+  if not Assigned(AMemory) then
+    Exit;
+  AMemory.Clear;
+  Len := ReceiveLength;
+  AMemory.SetSize(Len);
+  ReceiveBuf(Pointer(AMemory.Memory)^, Len);
+  AMemory.Position := 0;
+end;
+
+function TQuadSocket.ReceiveLength: Integer;
+begin
+  Result := ReceiveBuf(Pointer(nil)^, -1);
+end;
+
+function TQuadSocket.ReceiveText: AnsiString;
+var
+  LenStr: Integer;
+begin
+  LenStr := ReceiveLength;
+  if LenStr <= 0 then
+    Exit('');
+  SetLength(Result, LenStr);
+  ReceiveBuf(Pointer(Result)^, LenStr);
+end;
+
+{ TQuadCustomSocket }
+
+constructor TQuadCustomSocket.Create;
+begin
+  Startup;
+  FHandle := AllocateHwnd(WndProc);
+  inherited Create(socket(PF_INET, SOCK_STREAM, IPPROTO_IP));
+end;
+
+destructor TQuadCustomSocket.Destroy;
+begin
+  if FHandle <> 0 then
+    DeallocateHWnd(FHandle);
+  Cleanup;
+  inherited;
+end;
+
+procedure TQuadCustomSocket.InitSocket(const AAddress: string; APort: Word);
+begin
+  FAddr.sin_family := PF_INET;
+  if AAddress <> '' then
+    FAddr.sin_addr.s_addr := inet_addr(PAnsiChar(AnsiString(AAddress)))
+  else
+    FAddr.sin_addr.s_addr := INADDR_ANY;
+  FAddr.sin_port := htons(APort);
+  FillChar(FAddr.sin_zero, SizeOf(FAddr.sin_zero), 0);
+end;
+
+procedure TQuadCustomSocket.Open;
+begin
+  WSAAsyncSelect(FSocket, FHandle, WM_SOCKETMESSAGE, FD_WRITE or FD_READ or FD_CONNECT or FD_ACCEPT or FD_CLOSE);
+end;
+
+procedure TQuadCustomSocket.WndProc(var Message: TMessage);
+begin
+  Dispatch(Message);
+end;
+
+procedure TQuadCustomSocket.WMSocketMessage(var Msg: TMessage);
+begin
+  case WSAGetSelectEvent(Msg.lParam) of
+    FD_ACCEPT: DoAccept(TSocket(Msg.WParam));
+    FD_CONNECT: DoConnect(TSocket(Msg.WParam));
+    FD_CLOSE: DoClose(TSocket(Msg.WParam));
+    FD_READ: DoRead(TSocket(Msg.WParam));
+    FD_WRITE: DoWrite(TSocket(Msg.WParam));
+  end;
+end;
+
+procedure TQuadCustomSocket.DoRead(ASocket: TSocket);
+begin
+
+end;
+
+procedure TQuadCustomSocket.DoWrite(ASocket: TSocket);
+begin
+
+end;
+
+procedure TQuadCustomSocket.DoAccept(ASocket: TSocket);
+begin
+
+end;
+
+procedure TQuadCustomSocket.DoConnect(ASocket: TSocket);
+begin
+
+end;
+
+procedure TQuadCustomSocket.DoClose(ASocket: TSocket);
+begin
+  shutdown(ASocket, SD_SEND);
+  closesocket(ASocket);
+end;
+
+{ TQuadServerSocket }
+
+constructor TQuadServerSocket.Create(APort: Word);
+begin
+  inherited Create;
+  FClients := TObjectList<TQuadSocket>.Create;
+  InitSocket('', APort);
+end;
+
+destructor TQuadServerSocket.Destroy;
+begin
+  FClients.Free;
+  inherited;
+end;
+
+procedure TQuadServerSocket.Open;
+begin
+  bind(FSocket, PSockAddr(@FAddr)^, SizeOf(FAddr));
+  inherited Open;
+  listen(FSocket, SOMAXCONN);
+end;
+
+procedure TQuadServerSocket.DoAccept(ASocket: TSocket);
+var
+  Client: TQuadSocket;
+  Sock: TSocket;
   Addr: TSockAddrIn;
+  Len: Integer;
 begin
-  Addr.sin_addr.S_addr := inet_addr(AIP);
-  Addr.sin_port := htons(APort);
-  Result := AddressAdd(Addr);
-  FAddressList.Add(Result);
-  SendConnect(Result);
+  Len := SizeOf(Addr);
+  Sock := accept(ASocket, @Addr, @Len);
+  if Sock <> INVALID_SOCKET then
+  begin
+    Client := TQuadSocket.Create(Sock);
+    FClients.Add(Client);
+    if Assigned(FOnClientConnect) then
+      FOnClientConnect(Self, Client);
+  end;
 end;
 
-procedure TQuadSocket.SendConnect(AAddress: PQuadSocketAddressItem);
+procedure TQuadServerSocket.DoRead(ASocket: TSocket);
+var
+  Client: TQuadSocket;
 begin
-  Clear;
-  SetPackedType(qsptConnect);
-  Write(FGlobalGUID, SizeOf(FGlobalGUID));
-  Send(AAddress);
+  Client := FindClientBySocket(ASocket);
+  if Assigned(Client) and Assigned(FOnRead) then
+    FOnRead(Self, Client);
 end;
 
-function TQuadSocket.GetAddress(Index: Integer): PQuadSocketAddressItem;
+procedure TQuadServerSocket.DoClose(ASocket: TSocket);
+var
+  Client: TQuadSocket;
 begin
-  Result := FAddressList[Index];
+  Client := FindClientBySocket(ASocket);
+  if Assigned(Client) then
+  begin
+    if Assigned(FOnClientDisconnect) then
+      FOnClientDisconnect(Self, Client);
+    FClients.Remove(Client);
+  end;
+  inherited;
 end;
 
-function TQuadSocket.GetAddressCount: Integer;
+function TQuadServerSocket.GetClient(Index: Integer): TQuadSocket;
 begin
-  Result := FAddressList.Count;
+  if (Index < 0) or (Index >= FClients.Count) then
+    Exit(nil);
+  Result := FClients[Index];
 end;
 
-initialization
-  TQuadSocket.FGlobalGUID := StringToGUID('{D4523A77-065E-4EB4-A249-6F75B416F8BE}');
-  TQuadSocket.FActiveCount := 0;
+function TQuadServerSocket.GetClientCount: Integer;
+begin
+  Result := FClients.Count;
+end;
 
-finalization
-  TQuadSocket.Disconnect;
+function TQuadServerSocket.FindClientBySocket(ASocket: TSocket): TQuadSocket;
+var
+  Client: TQuadSocket;
+begin
+  for Client in FClients do
+    if Client.FSocket = ASocket then
+      Exit(Client);
+  Result := nil;
+end;
 
+{ TQuadClientSocket }
+
+constructor TQuadClientSocket.Create(const AAddress: string; APort: Word);
+begin
+  inherited Create;
+  InitSocket(AAddress, APort);
+end;
+
+destructor TQuadClientSocket.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TQuadClientSocket.Open;
+begin
+  inherited Open;
+  connect(FSocket, PSockAddr(@FAddr)^, SizeOf(FAddr));
+end;
+
+procedure TQuadClientSocket.DoConnect(ASocket: TSocket);
+begin
+  if Assigned(FOnConnect) then
+    FOnConnect(Self);
+end;
+
+procedure TQuadClientSocket.DoClose(ASocket: TSocket);
+begin
+  if Assigned(FOnDisconnect) then
+    FOnDisconnect(Self);
+  inherited;
+end;
+
+procedure TQuadClientSocket.DoRead(ASocket: TSocket);
+begin
+  if Assigned(FOnDisconnect) then
+    FOnRead(Self);
+end;
+        
 end.

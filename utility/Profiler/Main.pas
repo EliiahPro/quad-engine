@@ -11,19 +11,19 @@ type
   TfMain = class(TForm)
     Panel1: TPanel;
     PanelGroup: TCategoryPanelGroup;
-    Timer: TTimer;
     lvLog: TListView;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure TimerTimer(Sender: TObject);
-    procedure lvLogCreateItemClass(Sender: TCustomListView;
-      var ItemClass: TListItemClass);
+    procedure lvLogCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
   private
-    FSocket: TQuadSocket;
+    FServerSocket: TQuadServerSocket;
     FMemory: TMemoryStream;
+
+    procedure ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
+    procedure ServerSocketConnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
   public
     procedure RepaintAll;
-    property Socket: TQuadSocket read FSocket;
+    property ServerSocket: TQuadServerSocket read FServerSocket;
   end;
 
 var
@@ -36,14 +36,16 @@ implementation
 procedure TfMain.FormCreate(Sender: TObject);
 begin
   FMemory := TMemoryStream.Create;
-  FSocket := TQuadSocket.Create;
-  FSocket.InitSocket(17788);
+  FServerSocket := TQuadServerSocket.Create(17788);
+  FServerSocket.OnClientConnect := ServerSocketConnect;
+  FServerSocket.OnRead := ServerSocketRead;
+  FServerSocket.Open;
 end;
 
 procedure TfMain.FormDestroy(Sender: TObject);
 begin
-  if Assigned(FSocket) then
-    FSocket.Free;
+  if Assigned(FServerSocket) then
+    FServerSocket.Free;
   if Assigned(FMemory) then
     FMemory.Free;
 end;
@@ -53,7 +55,12 @@ begin
   ItemClass := TLogListItem;
 end;
 
-procedure TfMain.TimerTimer(Sender: TObject);
+procedure TfMain.ServerSocketConnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
+begin
+
+end;
+
+procedure TfMain.ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
   function FindPanel(const GUID: TGUID): TDiagramView;
   var
     i: Integer;
@@ -65,35 +72,37 @@ procedure TfMain.TimerTimer(Sender: TObject);
   end;
 var
   IsRefresh: Boolean;
-  Address: PQuadSocketAddressItem;
   Code: Word;
   GUID: TGUID;
   Diagram: TDiagramView;
+  it: TListItem;
 begin
-  IsRefresh := False;
+  //ShowMessage(AClient.ReceiveText);
+  {it := lvLog.Items.Insert(0);
+  it.Caption := AClient.ReceiveText;
+  Exit; }
+  if AClient.ReceiveStream(FMemory) <= 0 then
+    Exit;
 
-  while FSocket.Recv(Address, FMemory) do
-    if FMemory.Size > 0 then
-    begin
-      FMemory.Read(Code, SizeOf(Code));
-      case Code of
-        1, 2, 3, 4:
-          begin
-            FMemory.Read(GUID, SizeOf(GUID));
-            Diagram := FindPanel(GUID);
-            if Assigned(Diagram) then
-            begin
-              case Code of
-                1: Diagram.Write(FMemory);
-                2, 3, 4: Diagram.UpdateInfo(Code, FMemory);
-              end;
-            end
-            else
-              PanelGroup.Panels.Add(TDiagramView.Create(PanelGroup, Address, GUID));
-            IsRefresh := True;
+  IsRefresh := False;
+  FMemory.Read(Code, SizeOf(Code));
+  case Code of
+    1, 2, 3, 4:
+      begin
+        FMemory.Read(GUID, SizeOf(GUID));
+        Diagram := FindPanel(GUID);
+        if Assigned(Diagram) then
+        begin
+          case Code of
+            1: Diagram.Write(FMemory);
+            2, 3, 4: Diagram.UpdateInfo(Code, FMemory);
           end;
+        end
+        else
+          PanelGroup.Panels.Add(TDiagramView.Create(PanelGroup, AClient, GUID));
+        IsRefresh := True;
       end;
-    end;
+  end;
 
   if IsRefresh then
     RepaintAll;

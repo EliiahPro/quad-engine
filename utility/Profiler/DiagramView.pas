@@ -18,13 +18,13 @@ type
     class var FScale: Single;
   private
     FGUID: TGUID;
-    FDiagram: TDiagram;
     FMaxValue: Double;
-    FAddress: PQuadSocketAddressItem;
+    FClient: TQuadSocket;
     FFrame: TfDiagramFrame;
+    FMemory: TMemoryStream;
   public
     class procedure SetScale(AScale: Single);
-    constructor Create(APanelGroup: TCategoryPanelGroup; AAddress: PQuadSocketAddressItem; const AGUID: TGUID);
+    constructor Create(APanelGroup: TCategoryPanelGroup; AClient: TQuadSocket; const AGUID: TGUID);
     destructor Destroy; override;
     procedure Write(AMemory: TMemoryStream);
     procedure UpdateInfo(ACode: Word; AMemory: TMemoryStream);
@@ -47,32 +47,38 @@ begin
   FScale := AScale;
 end;
 
-constructor TDiagramView.Create(APanelGroup: TCategoryPanelGroup; AAddress: PQuadSocketAddressItem; const AGUID: TGUID);
+constructor TDiagramView.Create(APanelGroup: TCategoryPanelGroup; AClient: TQuadSocket; const AGUID: TGUID);
+var
+  Code: Word;
 begin
   inherited Create(APanelGroup.Parent);
   FFrame := TfDiagramFrame.Create(Self);
   FFrame.Parent := Self;
-
+  FMemory := TMemoryStream.Create;
   PanelGroup := APanelGroup;
   Height := 256;
   FGUID := AGUID;
   Text := FGUID.ToString;
   FMaxValue := 0;
-  FAddress := AAddress;
+  FClient := AClient;
 
   FFrame.Diagram := TDiagram.Create(FFrame);
   FFrame.Diagram.Parent := FFrame.Panel;
   FFrame.Diagram.Align := alClient;
   FFrame.Diagram.OnPaint := FFrame.Draw;
 
-  fMain.Socket.Clear;
-  fMain.Socket.SetCode(2);
-  fMain.Socket.Send(FAddress);
+  Code := 2;
+  AClient.SendBuf(Code, SizeOf(Code));
+end;
+
+destructor TDiagramView.Destroy;
+begin
+  FMemory.Free;
+  inherited;
 end;
 
 procedure TDiagramView.Write(AMemory: TMemoryStream);
 var
-  Time: Double;
   TagsCount: Word;
   i: Integer;
   ID, Code: Word;
@@ -82,6 +88,7 @@ begin
   if not Assigned(AMemory) then
     Exit;
 
+  Code := 3;
   AMemory.Read(TagsCount, SizeOf(TagsCount));
   for i := 0 to TagsCount - 1 do
   begin
@@ -93,10 +100,10 @@ begin
       Line := FFrame.List.Items.Add as TDiagramLine;
       Line.Checked := True;
       Line.SetID(ID);
-      fMain.Socket.Clear;
-      fMain.Socket.SetCode(3);
-      fMain.Socket.Write(ID, SizeOf(ID));
-      fMain.Socket.Send(FAddress);
+      FMemory.Clear;
+      FMemory.Write(Code, SizeOf(Code));
+      FMemory.Write(ID, SizeOf(ID));
+      FClient.SendStream(FMemory);
     end;
     Line.Add(Call);
   end;
@@ -156,12 +163,6 @@ begin
           LogItem.SubItems.Add('');
       end;
   end;
-end;
-
-destructor TDiagramView.Destroy;
-begin
-
-  inherited;
 end;
 
 procedure TDiagramView.Repaint;
