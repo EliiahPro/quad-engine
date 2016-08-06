@@ -197,11 +197,11 @@ var
   Len: Integer;
 begin
   if not Assigned(AMemory) then
-    Exit;
+    Exit(-1);
   AMemory.Clear;
   Len := ReceiveLength;
   AMemory.SetSize(Len);
-  ReceiveBuf(Pointer(AMemory.Memory)^, Len);
+  Result := ReceiveBuf(Pointer(AMemory.Memory)^, Len);
   AMemory.Position := 0;
 end;
 

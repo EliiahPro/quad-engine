@@ -12,9 +12,12 @@ type
     Panel1: TPanel;
     PanelGroup: TCategoryPanelGroup;
     lvLog: TListView;
+    Timer: TTimer;
+    Splitter1: TSplitter;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvLogCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
+    procedure TimerTimer(Sender: TObject);
   private
     FServerSocket: TQuadServerSocket;
     FMemory: TMemoryStream;
@@ -75,7 +78,6 @@ var
   Code: Word;
   GUID: TGUID;
   Diagram: TDiagramView;
-  it: TListItem;
 begin
   //ShowMessage(AClient.ReceiveText);
   {it := lvLog.Items.Insert(0);
@@ -105,7 +107,15 @@ begin
   end;
 
   if IsRefresh then
-    RepaintAll;
+    Timer.Enabled := True;
+ //   RepaintAll;
+ // Application.ProcessMessages;
+end;
+
+procedure TfMain.TimerTimer(Sender: TObject);
+begin
+  RepaintAll;
+  Timer.Enabled := False;
 end;
 
 procedure TfMain.RepaintAll;

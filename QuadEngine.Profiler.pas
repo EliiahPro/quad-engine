@@ -69,7 +69,7 @@ type
     FGUID: TGUID;
     FName: WideString;
     FIsSend: Boolean;
-    FServerAdress: AnsiString;
+    FServerAddress: AnsiString;
     FServerPort: Word;
 
     FTags: TList<TQuadProfilerTag>;
@@ -90,7 +90,7 @@ type
     function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
     procedure BeginTick; stdcall;
     procedure EndTick; stdcall;
-    procedure SetAdress(AAddress: PAnsiChar; APort: Word = 17788); stdcall;
+    procedure SetAddress(AAddress: PAnsiChar; APort: Word = 17788); stdcall;
     procedure SetGUID(const AGUID: TGUID); stdcall;
     procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
@@ -195,7 +195,7 @@ begin
 
   ini := TIniFile.Create('QuadConfig.ini');
   try
-    FServerAdress := ini.ReadString('Profiler', 'Adress', '127.0.0.1');
+    FServerAddress := ini.ReadString('Profiler', 'Address', '127.0.0.1');
     FServerPort := ini.ReadInteger('Profiler', 'Port', 17788);
     FIsSend := True;
   finally
@@ -216,15 +216,15 @@ begin
   FClientSocket := nil;
   LoadFromIniFile;
   if FIsSend then
-    SetAdress(PAnsiChar(FServerAdress), FServerPort);
+    SetAddress(PAnsiChar(FServerAddress), FServerPort);
 end;
 
-procedure TQuadProfiler.SetAdress(AAddress: PAnsiChar; APort: Word = 17788);
+procedure TQuadProfiler.SetAddress(AAddress: PAnsiChar; APort: Word = 17788);
 begin
   FIsSend := True;
   if not Assigned(FClientSocket) then
   begin
-    FClientSocket := TQuadClientSocket.Create(FServerAdress, FServerPort);
+    FClientSocket := TQuadClientSocket.Create(FServerAddress, FServerPort);
     FClientSocket.OnConnect := ClientSocketConnect;
     FClientSocket.OnDisconnect := ClientSocketDisconnect;
     FClientSocket.OnRead := ClientSocketRead;

@@ -56,7 +56,7 @@ begin
   FFrame.Parent := Self;
   FMemory := TMemoryStream.Create;
   PanelGroup := APanelGroup;
-  Height := 256;
+  Height := 200;
   FGUID := AGUID;
   Text := FGUID.ToString;
   FMaxValue := 0;

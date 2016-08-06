@@ -15,6 +15,16 @@ object fMain: TfMain
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
+  object Splitter1: TSplitter
+    Left = 0
+    Top = 453
+    Width = 794
+    Height = 3
+    Cursor = crVSplit
+    Align = alBottom
+    ExplicitTop = 33
+    ExplicitWidth = 423
+  end
   object Panel1: TPanel
     Left = 0
     Top = 0
@@ -28,7 +38,7 @@ object fMain: TfMain
     Left = 0
     Top = 33
     Width = 794
-    Height = 447
+    Height = 420
     VertScrollBar.Tracking = True
     Align = alClient
     HeaderFont.Charset = DEFAULT_CHARSET
@@ -40,9 +50,9 @@ object fMain: TfMain
   end
   object lvLog: TListView
     Left = 0
-    Top = 480
+    Top = 456
     Width = 794
-    Height = 92
+    Height = 116
     Align = alBottom
     Columns = <
       item
@@ -69,5 +79,12 @@ object fMain: TfMain
     TabOrder = 2
     ViewStyle = vsReport
     OnCreateItemClass = lvLogCreateItemClass
+  end
+  object Timer: TTimer
+    Enabled = False
+    Interval = 16
+    OnTimer = TimerTimer
+    Left = 232
+    Top = 145
   end
 end
