@@ -595,6 +595,7 @@ type
     function CreateTag(AName: PWideChar; out ATag: IQuadProfilerTag): HResult; stdcall;
     procedure BeginTick; stdcall;
     procedure EndTick; stdcall;
+    procedure SetAddress(AAddress: PAnsiChar; APort: Word = 17788); stdcall;
     procedure SetGUID(const AGUID: TGUID); stdcall;
     procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
