@@ -16,7 +16,7 @@ unit QuadEngine.Utils;
 interface
 
 uses
-  Winapi.Windows, Winapi.PSApi;
+  Winapi.Windows, Winapi.PSApi, System.SysUtils;
 
 type
   TCPUExtensions = record
@@ -30,6 +30,7 @@ type
   function IsSingleIn(const AValue, Amin, Amax: Single): Boolean; inline;
   function GetCPUInfo: TCPUExtensions;
   procedure FastSinCos(Angle : Single; var Asin, Acos: Single); inline;
+  function GetFilePath: string;
 
 implementation
 
@@ -143,6 +144,18 @@ begin
       else
         Acos := 0.225 * (Acos * Acos - Acos) + Acos;
   end;
+end;
+
+//=============================================================================
+//
+//=============================================================================
+
+function GetFilePath: string;
+var
+  buffer: array [0..MAX_PATH] of WideChar;
+begin
+  GetModuleFileNameW(Hinstance, buffer, MAX_PATH);
+  Result := ExtractFilePath(buffer);
 end;
 
 end.

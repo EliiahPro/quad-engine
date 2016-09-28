@@ -8,7 +8,7 @@ uses
   QuadEngine.Socket, Vcl.ComCtrls, QuadEngine.Profiler;
 
 const
-  CALL_BLOCK_COUNT = 10000;
+  CALL_BLOCK_COUNT = 1000;
 
 type
   PAPICall = ^TAPICall;
@@ -73,34 +73,8 @@ begin
 end;
 
 function TDiagramLine.CreateBlockCall: PDiagramLineCall;
-var
-  Call: PDiagramLineCall;
-  Size: Integer;
-  i: Integer;
 begin
-  Size := SizeOf(TDiagramLineCall);
-  GetMem(Result, Size * CALL_BLOCK_COUNT);
-  Call := Result;
-  for i := 0 to CALL_BLOCK_COUNT - 1 do
-  begin
-    if i > 0 then
-      Call.Prev := Pointer(Integer(Call) - Size)
-    else
-      Call.Prev := nil;
-
-    if i < CALL_BLOCK_COUNT - 1 then
-      Call.Next := Pointer(Integer(Call) + Size)
-    else
-      Call.Next := nil;
-    Inc(Call);
-  end;
-
-  if FCallBlockList.Count > 0 then
-  begin
-    Call := Pointer(Integer(FCallBlockList[FCallBlockList.Count - 1]) + Size * (CALL_BLOCK_COUNT - 1));
-    Result.Prev := Call;
-    Call.Next := Result;
-  end;
+  GetMem(Result, SizeOf(TDiagramLineCall) * CALL_BLOCK_COUNT);
   FCallBlockList.Add(Result);
 end;
 
@@ -113,14 +87,21 @@ procedure TDiagramLine.Add(const ACall: TAPICall);
 var
   Call: PDiagramLineCall;
 begin
-  if FCall = nil then
-    FCall := FCallBlockList[0];
+  if FCallCount mod CALL_BLOCK_COUNT = 0 then
+    Call := CreateBlockCall
+  else
+    Call := Pointer(Integer(FCall) + SizeOf(TDiagramLineCall));
 
-  if FCall.Next = nil then
-    CreateBlockCall;
+  Call.Next := nil;
+  if FCall <> nil then
+  begin
+    Call.Prev := FCall;
+    FCall.Next := Call;
+  end
+  else
+    Call.Prev := nil;
 
-  if FCallCount > 0 then
-    FCall := FCall.Next;
+  FCall := Call;
   FCall.Call := ACall;
   Inc(FCallCount);
 

@@ -4,28 +4,28 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, DiagramView, QuadEngine.Socket,
-  System.Generics.Collections, DiagramLine, Vcl.ComCtrls, ListLogItem;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, QuadEngine, QuadEngine.Socket,
+  System.Generics.Collections, DiagramLine, Vcl.ComCtrls, ListLogItem, Vcl.Menus, ShellApi, DiagramFrame;
 
 type
   TfMain = class(TForm)
     Panel1: TPanel;
-    PanelGroup: TCategoryPanelGroup;
-    lvLog: TListView;
     Timer: TTimer;
-    Splitter1: TSplitter;
+    ScrollBox1: TScrollBox;
+    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvLogCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
     procedure TimerTimer(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     FServerSocket: TQuadServerSocket;
     FMemory: TMemoryStream;
+    FFrames: TList<TfDiagramForm>;
 
     procedure ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
     procedure ServerSocketConnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
   public
-    procedure RepaintAll;
     property ServerSocket: TQuadServerSocket read FServerSocket;
   end;
 
@@ -36,8 +36,14 @@ implementation
 
 {$R *.dfm}
 
+procedure TfMain.Button1Click(Sender: TObject);
+begin
+  ShellExecute(Handle, 'open', 'demo09.exe', nil, nil, SW_SHOWNORMAL);
+end;
+
 procedure TfMain.FormCreate(Sender: TObject);
 begin
+  FFrames := TList<TfDiagramForm>.Create;
   FMemory := TMemoryStream.Create;
   FServerSocket := TQuadServerSocket.Create(17788);
   FServerSocket.OnClientConnect := ServerSocketConnect;
@@ -51,6 +57,8 @@ begin
     FServerSocket.Free;
   if Assigned(FMemory) then
     FMemory.Free;
+
+  FFrames.Free;
 end;
 
 procedure TfMain.lvLogCreateItemClass(Sender: TCustomListView; var ItemClass: TListItemClass);
@@ -59,71 +67,78 @@ begin
 end;
 
 procedure TfMain.ServerSocketConnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
+var
+  Code: Word;
 begin
-
+  Code := 2;
+  AClient.SendBuf(Code, SizeOf(Code));
 end;
 
 procedure TfMain.ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
-  function FindPanel(const GUID: TGUID): TDiagramView;
+  function FindPanel(const GUID: TGUID): TfDiagramForm;
   var
     i: Integer;
   begin
-    for i := 0 to PanelGroup.Panels.Count - 1 do
-      if TDiagramView(PanelGroup.Panels[i]).GUID = GUID then
-        Exit(TDiagramView(PanelGroup.Panels[i]));
+    for i := 0 to FFrames.Count - 1 do
+      if TfDiagramForm(FFrames[i]).GUID = GUID then
+        Exit(TfDiagramForm(FFrames[i]));
+
     Result := nil;
   end;
 var
   IsRefresh: Boolean;
   Code: Word;
   GUID: TGUID;
-  Diagram: TDiagramView;
+  Form: TfDiagramForm;
+  Splitter: TSplitter;
 begin
-  //ShowMessage(AClient.ReceiveText);
-  {it := lvLog.Items.Insert(0);
-  it.Caption := AClient.ReceiveText;
-  Exit; }
   if AClient.ReceiveStream(FMemory) <= 0 then
     Exit;
 
   IsRefresh := False;
-  FMemory.Read(Code, SizeOf(Code));
-  case Code of
-    1, 2, 3, 4:
-      begin
-        FMemory.Read(GUID, SizeOf(GUID));
-        Diagram := FindPanel(GUID);
-        if Assigned(Diagram) then
+
+  repeat
+    FMemory.Read(Code, SizeOf(Code));
+    case Code of
+      1, 2, 3, 4:
         begin
-          case Code of
-            1: Diagram.Write(FMemory);
-            2, 3, 4: Diagram.UpdateInfo(Code, FMemory);
-          end;
-        end
-        else
-          PanelGroup.Panels.Add(TDiagramView.Create(PanelGroup, AClient, GUID));
-        IsRefresh := True;
-      end;
-  end;
+          FMemory.Read(GUID, SizeOf(GUID));
+          Form := FindPanel(GUID);
+          if Assigned(Form) then
+          begin
+            case Code of
+              1: Form.Write(FMemory);
+              3, 4: Form.UpdateInfo(Code, FMemory);
+            end;
+          end
+          else
+            if Code = 2 then
+            begin
+              Form := TfDiagramForm.Create(Self, AClient, GUID);
+              Form.Name := '';
+              Form.Parent := ScrollBox1;
+              Form.UpdateInfo(Code, FMemory);
+              Form.Top := FFrames.Count * 300;
+              FFrames.Add(Form);
+              Splitter := TSplitter.Create(Self);
+              Splitter.Align := alTop;
+              Splitter.Height := 5;
+              Splitter.Top := Form.Top + Form.ClientHeight;
+              Splitter.Parent := ScrollBox1;
+            end;
+
+          IsRefresh := True;
+        end;
+    end;
+  until FMemory.Position >= FMemory.Size;
 
   if IsRefresh then
     Timer.Enabled := True;
- //   RepaintAll;
- // Application.ProcessMessages;
 end;
 
 procedure TfMain.TimerTimer(Sender: TObject);
 begin
-  RepaintAll;
   Timer.Enabled := False;
-end;
-
-procedure TfMain.RepaintAll;
-var
-  i: Integer;
-begin
-  for i := 0 to PanelGroup.Panels.Count - 1 do
-    TDiagramView(PanelGroup.Panels[i]).Repaint;
 end;
 
 end.
