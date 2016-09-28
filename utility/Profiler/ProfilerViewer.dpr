@@ -9,9 +9,8 @@ uses
   Main in 'Main.pas' {fMain},
   Vcl.Themes,
   Vcl.Styles,
-  DiagramView in 'DiagramView.pas',
   DiagramLine in 'DiagramLine.pas',
-  DiagramFrame in 'DiagramFrame.pas' {fDiagramFrame: TFrame},
+  DiagramFrame in 'DiagramFrame.pas' {fDiagramForm: TFrame},
   ListLogItem in 'ListLogItem.pas';
 
 {$R *.res}

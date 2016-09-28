@@ -15,7 +15,7 @@ interface
 
 uses
   Winapi.Windows, System.SysUtils, System.SyncObjs, TypInfo, QuadEngine.Socket, IniFiles, QuadEngine,
-  System.Generics.collections, System.Classes;
+  System.Generics.collections, System.Classes, QuadEngine.Utils;
 
 type
   TAPICall = record
@@ -84,6 +84,7 @@ type
     procedure ClientSocketRead(AClient: TQuadClientSocket);
     procedure ClientSocketConnect(AClient: TQuadClientSocket);
     procedure ClientSocketDisconnect(AClient: TQuadClientSocket);
+    procedure SendTagInfo(ATag: TQuadProfilerTag);
   public
     constructor Create(AName: PWideChar);
     destructor Destroy; override;
@@ -98,7 +99,7 @@ type
 implementation
 
 uses
-  Math;
+  Math, QuadEngine.Device;
 
 { TQuadProfilerTag }
 
@@ -184,20 +185,22 @@ begin
     Result := S_OK
   else
     Result := E_FAIL;
+
+  if FConnected then
+    SendTagInfo(Tag);
 end;
 
 procedure TQuadProfiler.LoadFromIniFile;
 var
   ini: TIniFile;
 begin
-  if not FileExists('QuadConfig.ini') then
+  if not FileExists(GetFilePath + 'QuadConfig.ini') then
     Exit;
 
-  ini := TIniFile.Create('QuadConfig.ini');
+  ini := TIniFile.Create(GetFilePath + 'QuadConfig.ini');
   try
     FServerAddress := ini.ReadString('Profiler', 'Address', '127.0.0.1');
     FServerPort := ini.ReadInteger('Profiler', 'Port', 17788);
-    FIsSend := True;
   finally
     ini.Free;
   end;
@@ -215,13 +218,12 @@ begin
   FMessages := TQueue<TQuadProfilerMessage>.Create;
   FClientSocket := nil;
   LoadFromIniFile;
-  if FIsSend then
+  //if FIsSend then
     SetAddress(PAnsiChar(FServerAddress), FServerPort);
 end;
 
 procedure TQuadProfiler.SetAddress(AAddress: PAnsiChar; APort: Word = 17788);
 begin
-  FIsSend := True;
   if not Assigned(FClientSocket) then
   begin
     FClientSocket := TQuadClientSocket.Create(FServerAddress, FServerPort);
@@ -273,19 +275,7 @@ begin
 end;
 
 procedure TQuadProfiler.ClientSocketConnect(AClient: TQuadClientSocket);
-var
-  Mem: TMemoryStream;
-  Code: Word;
 begin
-  Mem := TMemoryStream.Create;
-  try
-    Code := 2;
-    Mem.Write(Code, SizeOf(Code));
-    Mem.Write(FGUID, SizeOf(FGUID));
-    AClient.SendStream(Mem);
-  finally
-    Mem.Free;
-  end;
   FConnected := True;
 end;
 
@@ -294,12 +284,34 @@ begin
   FConnected := False;
 end;
 
+procedure TQuadProfiler.SendTagInfo(ATag: TQuadProfilerTag);
+var
+  Code: Word;
+  StrLength: Byte;
+  Mem: TMemoryStream;
+begin
+  Code := 3;
+  Mem := TMemoryStream.Create;
+  try
+    Mem.Write(Code, SizeOf(Code));
+    Mem.Write(FGUID, SizeOf(FGUID));
+    Mem.Write(ATag.ID, SizeOf(ATag.ID));
+
+    StrLength := Length(ATag.Name);
+    Mem.Write(StrLength, SizeOf(StrLength));
+    Mem.Write(ATag.Name[1], StrLength * 2);
+    FClientSocket.SendStream(Mem);
+  finally
+    Mem.Free;
+  end;
+end;
+
 procedure TQuadProfiler.ClientSocketRead(AClient: TQuadClientSocket);
 var
-  Code, ID: Word;
+  Code: Word;
   StrLength: Byte;
-  Tag: TQuadProfilerTag;
   Mem: TMemoryStream;
+  Tag: TQuadProfilerTag;
 begin
   if AClient.ReceiveStream(FMemory) <= 0 then
     Exit;
@@ -316,23 +328,11 @@ begin
           Mem.Write(StrLength, SizeOf(StrLength));
           Mem.Write(FName[1], StrLength * 2);
           AClient.SendStream(Mem);
-        end;
-      3: // return tag name
-        begin
-          FMemory.Read(ID, SizeOf(ID));
+
           for Tag in FTags do
-            if Tag.ID = ID then
-            begin
-              Mem.Write(Code, SizeOf(Code));
-              Mem.Write(FGUID, SizeOf(FGUID));
-              Mem.Write(ID, SizeOf(ID));
-              StrLength := Length(Tag.Name);
-              Mem.Write(StrLength, SizeOf(StrLength));
-              Mem.Write(Tag.Name[1], StrLength * 2);
-              AClient.SendStream(Mem);
-              Break;
-            end;
+            SendTagInfo(Tag);
         end;
+      4: FIsSend := True;
     end;
   finally
     Mem.Free;

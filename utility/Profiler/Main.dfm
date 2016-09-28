@@ -1,9 +1,9 @@
 object fMain: TfMain
   Left = 0
-  Top = 0
+  Top = 200
   Caption = 'QuadProfiler (beta)'
-  ClientHeight = 572
-  ClientWidth = 794
+  ClientHeight = 441
+  ClientWidth = 796
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,74 +11,36 @@ object fMain: TfMain
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object Splitter1: TSplitter
-    Left = 0
-    Top = 453
-    Width = 794
-    Height = 3
-    Cursor = crVSplit
-    Align = alBottom
-    ExplicitTop = 33
-    ExplicitWidth = 423
-  end
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 794
+    Width = 796
     Height = 33
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    object Button1: TButton
+      Left = 624
+      Top = 2
+      Width = 75
+      Height = 25
+      Caption = 'Button1'
+      TabOrder = 0
+      OnClick = Button1Click
+    end
   end
-  object PanelGroup: TCategoryPanelGroup
+  object ScrollBox1: TScrollBox
     Left = 0
     Top = 33
-    Width = 794
-    Height = 420
-    VertScrollBar.Tracking = True
+    Width = 796
+    Height = 408
     Align = alClient
-    HeaderFont.Charset = DEFAULT_CHARSET
-    HeaderFont.Color = clWindowText
-    HeaderFont.Height = -11
-    HeaderFont.Name = 'Tahoma'
-    HeaderFont.Style = []
     TabOrder = 1
-  end
-  object lvLog: TListView
-    Left = 0
-    Top = 456
-    Width = 794
-    Height = 116
-    Align = alBottom
-    Columns = <
-      item
-        Width = 20
-      end
-      item
-        Caption = 'Time'
-        Width = 70
-      end
-      item
-        AutoSize = True
-        Caption = 'Message'
-      end
-      item
-        Caption = 'Profiler'
-        Width = 100
-      end
-      item
-        Caption = 'Tag'
-        Width = 100
-      end>
-    ColumnClick = False
-    RowSelect = True
-    TabOrder = 2
-    ViewStyle = vsReport
-    OnCreateItemClass = lvLogCreateItemClass
   end
   object Timer: TTimer
     Enabled = False
