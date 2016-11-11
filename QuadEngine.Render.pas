@@ -129,8 +129,8 @@ type
     procedure Polygon(const PointA, PointB, PointC, PointD: TVec2f; Color: Cardinal); stdcall;
     procedure Rectangle(const PointA, PointB: TVec2f; Color: Cardinal); stdcall;
     procedure RectangleEx(const PointA, PointB: TVec2f; Color1, Color2, Color3, Color4: Cardinal); stdcall;
-    procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
-    procedure RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
+    procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; const AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
+    procedure RenderToTexture(AIsRenderToTexture: Boolean; const AQuadTexture: IQuadTexture = nil;
       ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
@@ -1259,7 +1259,7 @@ end;
 //=============================================================================
 // Enable/disable rendering into GBuffer
 //=============================================================================
-procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
+procedure TQuadRender.RenderToGBuffer(AIsRenderToGBuffer: Boolean; const AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False);
 var
   Obj: TQuadGBuffer;
   TexBuffer: IQuadTexture;
@@ -1292,7 +1292,7 @@ end;
 //=============================================================================
 // Enable/disable rendering into texture with index "Count"
 //=============================================================================
-procedure TQuadRender.RenderToTexture(AIsRenderToTexture: Boolean; AQuadTexture: IQuadTexture = nil;
+procedure TQuadRender.RenderToTexture(AIsRenderToTexture: Boolean; const AQuadTexture: IQuadTexture = nil;
   ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False);
 var
   ARenderSurface: IDirect3DSurface9;

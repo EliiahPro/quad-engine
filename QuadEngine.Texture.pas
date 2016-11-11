@@ -50,7 +50,7 @@ type
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
     procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
-    procedure AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;
+    procedure AssignTexture(const AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawMap(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -103,7 +103,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.AssignTexture(AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte);
+procedure TQuadTexture.AssignTexture(const AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte);
 begin
   AddTexture(ATargetRegister, AQuadTexture.GetTexture(ASourceRegister));
 end;
