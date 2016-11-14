@@ -99,10 +99,10 @@ begin
   FrameWidth := bmp.Width;
   FrameHeight := bmp.Height;
 
-  Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Result, nil);
+  Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, Result, nil);
   Device.LastResultCode := result.LockRect(0, aData, nil, 0);
 
-  for I := 0 to FrameHeight - 1 do
+  for i := 0 to FrameHeight - 1 do
   begin
     p:= bmp.ScanLine[i];
     for j:= 0 to FrameWidth - 1 do

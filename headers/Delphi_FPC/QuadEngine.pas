@@ -281,6 +281,7 @@ type
     /// <param name="AIsCropScreen">Scale or crop scene to match rendertarget's resolution</param>
     procedure RenderToTexture(AIsRenderToTexture: Boolean; const AQuadTexture: IQuadTexture = nil;
       ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
+    procedure RenderToBackBuffer; stdcall;
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;

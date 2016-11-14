@@ -261,6 +261,7 @@ namespace QuadEngine
         /// <param name="AIsCropScreen">Scale or crop scene to match rendertarget's resolution</param>
         void RenderToTexture(bool AIsRenderToTexture, IQuadTexture AQuadTexture = null,
           byte ATextureRegister = 0, byte ARenderTargetRegister = 0, bool AIsCropScreen = false);
+        void RenderToBackBuffer();
         void SetAutoCalculateTBN(bool Value);
         void SetBlendMode(TQuadBlendMode TQuadBlendMode);
         void SetClipRect(UInt32 X, UInt32 Y, UInt32 X2, UInt32 Y2);
@@ -658,7 +659,7 @@ namespace QuadEngine
       void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = TQuadProfilerMessageType.pmtMessage);
     }
 
-    public static class QuadEngine
+    public static class QuadEngine                                                               oCalculateTBN(Value:
     {
         [DllImport("qei.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "CreateQuadDevice", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateQuadDevice(out IQuadDevice Device); //[Out, MarshalAs(UnmanagedType.Interface)]

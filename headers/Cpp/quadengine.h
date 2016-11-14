@@ -220,6 +220,7 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual void CALLBACK RectangleEx(const Vec2f& pointA, const Vec2f& pointB, unsigned int color1, unsigned int color2, unsigned int color3, unsigned int color4) = 0;
 	virtual void CALLBACK RenderToGBuffer(bool isRenderToGBuffer, IQuadGBuffer* quadGBuffer = NULL, bool isCropScreen = false) = 0;
 	virtual void CALLBACK RenderToTexture(bool isRenderToTexture, IQuadTexture* texture, unsigned char textureRegister = 0, unsigned char renderTargetRegister = 0, bool isCropScreen = false) = 0;
+	virtual void CALLBACK RenderToBackBuffer() = 0;
 	virtual void CALLBACK SetAutoCalculateTBN(bool Value) = 0;
 	virtual void CALLBACK SetBlendMode(TQuadBlendMode Mode) = 0;
 	virtual void CALLBACK SetClipRect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2) = 0;

@@ -40,6 +40,7 @@ type
   TQuadRender = class(TInterfacedObject, IQuadRender)
   private
     FActiveTexture: array of IDirect3DTexture9;
+    FRenderTargetsInUse: array of Boolean;
     FBackBuffer: IDirect3DSurface9;
     FCount: Cardinal;
     FD3DDM: TD3DDisplayMode;
@@ -85,6 +86,7 @@ type
     end;
     {$ENDIF}
     FQuad: array[0..5] of TVertex;
+    FVBOffset: Integer;
     procedure AddQuadToBuffer;
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
@@ -132,6 +134,7 @@ type
     procedure RenderToGBuffer(AIsRenderToGBuffer: Boolean; const AQuadGBuffer: IQuadGBuffer = nil; AIsCropScreen: Boolean = False); stdcall;
     procedure RenderToTexture(AIsRenderToTexture: Boolean; const AQuadTexture: IQuadTexture = nil;
       ATextureRegister: Byte = 0; ARenderTargetRegister: Byte = 0; AIsCropScreen: Boolean = False); stdcall;
+    procedure RenderToBackBuffer; stdcall;
     procedure SetAutoCalculateTBN(Value: Boolean); stdcall;
     procedure SetBlendMode(qbm: TQuadBlendMode); stdcall;
     procedure SetClipRect(X, Y, X2, Y2: Cardinal); stdcall;
@@ -310,6 +313,8 @@ procedure TQuadRender.BeginRender;
 begin
   if FIsDeviceLost then
     Exit;
+
+  FVBOffset := 0;
 
   {$IFDEF PROFILER}
   if Assigned(FProfiler) then
@@ -826,39 +831,15 @@ var
   pver: Pointer;
   PrimitiveCount: Cardinal;
 begin
-  if FIsDeviceLost then
+  if FIsDeviceLost or (FCount = 0) then
     Exit;
 
   PrimitiveCount := 0;
 
   case FRenderMode of
-    D3DPT_POINTLIST:
-    begin
-      // if vertex count less then one — exit
-      // else we cannot draw point (1 vertex)
-      if FCount = 0 then
-        Exit;
-
-      PrimitiveCount := FCount;
-    end;
-    D3DPT_LINELIST:
-    begin
-      // if vertex count less then two — exit
-      // else we cannot draw line (2 triangles)
-      if FCount < 2 then
-        Exit;
-
-      PrimitiveCount := FCount div 2;
-    end;
-    D3DPT_TRIANGLELIST:
-    begin
-      // if vertex count less then six — exit
-      // else we cannot draw quad (2 triangles)
-      if FCount < 6 then
-        Exit;
-
-      PrimitiveCount := FCount div 3;
-    end;
+    D3DPT_POINTLIST:    PrimitiveCount := FCount;
+    D3DPT_LINELIST:     PrimitiveCount := FCount div 2;
+    D3DPT_TRIANGLELIST: PrimitiveCount := FCount div 3;
   else
     Exit;
   end;
@@ -867,10 +848,15 @@ begin
   if Assigned(FProfilerTags.DrawCall) then
     FProfilerTags.DrawCall.BeginCount;
   {$ENDIF}
-  Device.LastResultCode := FD3DVB.Lock(0, 0, pver, D3DLOCK_DISCARD);
+  Device.LastResultCode := FD3DVB.Lock(FVBOffset * SizeOf(TVertex), FCount * SizeOf(TVertex), pver, D3DLOCK_DISCARD or D3DLOCK_NOOVERWRITE);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
-  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, 0, PrimitiveCount);
+  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, FVBOffset, PrimitiveCount);
+  FVBOffset := FVBOffset + FCount;
+
+  if FVBOffset > MaxBufferCount then
+    FVBOffset := 0;
+
   FCount := 0;
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.DrawCall) then
@@ -1078,7 +1064,7 @@ begin
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
 
   Device.LastResultCode := FD3DDevice.CreateVertexBuffer(MaxBufferCount * SizeOf(TVertex),
-                                                         D3DUSAGE_WRITEONLY,
+                                                         D3DUSAGE_WRITEONLY or D3DUSAGE_DYNAMIC,
                                                          0,
                                                          D3DPOOL_DEFAULT,
                                                          FD3DVB,
@@ -1318,6 +1304,8 @@ begin
     FOldScreenWidth := FWidth;
     FOldScreenHeight := FHeight;
 
+    FRenderTargetsInUse[ARenderTargetRegister] := True;
+
     if AIsCropScreen then
       ChangeResolution(AQuadTexture.GetTextureWidth, AQuadTexture.GetTextureHeight);
 
@@ -1326,18 +1314,34 @@ begin
   end
   else
   begin
-    if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
-      ChangeResolution(FOldScreenWidth, FOldScreenHeight);
+//    if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
+//      ChangeResolution(FOldScreenWidth, FOldScreenHeight);
 
-    for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
+    for i := 0 to FD3DCaps.NumSimultaneousRTs - 1 do
+    if FRenderTargetsInUse[i] then
+    begin
       Device.LastResultCode := FD3DDevice.SetRenderTarget(i, nil);
+      FRenderTargetsInUse[i] := False;
+    end;
 
-    Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
+//    Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
   end;
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.SwitchRenderTarget) then
     FProfilerTags.SwitchRenderTarget.EndCount;
   {$ENDIF}
+end;
+
+//=============================================================================
+//
+//=============================================================================
+procedure TQuadRender.RenderToBackBuffer; stdcall;
+begin
+  if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
+    ChangeResolution(FOldScreenWidth, FOldScreenHeight);
+
+  Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
+  FIsRenderIntoTexture := False;
 end;
 
 //=============================================================================
@@ -1694,6 +1698,7 @@ begin
 
   // set length of possible texture stages
   SetLength(FActiveTexture, MaxTextureStages);
+  SetLength(FRenderTargetsInUse, NumSimultaneousRTs);
 
   // ps2_0
   case FShaderModel of
@@ -1761,7 +1766,7 @@ end;
 //=============================================================================
 // Set active texures and flush buffer if texture changed
 //=============================================================================
-procedure TQuadRender.SetTexture(aRegister : Byte; const aTexture: IDirect3DTexture9);
+procedure TQuadRender.SetTexture(aRegister: Byte; const aTexture: IDirect3DTexture9);
 begin
   if (ARegister >= MaxTextureStages) or (aTexture = FActiveTexture[aRegister]) then
     Exit;
