@@ -218,8 +218,8 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual void CALLBACK Polygon(const Vec2f& pointA, const Vec2f& pointB, const Vec2f& pointC, const Vec2f& pointD, unsigned int color) = 0;
 	virtual void CALLBACK Rectangle(const Vec2f& pointA, const Vec2f& pointB, unsigned int color) = 0;
 	virtual void CALLBACK RectangleEx(const Vec2f& pointA, const Vec2f& pointB, unsigned int color1, unsigned int color2, unsigned int color3, unsigned int color4) = 0;
-	virtual void CALLBACK RenderToGBuffer(bool isRenderToGBuffer, IQuadGBuffer* quadGBuffer = NULL, bool isCropScreen = false) = 0;
-	virtual void CALLBACK RenderToTexture(bool isRenderToTexture, IQuadTexture* texture, unsigned char textureRegister = 0, unsigned char renderTargetRegister = 0, bool isCropScreen = false) = 0;
+	virtual void CALLBACK RenderToGBuffer(bool isRenderToGBuffer, IQuadGBuffer* &quadGBuffer = NULL, bool isCropScreen = false) = 0;
+	virtual void CALLBACK RenderToTexture(bool isRenderToTexture, IQuadTexture* &texture, unsigned char textureRegister = 0, unsigned char renderTargetRegister = 0, bool isCropScreen = false) = 0;
 	virtual void CALLBACK RenderToBackBuffer() = 0;
 	virtual void CALLBACK SetAutoCalculateTBN(bool Value) = 0;
 	virtual void CALLBACK SetBlendMode(TQuadBlendMode Mode) = 0;
