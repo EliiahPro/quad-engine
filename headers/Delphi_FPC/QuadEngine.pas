@@ -585,6 +585,7 @@ type
 
   IQuadProfilerTag = interface(IUnknown)
   ['{0CBAA03E-B54B-4351-B9EF-EEC46D99FCFB}']
+    procedure AddValue(AValue: Single); stdcall;
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;

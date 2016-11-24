@@ -18,7 +18,7 @@ uses
   System.Generics.collections, System.Classes, QuadEngine.Utils;
 
 type
-  TAPICall = record
+  TAPICall = packed record
     Time: TDateTime;
     Value: Double;
     Count: Integer;
@@ -43,6 +43,7 @@ type
     FOnSendMessage: TOnSendMessageEvent;
   public
     constructor Create(const AName: PWideChar);
+    procedure AddValue(AValue: Single); stdcall;
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
@@ -126,20 +127,9 @@ end;
 procedure TQuadProfilerTag.EndCount;
 var
   Counter: Int64;
-  Value: Double;
 begin
-  Inc(FCurrentAPICall.Count);
-
   QueryPerformanceCounter(Counter);
-  Value := (Counter - FCurrentAPICallStartTime) / FPerformanceFrequency;
-
-  FCurrentAPICall.Value := FCurrentAPICall.Value + Value;
-
-  if FCurrentAPICall.MinValue > Value then
-    FCurrentAPICall.MinValue := Value;
-
-  if FCurrentAPICall.MaxValue < Value then
-    FCurrentAPICall.MaxValue := Value;
+  AddValue(FCurrentAPICall.Value + (Counter - FCurrentAPICallStartTime) / FPerformanceFrequency)
 end;
 
 procedure TQuadProfilerTag.Refresh;
@@ -148,6 +138,18 @@ begin
   FCurrentAPICall.Value := 0.0;
   FCurrentAPICall.MaxValue := 0.0;
   FCurrentAPICall.MinValue := MaxDouble;
+end;
+
+procedure TQuadProfilerTag.AddValue(AValue: Single);
+begin
+  Inc(FCurrentAPICall.Count);
+  FCurrentAPICall.Value := FCurrentAPICall.Value + AValue;
+
+  if FCurrentAPICall.MinValue > AValue then
+    FCurrentAPICall.MinValue := AValue;
+
+  if FCurrentAPICall.MaxValue < AValue then
+    FCurrentAPICall.MaxValue := AValue;
 end;
 
 function TQuadProfilerTag.GetName: PWideChar;
