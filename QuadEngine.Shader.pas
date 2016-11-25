@@ -35,6 +35,7 @@ type
     FBindedVariableCount: Byte;
     FAutoCalcTBN: Boolean;
   public
+    class constructor Create;
     constructor Create(AQuadRender: TQuadRender); reintroduce;
     procedure LoadFromResource(AResourceName: PWideChar; AIsPixelShader: Boolean = True);
 
@@ -124,6 +125,14 @@ begin
     isVS := False;
   end;
 
+end;
+
+//=============================================================================
+//
+//=============================================================================
+class constructor TQuadShader.Create;
+begin
+  AutoCalcTBN := False;
 end;
 
 //=============================================================================
@@ -297,10 +306,5 @@ begin
     TQuadShader.AutoCalcTBN := False;
   end;
 end;
-
-initialization
-  TQuadShader.AutoCalcTBN := False;
-
-finalization
 
 end.

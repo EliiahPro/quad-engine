@@ -42,6 +42,7 @@ type
     FCurrentAPICall: TAPICall;
     FOnSendMessage: TOnSendMessageEvent;
   public
+    class constructor Create;
     constructor Create(const AName: PWideChar);
     procedure AddValue(AValue: Single); stdcall;
     procedure BeginCount; stdcall;
@@ -108,6 +109,11 @@ class procedure TQuadProfilerTag.Init;
 begin
   QueryPerformanceFrequency(FPerformanceFrequency);
   FNextID := 0;
+end;
+
+class constructor TQuadProfilerTag.Create;
+begin
+  Init;
 end;
 
 constructor TQuadProfilerTag.Create(const AName: PWideChar);
@@ -401,8 +407,5 @@ procedure TQuadProfiler.SetGUID(const AGUID: TGUID);
 begin
   FGUID := AGUID;
 end;
-
-initialization
-  TQuadProfilerTag.Init;
 
 end.

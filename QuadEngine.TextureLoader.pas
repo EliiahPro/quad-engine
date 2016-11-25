@@ -54,6 +54,8 @@ type
   private
     class var FFormats: TList<TQuadCustomTextureClass>;
   public
+    class constructor Create;
+    class destructor Destroy;
     class procedure Register(AQuadCustomTextureClass: TQuadCustomTextureClass);
     class function LoadFromStream(AStream: TMemoryStream): TTextureResult;
   end;
@@ -340,6 +342,21 @@ end;
 
 { TQuadTextureLoader }
 
+class constructor TQuadTextureLoader.Create;
+begin
+  FFormats := TList<TQuadCustomTextureClass>.Create;
+  Register(TQuadBMPTextureFormat);
+  Register(TQuadPNGTextureFormat);
+  Register(TQuadTGATextureFormat);
+  Register(TQuadJPGTextureFormat);
+  Register(TQuadDDSTextureFormat);
+end;
+
+class destructor TQuadTextureLoader.Destroy;
+begin
+  FFormats.Free;
+end;
+
 class function TQuadTextureLoader.LoadFromStream(AStream: TMemoryStream): TTextureResult;
 var
   tf: TQuadCustomTextureClass;
@@ -382,16 +399,5 @@ class procedure TQuadTextureLoader.Register(AQuadCustomTextureClass: TQuadCustom
 begin
   FFormats.Add(AQuadCustomTextureClass);
 end;
-
-initialization
-  TQuadTextureLoader.FFormats := TList<TQuadCustomTextureClass>.Create;
-  TQuadTextureLoader.Register(TQuadBMPTextureFormat);
-  TQuadTextureLoader.Register(TQuadPNGTextureFormat);
-  TQuadTextureLoader.Register(TQuadTGATextureFormat);
-  TQuadTextureLoader.Register(TQuadJPGTextureFormat);
-  TQuadTextureLoader.Register(TQuadDDSTextureFormat);
-
-finalization
-  TQuadTextureLoader.FFormats.Free;
 
 end.
