@@ -43,6 +43,7 @@ object fMainForm: TfMainForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    OnMouseMove = PaintPanelMouseMove
     OnResize = PaintPanelResize
   end
   object FooterPanel: TPanel
@@ -100,6 +101,7 @@ object fMainForm: TfMainForm
       ReadOnly = True
       RowSelect = True
       TabOrder = 0
+      OnCollapsed = TreeViewCollapsed
       OnCreateNodeClass = TreeViewCreateNodeClass
     end
   end
@@ -128,6 +130,7 @@ object fMainForm: TfMainForm
     ViewStyle = vsReport
   end
   object PaintTimer: TTimer
+    Enabled = False
     Interval = 16
     OnTimer = PaintTimerTimer
     Left = 328

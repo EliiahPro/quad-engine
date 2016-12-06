@@ -6,11 +6,11 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Quad.CanvasGL, Vec2f,
   Vcl.StdCtrls, CommCtrl, QuadEngine.Socket, QuadEngine, QuadEngine.Profiler, System.Generics.Collections,
-  QuadEngine.Timer, System.ImageList, Vcl.ImgList;
+  System.ImageList, Vcl.ImgList;
 
 const
-  TREEVIEW_ITEM_HEIGHT = 48;
-  LINEBLOCK_POINT_COUNT = 10000;
+  TREEVIEW_ITEM_HEIGHT = 60;
+  LINEBLOCK_POINT_COUNT = 1000;
 
 type
   TfMainForm = class;
@@ -18,39 +18,51 @@ type
   PAPICall = ^TAPICall;
 
   PLineBlock = ^TLineBlock;
-  TLineBlock = array[0..(LINEBLOCK_POINT_COUNT - 1)] of TVec2f;
-  TLineFillBlock = array[0..(LINEBLOCK_POINT_COUNT * 2 - 1)] of TVec2f;
 
-  TProfilerTagNode = class(TTreeNode)
+  TLineBlock = record
+    FillPoints: array[0..(LINEBLOCK_POINT_COUNT * 2 - 1)] of TVec2f;
+    Points: array[0..(LINEBLOCK_POINT_COUNT - 1)] of TVec2f;
+    PointCount: Integer;
+  end;
+
+  TProfilerCustomNode = class(TTreeNode)
+  public
+    procedure Draw(ACanvasGL: TQuadCanvasGL); virtual;
+  end;
+
+  TProfilerTagNode = class(TProfilerCustomNode)
   private
     FID: Integer;
     FCallList: TList<TAPICall>;
+    FLineBlockList: TList<PLineBlock>;
+    FColor: Cardinal;
 
-    FFillPoints: TLineBlock;
-    FPoints: TLineBlock;
-    FPointCount: Integer;
-
-    FMaxValue: Single;
+    FMinValue, FMaxValue: Single;
+    FValue: Single;
   public
     constructor Create(AOwner: TTreeNodes); override;
 
     destructor Destroy; override;
     procedure Add(const ACall: TAPICall; AX: Single);
-    property ID: Integer read FID write FID;
+    procedure Reset;
+    procedure Draw(ACanvasGL: TQuadCanvasGL); override;
 
-    property FillPoints: TLineBlock read FFillPoints;
-    property Points: TLineBlock read FPoints;
-    property PointCount: Integer read FPointCount;
+    property ID: Integer read FID write FID;
+    property Color: Cardinal read FColor write FColor;
+    property Value: Single read FValue;
+    property MinValue: Single read FMinValue;
     property MaxValue: Single read FMaxValue;
   end;
 
-  TProfilerNode = class(TTreeNode)
+  TProfilerNode = class(TProfilerCustomNode)
   private
     FGUID: TGUID;
     FClient: TQuadSocket;
     FPosition: Integer;
   public
+    constructor Create(AOwner: TTreeNodes); override;
     function FindTag(AID: Integer): TProfilerTagNode;
+    procedure Reset;
 
     property GUID: TGUID read FGUID write FGUID;
     property Client: TQuadSocket read FClient write FClient;
@@ -77,6 +89,8 @@ type
     procedure TreeViewCreateNodeClass(Sender: TCustomTreeView; var NodeClass: TTreeNodeClass);
     procedure Button2Click(Sender: TObject);
     procedure PaintTimerTimer(Sender: TObject);
+    procedure PaintPanelMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure TreeViewCollapsed(Sender: TObject; Node: TTreeNode);
   private
     FShow: Boolean;
     FCanvasGL: TQuadCanvasGL;
@@ -84,9 +98,11 @@ type
     FMemory: TMemoryStream;
     FNodeClass: TTreeNodeClass;
     FPerformanceFrequency: Int64;
-    FOld: Int64;
-    FTimer: TQuadCanvasGLTimer;
+    FMousePosition: TVec2i;
+    function FindProfiler(const AGUID: TGUID): TProfilerNode; overload;
+    function FindProfiler(AClient: TQuadSocket): TProfilerNode; overload;
     procedure ServerSocketConnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
+    procedure ServerSocketDisconnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
     procedure ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
     procedure Timer(const Delta: Double);
   public
@@ -103,36 +119,140 @@ uses
 
 {$R *.dfm}
 
+
+{ TProfilerCustomNode }
+
+procedure TProfilerCustomNode.Draw(ACanvasGL: TQuadCanvasGL);
+begin
+
+end;
+
 { TProfilerTagNode }
 
 constructor TProfilerTagNode.Create(AOwner: TTreeNodes);
 begin
   inherited;
   FCallList := TList<TAPICall>.Create;
-  FPointCount := 0;
-  FMaxValue := 0.1;
+  FLineBlockList := TList<PLineBlock>.Create;
+  FMaxValue := 0.01;
+  FMinValue := 0;
+    Reset;
 end;
 
 destructor TProfilerTagNode.Destroy;
+var
+  i: Integer;
 begin
+  for i := FLineBlockList.Count - 1 downto 0 do
+    Dispose(FLineBlockList[i]);
+  FLineBlockList.Free;
   FCallList.Free;
   inherited;
 end;
 
+procedure TProfilerTagNode.Reset;
+var
+  Block: PLineBlock;
+begin
+  New(Block);
+  Block.PointCount := 0;
+  FLineBlockList.Add(Block);
+end;
+
 procedure TProfilerTagNode.Add(const ACall: TAPICall; AX: Single);
+var
+  Block, LastBlock: PLineBlock;
 begin
   FCallList.Add(ACall);
+  Block := FLineBlockList[FLineBlockList.Count - 1];
+  if Block.PointCount = LINEBLOCK_POINT_COUNT then
+  begin
+    Reset;
+    LastBlock := Block;
+    Block := FLineBlockList[FLineBlockList.Count - 1];
+    Block.FillPoints[0] := LastBlock.FillPoints[LINEBLOCK_POINT_COUNT * 2 - 2];
+    Block.FillPoints[1] := LastBlock.FillPoints[LINEBLOCK_POINT_COUNT * 2 - 1];
+    Block.Points[0] := LastBlock.Points[LINEBLOCK_POINT_COUNT - 1];
+    Block.PointCount := 1;
+  end;
 
-  FFillPoints[FPointCount * 2] := TVec2f.Create(AX, ACall.MinValue);
-  FFillPoints[FPointCount * 2 + 1] := TVec2f.Create(AX, ACall.MaxValue);
-  FPoints[FPointCount] := TVec2f.Create(AX, ACall.Value / ACall.Count);
-  Inc(FPointCount);
+  FValue := ACall.Value / ACall.Count;
+  Block.FillPoints[Block.PointCount * 2] := TVec2f.Create(AX, Min(ACall.MinValue, ACall.MaxValue));
+  Block.FillPoints[Block.PointCount * 2 + 1] := TVec2f.Create(AX, Max(ACall.MinValue, ACall.MaxValue));
+  Block.Points[Block.PointCount] := TVec2f.Create(AX, FValue);
+  Inc(Block.PointCount);
 
   if FMaxValue < ACall.MaxValue then
     FMaxValue := ACall.MaxValue;
+
+  if FMinValue > ACall.MinValue then
+    FMinValue := ACall.MinValue;
+end;
+
+procedure TProfilerTagNode.Draw(ACanvasGL: TQuadCanvasGL);
+var
+  Rect: TRect;
+  Camera: TQuadCanvasGLCamera;
+  Scale: Single;
+  Block: PLineBlock;
+begin
+  Rect := DisplayRect(False);
+  Camera := TQuadCanvasGLCamera.Create;
+  try
+    ACanvasGL.SetPenColor($FF333333);
+    ACanvasGL.DrawLine(TVec2f.Create(0, Rect.Bottom), TVec2f.Create(fMainForm.PaintPanel.Width, Rect.Bottom));
+    Scale := (TREEVIEW_ITEM_HEIGHT - 4) / (MaxValue - MinValue);
+    ACanvasGL.SetPenColor($FF444444);
+    ACanvasGL.DrawLine(
+      TVec2f.Create(0, Rect.Bottom + MinValue * Scale - 2),
+      TVec2f.Create(fMainForm.PaintPanel.Width - 64, Rect.Bottom + MinValue * Scale - 2)
+    );
+    ACanvasGL.DrawLine(
+      TVec2f.Create(fMainForm.PaintPanel.Width - 64, Rect.Top + 2),
+      TVec2f.Create(fMainForm.PaintPanel.Width - 64, Rect.Bottom - 2)
+    );
+    ACanvasGL.SetPenColor($FF555555);
+
+    ACanvasGL.TextOut(nil, TVec2f.Create(fMainForm.PaintPanel.Width - 62, Rect.Bottom + MinValue * Scale), '0');
+    ACanvasGL.TextOut(nil, TVec2f.Create(fMainForm.PaintPanel.Width - 50, Rect.Top + 9), Format('%.3f', [MaxValue]));
+    ACanvasGL.TextOut(nil, TVec2f.Create(fMainForm.PaintPanel.Width - 50, Rect.Bottom - 4), Format('%.3f', [MinValue]));
+    ACanvasGL.TextOut(nil, TVec2f.Create(fMainForm.PaintPanel.Width - 50, Rect.Top + TREEVIEW_ITEM_HEIGHT div 2 + 2), Format('%.3f', [Value]));
+
+    Camera.Translate := TVec2f.Create(
+      fMainForm.PaintPanel.Width - TProfilerNode(Parent).Position - 64,
+      Rect.Top + TREEVIEW_ITEM_HEIGHT + MinValue * Scale - 3
+    );
+    Camera.Scale := TVec2f.Create(1, -Scale);
+    ACanvasGL.ApplyCamera(Camera);
+
+    ACanvasGL.SetBrushColor(Color - $AA000000);
+    ACanvasGL.SetPenColor(Color);
+
+    for Block in FLineBlockList do
+      if Block.PointCount > 1 then
+      begin
+        ACanvasGL.FillPolygon(@Block.FillPoints[0], Block.PointCount * 2);
+        ACanvasGL.DrawPolyline(@Block.Points[0], Block.PointCount);
+      end;
+
+    ACanvasGL.ApplyCamera(nil);
+    ACanvasGL.SetBrushColor(Color);
+
+    ACanvasGL.FillCircle(TVec2f.Create(
+      fMainForm.PaintPanel.Width - 64,
+      Rect.Bottom - Value * Scale + MinValue * Scale - 3
+    ), 2);
+  finally
+    Camera.Free;
+  end;
 end;
 
 { TProfilerNode }
+
+constructor TProfilerNode.Create(AOwner: TTreeNodes);
+begin
+  inherited;
+end;
 
 function TProfilerNode.FindTag(AID: Integer): TProfilerTagNode;
 var
@@ -146,6 +266,15 @@ begin
     Node := GetNextChild(Node);
   end;
   Result := nil;
+end;
+
+procedure TProfilerNode.Reset;
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do
+    if Item[i] is TProfilerTagNode then
+      TProfilerTagNode(Item[i]).Reset;
 end;
 
 { TForm4 }
@@ -165,17 +294,13 @@ begin
   FMemory := TMemoryStream.Create;
   FServerSocket := TQuadServerSocket.Create(17788);
   FServerSocket.OnClientConnect := ServerSocketConnect;
+  FServerSocket.OnClientDisconnect := ServerSocketDisconnect;
   FServerSocket.OnRead := ServerSocketRead;
   FServerSocket.Open;
-
-  FTimer := TQuadCanvasGLTimer.Create;
-  FTimer.OnTimer := Timer;
 end;
 
 procedure TfMainForm.FormDestroy(Sender: TObject);
 begin
-  FTimer.Free;
-
   FMemory.Free;
   if Assigned(FServerSocket) then
     FServerSocket.Free;
@@ -190,22 +315,51 @@ begin
   AClient.SendBuf(Code, SizeOf(Code));
 end;
 
-procedure TfMainForm.ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
-
-  function FindProfiler(const AGUID: TGUID): TProfilerNode;
-  var
-    Node: TTreeNode;
+procedure TfMainForm.ServerSocketDisconnect(AServer: TQuadServerSocket; AClient: TQuadSocket);
+var
+  Node: TTreeNode;
+begin
+  Node := TreeView.TopItem;
+  while Assigned(Node) do
   begin
-    Node := TreeView.TopItem;
-    while Assigned(Node) do
+    if (Node is TProfilerNode) and (TProfilerNode(Node).Client = AClient) then
     begin
-      if (Node is TProfilerNode) and (TProfilerNode(Node).GUID = AGUID) then
-        Exit(TProfilerNode(Node));
-      Node := Node.GetNext;
+      TProfilerNode(Node).Client := nil;
+      Exit;
     end;
-    Result := nil;
+    Node := Node.GetNext;
   end;
+end;
 
+function TfMainForm.FindProfiler(const AGUID: TGUID): TProfilerNode;
+var
+  Node: TTreeNode;
+begin
+  Node := TreeView.TopItem;
+  while Assigned(Node) do
+  begin
+    if (Node is TProfilerNode) and (TProfilerNode(Node).GUID = AGUID) then
+      Exit(TProfilerNode(Node));
+    Node := Node.GetNext;
+  end;
+  Result := nil;
+end;
+
+function TfMainForm.FindProfiler(AClient: TQuadSocket): TProfilerNode;
+var
+  Node: TTreeNode;
+begin
+  Node := TreeView.TopItem;
+  while Assigned(Node) do
+  begin
+    if (Node is TProfilerNode) and (TProfilerNode(Node).Client = AClient) then
+      Exit(TProfilerNode(Node));
+    Node := Node.GetNext;
+  end;
+  Result := nil;
+end;
+
+procedure TfMainForm.ServerSocketRead(AServer: TQuadServerSocket; AClient: TQuadSocket);
 var
   Code: Word;
   GUID: TGUID;
@@ -215,6 +369,7 @@ var
   Str: WideString;
   StrLen: Byte;
   ID: Word;
+  Color: Cardinal;
   MsgType: TQuadProfilerMessageType;
   DateTime: TDateTime;
   i, TagsCount: Word;
@@ -227,9 +382,10 @@ begin
     repeat
       FMemory.Read(Code, SizeOf(Code));
       FMemory.Read(GUID, SizeOf(GUID));
+
       Profiler := FindProfiler(GUID);
 
-      if not Assigned(Profiler) and (Code = 2) then
+      if (Code = 2) and not Assigned(Profiler) then
       begin
         FNodeClass := TProfilerNode;
         Profiler := TreeView.Items.AddChild(nil, '') as TProfilerNode;
@@ -241,6 +397,7 @@ begin
         Profiler.Text := Str;
         Code := 4;
         AClient.SendBuf(Code, SizeOf(Code));
+        PaintTimer.Enabled := True;
       end
       else
         if Assigned(Profiler) then
@@ -258,16 +415,21 @@ begin
                     ProfilerTag.Add(Call, Profiler.Position);
                 end;
                 Profiler.Position := Profiler.Position + 1;
+                PaintTimer.Enabled := True;
               end;
             2:
+              if not Assigned(Profiler.Client) then
               begin
                 Profiler.Client := AClient;
+                Profiler.Position := Profiler.Position + 16;
+                Profiler.Reset;
                 Code := 4;
                 AClient.SendBuf(Code, SizeOf(Code));
               end;
             3:
               begin
                 FMemory.Read(ID, SizeOf(ID));
+                FMemory.Read(Color, SizeOf(Color));
                 FMemory.Read(StrLen, SizeOf(StrLen));
                 SetLength(Str, StrLen);
                 FMemory.Read(Pointer(Str)^, StrLen * SizeOf(WideChar));
@@ -278,6 +440,7 @@ begin
                   FNodeClass := TProfilerTagNode;
                   ProfilerTag := TreeView.Items.AddChild(Profiler, Str) as TProfilerTagNode;
                   ProfilerTag.ID := ID;
+                  ProfilerTag.Color := Color;
                 end;
                 Profiler.Expand(True);
               end;
@@ -306,15 +469,23 @@ begin
   FShow := True;
 end;
 
+procedure TfMainForm.PaintPanelMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  FMousePosition := TVec2i.Create(X, Y);
+  PaintTimer.Enabled := True;
+end;
+
 procedure TfMainForm.PaintPanelResize(Sender: TObject);
 begin
+  PaintTimer.Enabled := False;
   if Assigned(FCanvasGL) then
     FCanvasGL.Resize(PaintPanel.Width, PaintPanel.Height);
+  PaintTimer.Enabled := True;
 end;
 
 procedure TfMainForm.PaintTimerTimer(Sender: TObject);
 begin
-    //
+  Timer(0);
 end;
 
 procedure TfMainForm.Timer(const Delta: Double);
@@ -322,43 +493,29 @@ var
   i: Integer;
   Rect: TRect;
   Node: TTreeNode;
-  ProfilerTag: TProfilerTagNode;
-  Camera: TQuadCanvasGLCamera;
 begin
-  Camera := TQuadCanvasGLCamera.Create;
+  PaintTimer.Enabled := False;
   FCanvasGL.RenderingBegin($FF191919);
-  FCanvasGL.TextOut(nil, TVec2f.Create(-50, -50), ' ');
   try
     for i := 0 to TreeView.Items.Count - 1 do
     begin
       Node := TreeView.Items[i];
-      Rect := Node.DisplayRect(False);
-      if (Rect.Height > 0) and (Rect.Bottom > 0) and (Rect.Top < PaintPanel.Height) then
+      if Node is TProfilerCustomNode then
       begin
-        if Node is TProfilerTagNode then
-        begin
-          FCanvasGL.SetPenColor($FF333333);
-          FCanvasGL.DrawLine(TVec2f.Create(0, Rect.Bottom), TVec2f.Create(PaintPanel.Width, Rect.Bottom));
-          ProfilerTag := TProfilerTagNode(Node);
-          if ProfilerTag.PointCount > 1 then
-          begin
-            Camera.Translate := TVec2f.Create(PaintPanel.Width - TProfilerNode(ProfilerTag.Parent).Position, Rect.Top + TREEVIEW_ITEM_HEIGHT);
-            Camera.Scale := TVec2f.Create(1, -((TREEVIEW_ITEM_HEIGHT - 4) / ProfilerTag.MaxValue) );
-            FCanvasGL.ApplyCamera(Camera);
-            FCanvasGL.SetBrushColor($55799C06);
-            FCanvasGL.FillPolygon(@ProfilerTag.FFillPoints[0], ProfilerTag.PointCount * 2);
-            FCanvasGL.SetPenColor($FF799C06);
-            FCanvasGL.DrawPolyline(@ProfilerTag.Points[0], ProfilerTag.PointCount);
-            FCanvasGL.ApplyCamera(nil);
-          end;
-          FCanvasGL.TextOut(nil, TVec2f.Create(20, Rect.Top), IntToStr(ProfilerTag.PointCount));
-        end;
+        Rect := Node.DisplayRect(False);
+        if (Rect.Height > 0) and (Rect.Bottom > 0) and (Rect.Top < PaintPanel.Height) then
+          TProfilerCustomNode(Node).Draw(FCanvasGL);
       end;
     end;
+
   finally
     FCanvasGL.RenderingEnd;
-    Camera.Free;
   end;
+end;
+
+procedure TfMainForm.TreeViewCollapsed(Sender: TObject; Node: TTreeNode);
+begin
+  PaintTimer.Enabled := True;
 end;
 
 procedure TfMainForm.TreeViewCreateNodeClass(Sender: TCustomTreeView; var NodeClass: TTreeNodeClass);

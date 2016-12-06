@@ -589,6 +589,7 @@ type
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
+    procedure SetColor(AColor: Cardinal); stdcall;
     procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
   end;
 

@@ -36,8 +36,11 @@ type
     class var FNextID: Word;
     class procedure Init;
   private
+    const DEFAULT_COLOR = $FF799C06;
+  private
     FID: Word;
     FName: WideString;
+    FColor: Cardinal;
     FCurrentAPICallStartTime: Int64;
     FCurrentAPICall: TAPICall;
     FOnSendMessage: TOnSendMessageEvent;
@@ -48,12 +51,14 @@ type
     procedure BeginCount; stdcall;
     procedure EndCount; stdcall;
     function GetName: PWideChar; stdcall;
+    procedure SetColor(AColor: Cardinal); stdcall;
     procedure SendMessage(AMessage: PWideChar; AMessageType: TQuadProfilerMessageType = pmtMessage); stdcall;
     procedure Refresh;
     procedure SetTime(ATime: TDateTime);
     procedure SetOnSendMessage(AOnSendMessage: TOnSendMessageEvent);
 
     property ID: Word read FID;
+    property Color: Cardinal read FColor;
     property Name: WideString read FName;
     property Call: TAPICall read FCurrentAPICall;
   end;
@@ -122,6 +127,7 @@ begin
   Inc(FNextID);
   FID := FNextID;
   FName := AName;
+  FColor := DEFAULT_COLOR;
   Refresh;
 end;
 
@@ -142,7 +148,7 @@ procedure TQuadProfilerTag.Refresh;
 begin
   FCurrentAPICall.Count := 0;
   FCurrentAPICall.Value := 0.0;
-  FCurrentAPICall.MaxValue := 0.0;
+  FCurrentAPICall.MaxValue := -MaxDouble;
   FCurrentAPICall.MinValue := MaxDouble;
 end;
 
@@ -161,6 +167,11 @@ end;
 function TQuadProfilerTag.GetName: PWideChar;
 begin
   Result := PWideChar(FName);
+end;
+
+procedure TQuadProfilerTag.SetColor(AColor: Cardinal);
+begin
+  FColor := AColor;
 end;
 
 procedure TQuadProfilerTag.SetTime(ATime: TDateTime);
@@ -304,6 +315,7 @@ begin
     Mem.Write(Code, SizeOf(Code));
     Mem.Write(FGUID, SizeOf(FGUID));
     Mem.Write(ATag.ID, SizeOf(ATag.ID));
+    Mem.Write(ATag.Color, SizeOf(ATag.Color));
 
     StrLength := Length(ATag.Name);
     Mem.Write(StrLength, SizeOf(StrLength));

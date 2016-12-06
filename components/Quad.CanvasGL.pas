@@ -37,6 +37,7 @@ type
     procedure DrawLine(const APointA, APointB: TVec2f);
     procedure DrawPolyline(APoints: PVec2f; ACount: Integer);
     procedure FillPolygon(APoints: PVec2f; ACount: Integer);
+    procedure FillCircle(const ACenter: TVec2f; ARadius: Single; AQuality: Integer = 0);
     procedure DrawRectangle(const APointA, APointB: TVec2f; AFill: Boolean = False);
     procedure DrawBitmap(ABitmap: TBitmap; const APosition: TVec2f);
     procedure TextOut(AFont: TQuadCanvasGLFont; const APosition: TVec2f; const AText: WideString);
@@ -104,6 +105,9 @@ type
   end;
 
 implementation
+
+uses
+  Math;
 
 const
   GL_TEXTURE_3D = $806F;
@@ -324,6 +328,29 @@ begin
   glEnd;
 end;
 
+procedure TQuadCanvasGL.FillCircle(const ACenter: TVec2f; ARadius: Single; AQuality: Integer = 0);
+var
+  i: Integer;
+  SinRad, CosRad: Single;
+  Point: TVec2f;
+begin
+  glColor4fv(@FBrushColor);
+
+  if AQuality < 1 then
+    AQuality := Round(ARadius * 0.1) + 10;
+
+  SinCos(Pi * 2 / AQuality, SinRad, CosRad);
+
+  glBegin(GL_POLYGON);
+  Point := TVec2f.Create(ARadius, 0);
+  for i := 0 to AQuality do
+  begin
+    glVertex2f(ACenter.X + Point.X, ACenter.Y + Point.Y);
+    Point := TVec2f.Create(Point.X * CosRad - Point.Y * SinRad, Point.X * SinRad + Point.Y * CosRad);
+  end;
+  glEnd;
+end;
+
 procedure TQuadCanvasGL.DrawBitmap(ABitmap: TBitmap; const APosition: TVec2f);
 begin
   if not Assigned(ABitmap) then
@@ -345,18 +372,19 @@ begin
     AFont := FDefaultFont;
 
   SelectObject(FHandle, AFont.FFont);
-  glColor4fv(@FPenColor);
+
+  List := glGenLists(MaxChar);
+  wglUseFontBitmaps(FHandle, 0, MaxChar, List);
 
   glPushMatrix;
   glLoadIdentity;
+  glColor4fv(@FPenColor);
   glRasterPos2f(APosition.X, APosition.Y);
   for i := 1 to Length(AText) do
-  begin
-    wglUseFontBitmapsW(FHandle, Ord(AText[i]), 1, List);
-    glCallList(List);
-  end;
-  glDeleteLists(List, 1);
+    glCallList(List + Ord(AText[i]));
   glPopMatrix;
+
+  glDeleteLists(List, MaxChar);
 end;
 
 { TQuadBitmaps }
