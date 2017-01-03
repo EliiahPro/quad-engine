@@ -540,6 +540,7 @@ end;
 procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 var
+  Origin, OriginAndAxis: TVec2f;
   Alpha: Single;
   SinA, CosA: Single;
   realUVA, realUVB: TVec2f;
@@ -568,6 +569,8 @@ begin
     realUVB.Y := UVA.Y;
   end;
 
+  Origin := (PointB - PointA) / 2 + PointA;
+  OriginAndAxis := Origin + Axis;
 
   Alpha := Angle * (pi / 180);
 
@@ -575,17 +578,17 @@ begin
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
 
-  FQuad[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  FQuad[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FQuad[0].x := ((PointA.X - OriginAndAxis.X) * cosA - (PointA.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
+  FQuad[0].y := ((PointA.X - OriginAndAxis.X) * sinA + (PointA.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
-  FQuad[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  FQuad[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FQuad[1].x := ((PointB.X - OriginAndAxis.X) * cosA - (PointA.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
+  FQuad[1].y := ((PointB.X - OriginAndAxis.X) * sinA + (PointA.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
-  FQuad[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  FQuad[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FQuad[2].x := ((PointA.X - OriginAndAxis.X) * cosA - (PointB.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
+  FQuad[2].y := ((PointA.X - OriginAndAxis.X) * sinA + (PointB.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
-  FQuad[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  FQuad[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FQuad[5].x := ((PointB.X - OriginAndAxis.X) * cosA - (PointB.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
+  FQuad[5].y := ((PointB.X - OriginAndAxis.X) * sinA + (PointB.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
