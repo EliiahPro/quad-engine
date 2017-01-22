@@ -224,7 +224,7 @@ begin
         FZoom := FZoom * 1.05;
   end;
 
-  FQuadCamera.Scale(FZoom);
+  FQuadCamera.SetScale(FZoom);
 end;
 
 procedure TRenderPanel.Play;

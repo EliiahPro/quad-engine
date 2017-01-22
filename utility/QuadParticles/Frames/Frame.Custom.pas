@@ -82,8 +82,8 @@ begin
   for i := 0 to APoints.Count - 1 do
     with ALine.Points.Add do
     begin
-      Point.X := APoints.List[i].Life * 100;
-      Point.Y := ValueConvert(APoints.List[i].Value);
+      X := APoints.List[i].Life * 100;
+      Y := ValueConvert(APoints.List[i].Value);
     end;
 end;
 

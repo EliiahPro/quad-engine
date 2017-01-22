@@ -416,15 +416,15 @@ begin
   for i := Count - 2 downto APoint.Index do
     Diagram.List[i + 1] := Diagram.List[i];
 
-  Diagram.List[APoint.Index].Value := APoint.Point.Y;
-  Diagram.List[APoint.Index].Life := APoint.Point.X / 100;
+  Diagram.List[APoint.Index].Value := APoint.Y;
+  Diagram.List[APoint.Index].Life := APoint.X / 100;
   Diagram.Count := Count;
 end;
 
 procedure TFrameValue.dDiagramPointChange(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);
 begin
-  FParams.Diagram[ALine.Index].List[APoint.Index].Value := APoint.Point.Y;
-  FParams.Diagram[ALine.Index].List[APoint.Index].Life := APoint.Point.X / 100;
+  FParams.Diagram[ALine.Index].List[APoint.Index].Value := APoint.Y;
+  FParams.Diagram[ALine.Index].List[APoint.Index].Life := APoint.X / 100;
 end;
 
 procedure TFrameValue.dDiagramPointDelete(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);

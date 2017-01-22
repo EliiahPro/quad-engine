@@ -137,8 +137,8 @@ begin
   for i := Count - 2 downto APoint.Index do
     Diagram.List[i + 1] := Diagram.List[i];
 
-  Diagram.List[APoint.Index].Value := APoint.Point.Y;
-  Diagram.List[APoint.Index].Life := APoint.Point.X / 100;
+  Diagram.List[APoint.Index].Value := APoint.Y;
+  Diagram.List[APoint.Index].Life := APoint.X / 100;
   Diagram.Count := Count;
 end;
 
@@ -150,8 +150,8 @@ begin
     0: param := @Params.Direction;
     1: param := @Params.Spread;
   end;
-  param.Diagram[0].List[APoint.Index].Value := DegToRad(APoint.Point.Y);
-  param.Diagram[0].List[APoint.Index].Life := APoint.Point.X / 100;
+  param.Diagram[0].List[APoint.Index].Value := DegToRad(APoint.Y);
+  param.Diagram[0].List[APoint.Index].Life := APoint.X / 100;
 end;
 
 procedure TFrameDirectionSpread.dDiagramPointDelete(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);

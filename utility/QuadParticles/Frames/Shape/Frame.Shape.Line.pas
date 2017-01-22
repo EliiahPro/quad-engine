@@ -111,15 +111,15 @@ begin
   for i := Count - 2 downto APoint.Index do
     Diagram.List[i + 1] := Diagram.List[i];
 
-  Diagram.List[APoint.Index].Value := APoint.Point.Y;
-  Diagram.List[APoint.Index].Life := APoint.Point.X / 100;
+  Diagram.List[APoint.Index].Value := APoint.Y;
+  Diagram.List[APoint.Index].Life := APoint.X / 100;
   Diagram.Count := Count;
 end;
 
 procedure TFrameShapeLine.dDiagramPointChange(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);
 begin
-  Params.Shape.Diagram[ALine.Index].List[APoint.Index].Value := APoint.Point.Y;
-  Params.Shape.Diagram[ALine.Index].List[APoint.Index].Life := APoint.Point.X / 100;
+  Params.Shape.Diagram[ALine.Index].List[APoint.Index].Value := APoint.Y;
+  Params.Shape.Diagram[ALine.Index].List[APoint.Index].Life := APoint.X / 100;
 end;
 
 procedure TFrameShapeLine.dDiagramPointDelete(ADiagram: TQuadDiagram; ALine: TQuadDiagramLineItem; APoint: TQuadDiagramLinePointItem);
