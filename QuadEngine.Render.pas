@@ -151,6 +151,7 @@ type
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
     procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal);
     procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal);
+    procedure DrawRectRotAxis2(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 
     property AvailableTextureMemory: Cardinal read GetAvailableTextureMemory;
     property BlendMode: TQuadBlendMode read Fqbm;
@@ -538,6 +539,76 @@ end;
 // Draws textured rotated rectangle along free axis
 //=============================================================================
 procedure TQuadRender.DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double;
+  const Axis, UVA, UVB: TVec2f; Color: Cardinal);
+var
+  Alpha: Single;
+  SinA, CosA: Single;
+  realUVA, realUVB: TVec2f;
+begin
+  if FIsDeviceLost then
+    Exit;
+
+  {$IFDEF PROFILER}
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.BeginCount;
+  {$ENDIF}
+
+  RenderMode := D3DPT_TRIANGLELIST;
+
+  realUVA := UVA;
+  realUVB := UVB;
+
+  if FTextureMirroring in [qtmHorizontal, qtmBoth] then
+  begin
+    realUVA.X := UVB.X;
+    realUVB.X := UVA.X;
+  end;
+  if FTextureMirroring in [qtmVertical, qtmBoth] then
+  begin
+    realUVA.Y := UVB.Y;
+    realUVB.Y := UVA.Y;
+  end;
+
+  Alpha := Angle * (pi / 180);
+
+  FastSinCos(Alpha, SinA, CosA);
+                                      { NOTE : use only 0, 1, 2, 5 vertex.
+                                               Vertex 3, 4 autocalculated}
+
+  FQuad[0].x := ((PointA.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FQuad[0].y := ((PointA.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+
+  FQuad[1].x := ((PointB.X - Axis.X) * cosA - (PointA.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FQuad[1].y := ((PointB.X - Axis.X) * sinA + (PointA.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+
+  FQuad[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FQuad[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+
+  FQuad[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FQuad[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+
+  FQuad[0].color := Color;
+  FQuad[1].color := Color;
+  FQuad[2].color := Color;
+  FQuad[5].color := Color;
+
+  FQuad[0].u := realUVA.U;   FQuad[0].v := realUVA.V;
+  FQuad[1].u := realUVB.U;   FQuad[1].v := realUVA.V;
+  FQuad[2].u := realUVA.U;   FQuad[2].v := realUVB.V;
+  FQuad[5].u := realUVB.U;   FQuad[5].v := realUVB.V;
+
+  {$IFDEF PROFILER}
+  if Assigned(FProfilerTags.Draw) then
+    FProfilerTags.Draw.EndCount;
+  {$ENDIF}
+
+  AddQuadToBuffer;
+end;
+
+//=============================================================================
+// Draws textured rotated rectangle along free axis
+//=============================================================================
+procedure TQuadRender.DrawRectRotAxis2(const PointA, PointB: TVec2f; Angle, Scale: Double;
   const Axis, UVA, UVB: TVec2f; Color: Cardinal);
 var
   Origin, OriginAndAxis: TVec2f;

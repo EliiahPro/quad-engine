@@ -260,7 +260,7 @@ begin
 
   SetTextureStages;
 
-  FQuadRender.DrawRectRotAxis(Position - 0.5, Position - 0.5 + (RightBottom - LeftTop) * Scale, angle, 1, Axis,
+  FQuadRender.DrawRectRotAxis2(Position - 0.5, Position - 0.5 + (RightBottom - LeftTop) * Scale, angle, 1, Axis,
                               TVec2f.Create(LeftTop.X / FWidth, LeftTop.Y / FHeight) , TVec2f.Create(RightBottom.X / FWidth, RightBottom.Y / FHeight),
                               Color);
 end;
