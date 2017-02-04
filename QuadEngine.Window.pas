@@ -186,7 +186,7 @@ begin
   RegisterClassEx(FWndClass);
 
   FHandle := CreateWindowEx(0, 'Main_Window', 'Quad-engine window',
-                            WS_OVERLAPPEDWINDOW or WS_VISIBLE,
+                            WS_DLGFRAME or WS_SYSMENU or WS_MINIMIZEBOX or WS_VISIBLE,
                             100, 100,
                             300, 300,
                             0, 0,
