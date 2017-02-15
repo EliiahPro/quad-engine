@@ -1927,6 +1927,9 @@ end;
 //=============================================================================
 procedure TQuadRender.SetTextureMirroring(ATextureMirroring: TQuadTextureMirroring);
 begin
+  if ATextureMirroring = FTextureMirroring then
+    Exit;
+    
   FlushBuffer;
   FTextureMirroring := ATextureMirroring;
 end;
