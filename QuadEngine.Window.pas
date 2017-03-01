@@ -129,7 +129,7 @@ begin
   WM_MOVE:
     begin
       if Assigned(Self) and Assigned(FOnMove) then
-        FOnMove(Integer(lparam and $FFFF), Integer((lparam shr 16) and $FFFF));
+        FOnMove(SmallInt(lparam and $FFFF), SmallInt((lparam shr 16) and $FFFF));
 
       Result := 0;
     end;
