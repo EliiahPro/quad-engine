@@ -229,13 +229,18 @@ function TQuadDevice.GetIsResolutionSupported(AWidth, AHeight: Word): Boolean;
 var
   AResolution: TCoord;
   i: Integer;
+  Count: Integer;
+  FD3DDM: TD3DDisplayMode;
 begin
-  i := 0;
-  repeat
+  FD3D.GetAdapterDisplayMode(Device.ActiveMonitorIndex, FD3DDM);
+  Count := FD3D.GetAdapterModeCount(FActiveMonitorIndex, FD3DDM.Format);
+  for i := 0 to Count - 1 do
+  begin
     GetSupportedScreenResolution(i, AResolution);
     Result := (Integer(AResolution.X) = Integer(AWidth)) and (Integer(AResolution.Y) = Integer(AHeight));
-    Inc(i);
-  until Result or (AResolution.X = -1);
+    if Result then
+      Break;
+  end;
 end;
 
 procedure TQuadDevice.GetErrorTextByCode(AErrorCode: HRESULT);
@@ -287,12 +292,14 @@ end;
 
 procedure TQuadDevice.GetSupportedScreenResolution(index: Integer; out Resolution: TCoord);
 var
-  ADevMode: DEVMODE;
+  AD3DDM: TD3DDisplayMode;
+  FD3DDM: TD3DDisplayMode;
 begin
-  if EnumDisplaySettings(nil, index, ADevMode) then
+  FD3D.GetAdapterDisplayMode(Device.ActiveMonitorIndex, FD3DDM);
+  if FD3D.EnumAdapterModes(FActiveMonitorIndex, FD3DDM.Format, index, AD3DDM) = D3D_OK then
   begin
-    Resolution.X := ADevMode.dmPelsWidth;
-    Resolution.Y := ADevMode.dmPelsHeight;
+    Resolution.X := AD3DDM.Width;
+    Resolution.Y := AD3DDM.Height;
   end
   else
   begin
