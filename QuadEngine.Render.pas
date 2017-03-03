@@ -1640,7 +1640,7 @@ procedure TQuadRender.InitializeEx(const ARenderInit: TRenderInit);
   function CompleteBooleanText(AText: PChar; AState: Boolean): PChar; inline;
   begin
     Result := PChar(AText + ': ');
-    if AState then
+    if not AState then
       Result := PChar(Result + 'Off')
     else
       Result := PChar(Result + 'On');
