@@ -241,6 +241,7 @@ begin
     end;
 
     if not (l in [CHAR_NEWLINE, CHAR_CARETRETURN]) then
+    begin
       if FIsDistanceField then
       begin
         qsl.Width := qsl.Width + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;
@@ -253,9 +254,13 @@ begin
         if l <> CHAR_SPACE then
           qsl.WidthWOSpaces := qsl.WidthWOSpaces + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
       end;
+    end;
 
     Inc(i);
   until l = CHAR_NULL;
+
+  qsl.Width := qsl.Width - FKerning;
+  qsl.WidthWOSpaces := qsl.WidthWOSpaces - FKerning;
 
   if i <= LineStart then
     Exit;
@@ -515,13 +520,13 @@ begin
           if l <> CHAR_SPACE then
           FTexture.DrawMap(
                      TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
-                     (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
+                                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
                      TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
-                     (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
+                                   (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
                      TVec2f.Create(FQuadChars[l].Xpos / FWidth,
-                     FQuadChars[l].YPos / FHeight),
-                     TVec2f.Create(FQuadChars[l].Xpos / FWidth + FQuadChars[l].SizeX / FWidth,
-                     FQuadChars[l].YPos / FHeight + FQuadChars[l].SizeY / FHeight),
+                                   FQuadChars[l].YPos / FHeight),
+                     TVec2f.Create((FQuadChars[l].Xpos + FQuadChars[l].SizeX) / FWidth,
+                                   (FQuadChars[l].YPos + FQuadChars[l].SizeY) / FHeight),
                      CurrentColor);
 
           if (AAlign = qfaJustify) and (l = CHAR_SPACE) then
@@ -621,12 +626,15 @@ begin
 
     if l = Ord(#13) then
     begin
+      Result := Result - FKerning;
       if Result > max then
         max := Result;
       Result := 0;
     end;
     Inc(i);
   until AText[i] = #0;
+
+  Result := Result - FKerning;
 
   if Result < max then
     Result := max;
