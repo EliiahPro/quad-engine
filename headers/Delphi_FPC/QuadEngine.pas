@@ -246,7 +246,7 @@ type
     function GetVertexShaderVersionString: PWideChar; stdcall;
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
-    function GetRenderDeviceName: PWideChar; stdcall;
+    function GetRenderDeviceName(AIndex: Byte): PWideChar; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     /// <summary>Begin of render. Call this routine before frame render begins.</summary>
     procedure BeginRender; stdcall;

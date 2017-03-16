@@ -112,7 +112,7 @@ type
     function GetVertexShaderVersionString: PWideChar; stdcall;
     function GetVSVersionMajor: Byte; stdcall;
     function GetVSVersionMinor: Byte; stdcall;
-    function GetRenderDeviceName: PWideChar; stdcall;
+    function GetRenderDeviceName(AIndex: Byte): PWideChar; stdcall;
     procedure AddTrianglesToBuffer(const AVertexes: array of TVertex; ACount: Cardinal); stdcall;
     procedure BeginRender; stdcall;
     procedure ChangeResolution(AWidth, AHeight: Word; isVirtual: Boolean = True); stdcall;
@@ -1046,9 +1046,12 @@ end;
 //=============================================================================
 //
 //=============================================================================
-function TQuadRender.GetRenderDeviceName: PWideChar;
+function TQuadRender.GetRenderDeviceName(AIndex: Byte): PWideChar;
+var
+  D3DAI: TD3DAdapterIdentifier9;
 begin
-  Result := PWideChar(string(FD3DAI.DeviceName));
+  Device.LastResultCode := Device.D3D.GetAdapterIdentifier(AIndex, 0, D3DAI);
+  Result := PWideChar(string(D3DAI.Description));
 end;
 
 //=============================================================================

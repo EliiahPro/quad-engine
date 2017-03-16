@@ -195,7 +195,7 @@ DECLARE_INTERFACE_(IQuadRender, IUnknown)
 	virtual wchar_t* CALLBACK GetVertexShaderVersionString() = 0;
 	virtual unsigned char CALLBACK GetVSVersionMajor() = 0;
 	virtual unsigned char CALLBACK GetVSVersionMinor() = 0;
-	virtual wchar_t* CALLBACK GetRenderDeviceName() = 0;
+	virtual wchar_t* CALLBACK GetRenderDeviceName(byte AIndex) = 0;
 	virtual void CALLBACK AddTrianglesToBuffer(const TVertex* vertexes, unsigned int count) = 0;
 	virtual void CALLBACK BeginRender() = 0;
 	virtual void CALLBACK ChangeResolution(unsigned short width, unsigned short height, bool isVirtual = true) = 0;
