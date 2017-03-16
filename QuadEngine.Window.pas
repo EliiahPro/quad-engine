@@ -177,7 +177,7 @@ begin
   FWndClass.cbClsExtra := 0;
   FWndClass.cbWndExtra := 4;
   FWndClass.hInstance := HInstance;
-  FWndClass.hIcon := LoadIcon(0, IDI_APPLICATION);
+  FWndClass.hIcon := LoadIcon(HInstance, IDI_APPLICATION);
   FWndClass.hCursor := LoadCursor(0, IDC_ARROW);
   FWndClass.hbrBackground := CreateSolidBrush(0);
   FWndClass.lpszMenuName := nil;
@@ -187,7 +187,7 @@ begin
 
   FHandle := CreateWindowEx(0, 'Main_Window', 'Quad-engine window',
                             WS_DLGFRAME or WS_SYSMENU or WS_MINIMIZEBOX or WS_VISIBLE,
-                            100, 100,
+                            0, 0,
                             300, 300,
                             0, 0,
                             HInstance, nil);
