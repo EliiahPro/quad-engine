@@ -34,7 +34,7 @@ type
     FIsLoaded: Boolean;
     FSync: TCriticalSection;
     FIsLoadFromFile: Boolean;
-    procedure SetTextureStages;
+    procedure SetTextureStages; inline;
   public
     constructor Create(QuadRender: TQuadRender);
     destructor Destroy; override;
@@ -284,7 +284,7 @@ begin
   px2 := px + FPatternWidth;
   py2 := py + FPatternHeight;
 
-  FQuadRender.Drawrectrot(Center - 0.5, Center - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
+  FQuadRender.DrawRectRot(Center - 0.5, Center - 0.5 + TVec2f.Create(FPatternWidth, FPatternHeight),
                           angle, Scale, TVec2f.Create(px / FWidth, py / FHeight),
                           TVec2f.Create(px2 / FWidth, py2 / FHeight), Color);
 end;

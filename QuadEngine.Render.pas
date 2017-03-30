@@ -34,7 +34,7 @@ const
     (Stream: $FF; Offset: 0;  _Type: D3DDECLTYPE_UNUSED;   Method: D3DDECLMETHOD_DEFAULT; Usage: D3DDECLUSAGE_POSITION; UsageIndex: 0)
     );
 
-  MaxBufferCount = 60000;
+  MaxBufferCount = 40000;
 
 type
   TQuadRender = class(TInterfacedObject, IQuadRender)
@@ -49,6 +49,7 @@ type
     FD3DDevice: IDirect3DDevice9;
     FD3DPP: TD3DPresentParameters;
     FD3DVB: IDirect3DVertexBuffer9;
+    FD3DIB: IDirect3DIndexBuffer9;
     FD3DVD: IDirect3DVertexDeclaration9;
     FHandle: THandle;
     FHeight: Integer;
@@ -85,9 +86,8 @@ type
       SwitchTexture: IQuadProfilerTag;
     end;
     {$ENDIF}
-    FQuad: array[0..5] of TVertex;
-    FVBOffset: Integer;
-    procedure AddQuadToBuffer;
+    FQuad: array[0..3] of TVertex;
+    procedure AddQuadToBuffer; inline;
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
     procedure InitializeVolatileResources;
@@ -123,7 +123,7 @@ type
     procedure DrawQuadLine(const PointA, PointB: TVec2f; Width1, Width2: Single; Color1, Color2: Cardinal); stdcall;
     procedure EndRender; stdcall;
     procedure Finalize; stdcall;
-    procedure FlushBuffer; stdcall;
+    procedure FlushBuffer; stdcall; inline;
     procedure Initialize(AHandle: THandle; AWidth, AHeight: Integer;
       AIsFullscreen: Boolean; AShaderModel: TQuadShaderModel = qsm20); stdcall;
     procedure InitializeEx(const ARenderInit: TRenderInit); stdcall;
@@ -193,7 +193,7 @@ uses
 //=============================================================================
 // Calculate vector cross
 //=============================================================================
-procedure Cross(const v1, v2 : TVector; var r : TVector);
+procedure Cross(const v1, v2 : TVector; var r : TVector); inline;
 begin
   r.x := v1.y * v2.z - v1.z * v2.y;
   r.y := v1.z * v2.x - v1.x * v2.z;
@@ -203,7 +203,7 @@ end;
 //=============================================================================
 // Normalize vector
 //=============================================================================
-procedure normalize(var a: TVector);
+procedure normalize(var a: TVector); inline;
 var
   s: Single;
 begin
@@ -216,7 +216,7 @@ end;
 //=============================================================================
 // Calculate Tangent, Binormal, Normal
 //=============================================================================
-procedure CalcTBN(var t, b, n: TVector; const p1, p2, p3: TVertex);
+procedure CalcTBN(var t, b, n: TVector; const p1, p2, p3: TVertex); inline;
 var
   s1, s2, crs, tangent, binormal: TVector;
 begin
@@ -278,18 +278,15 @@ begin
     CalcTBN(FQuad[0].tangent, FQuad[0].binormal, FQuad[0].normal, FQuad[0], FQuad[1], FQuad[2]);
     CalcTBN(FQuad[1].tangent, FQuad[1].binormal, FQuad[1].normal, FQuad[0], FQuad[1], FQuad[2]);
     CalcTBN(FQuad[2].tangent, FQuad[2].binormal, FQuad[2].normal, FQuad[0], FQuad[1], FQuad[2]);
-    CalcTBN(FQuad[5].tangent, FQuad[5].binormal, FQuad[5].normal, FQuad[0], FQuad[1], FQuad[2]);
+    CalcTBN(FQuad[3].tangent, FQuad[3].binormal, FQuad[3].normal, FQuad[0], FQuad[1], FQuad[2]);
     {$IFDEF PROFILER}
     if Assigned(FProfilerTags.CalculateTBN) then
       FProfilerTags.CalculateTBN.EndCount;
     {$ENDIF}
   end;
 
-  FQuad[3] := FQuad[2];
-  FQuad[4] := FQuad[1];
-
-  Move(FQuad, FVertexBuffer[FCount], 6 * SizeOf(TVertex));
-  Inc(FCount, 6);
+  Move(FQuad, FVertexBuffer[FCount], 4 * SizeOf(TVertex));
+  Inc(FCount, 4);
 
   if FCount >= MaxBufferCount then
     FlushBuffer;
@@ -314,8 +311,6 @@ procedure TQuadRender.BeginRender;
 begin
   if FIsDeviceLost then
     Exit;
-
-  FVBOffset := 0;
 
   {$IFDEF PROFILER}
   if Assigned(FProfiler) then
@@ -496,7 +491,6 @@ begin
     realUVB.Y := UVA.Y;
   end;
 
-
   Origin := (PointB - PointA) / 2 + PointA;
 
   Alpha := Angle * (pi / 180);
@@ -514,18 +508,18 @@ begin
   FQuad[2].x := ((PointA.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
   FQuad[2].y := ((PointA.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
 
-  FQuad[5].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
-  FQuad[5].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
+  FQuad[3].x := ((PointB.X - Origin.X) * cosA - (PointB.Y - Origin.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2;
+  FQuad[3].y := ((PointB.X - Origin.X) * sinA + (PointB.Y - Origin.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
   FQuad[2].color := Color;
-  FQuad[5].color := Color;
+  FQuad[3].color := Color;
 
   FQuad[0].u := realUVA.U;   FQuad[0].v := realUVA.V;
   FQuad[1].u := realUVB.U;   FQuad[1].v := realUVA.V;
   FQuad[2].u := realUVA.U;   FQuad[2].v := realUVB.V;
-  FQuad[5].u := realUVB.U;   FQuad[5].v := realUVB.V;
+  FQuad[3].u := realUVB.U;   FQuad[3].v := realUVB.V;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -584,18 +578,18 @@ begin
   FQuad[2].x := ((PointA.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
   FQuad[2].y := ((PointA.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
 
-  FQuad[5].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
-  FQuad[5].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
+  FQuad[3].x := ((PointB.X - Axis.X) * cosA - (PointB.Y - Axis.Y) * sinA) * Scale + Axis.X;
+  FQuad[3].y := ((PointB.X - Axis.X) * sinA + (PointB.Y - Axis.Y) * cosA) * Scale + Axis.Y;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
   FQuad[2].color := Color;
-  FQuad[5].color := Color;
+  FQuad[3].color := Color;
 
   FQuad[0].u := realUVA.U;   FQuad[0].v := realUVA.V;
   FQuad[1].u := realUVB.U;   FQuad[1].v := realUVA.V;
   FQuad[2].u := realUVA.U;   FQuad[2].v := realUVB.V;
-  FQuad[5].u := realUVB.U;   FQuad[5].v := realUVB.V;
+  FQuad[3].u := realUVB.U;   FQuad[3].v := realUVB.V;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -658,18 +652,18 @@ begin
   FQuad[2].x := ((PointA.X - OriginAndAxis.X) * cosA - (PointB.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
   FQuad[2].y := ((PointA.X - OriginAndAxis.X) * sinA + (PointB.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
-  FQuad[5].x := ((PointB.X - OriginAndAxis.X) * cosA - (PointB.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
-  FQuad[5].y := ((PointB.X - OriginAndAxis.X) * sinA + (PointB.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
+  FQuad[3].x := ((PointB.X - OriginAndAxis.X) * cosA - (PointB.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
+  FQuad[3].y := ((PointB.X - OriginAndAxis.X) * sinA + (PointB.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
   FQuad[2].color := Color;
-  FQuad[5].color := Color;
+  FQuad[3].color := Color;
 
   FQuad[0].u := realUVA.U;   FQuad[0].v := realUVA.V;
   FQuad[1].u := realUVB.U;   FQuad[1].v := realUVA.V;
   FQuad[2].u := realUVA.U;   FQuad[2].v := realUVB.V;
-  FQuad[5].u := realUVB.U;   FQuad[5].v := realUVB.V;
+  FQuad[3].u := realUVB.U;   FQuad[3].v := realUVB.V;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -792,12 +786,12 @@ begin
   FQuad[1] := pointA + perpendicular * (width1 / 2);
   FQuad[0] := pointA - perpendicular * (width1 / 2);
   FQuad[2] := pointB - perpendicular * (width2 / 2);
-  FQuad[5] := pointB + perpendicular * (width2 / 2);
+  FQuad[3] := pointB + perpendicular * (width2 / 2);
 
   FQuad[0].color := Color1;
   FQuad[1].color := Color1;
   FQuad[2].color := Color2;
-  FQuad[5].color := Color2;
+  FQuad[3].color := Color2;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -843,17 +837,17 @@ begin
   FQuad[0] := PointA;
   FQuad[1].x := PointB.X;    FQuad[1].y := PointA.Y;
   FQuad[2].x := PointA.X;    FQuad[2].y := PointB.Y;
-  FQuad[5] := PointB;
+  FQuad[3] := PointB;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
   FQuad[2].color := Color;
-  FQuad[5].color := Color;
+  FQuad[3].color := Color;
 
   FQuad[0].u := realUVA.X;  FQuad[0].v := realUVA.Y;
   FQuad[1].u := realUVB.X;  FQuad[1].v := realUVA.Y;
   FQuad[2].u := realUVA.X;  FQuad[2].v := realUVB.Y;
-  FQuad[5].u := realUVB.X;  FQuad[5].v := realUVB.Y;
+  FQuad[3].u := realUVB.X;  FQuad[3].v := realUVB.Y;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -913,7 +907,7 @@ begin
   case FRenderMode of
     D3DPT_POINTLIST:    PrimitiveCount := FCount;
     D3DPT_LINELIST:     PrimitiveCount := FCount div 2;
-    D3DPT_TRIANGLELIST: PrimitiveCount := FCount div 3;
+    D3DPT_TRIANGLELIST: PrimitiveCount := FCount div 2;
   else
     Exit;
   end;
@@ -922,14 +916,10 @@ begin
   if Assigned(FProfilerTags.DrawCall) then
     FProfilerTags.DrawCall.BeginCount;
   {$ENDIF}
-  Device.LastResultCode := FD3DVB.Lock(FVBOffset * SizeOf(TVertex), FCount * SizeOf(TVertex), pver, D3DLOCK_DISCARD or D3DLOCK_NOOVERWRITE);
+  Device.LastResultCode := FD3DVB.Lock(0, FCount * SizeOf(TVertex), pver, D3DLOCK_DISCARD);
   Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
   Device.LastResultCode := FD3DVB.Unlock;
-  Device.LastResultCode := FD3DDevice.DrawPrimitive(FRenderMode, FVBOffset, PrimitiveCount);
-  FVBOffset := FVBOffset + FCount;
-
-  if FVBOffset > MaxBufferCount then
-    FVBOffset := 0;
+  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, 0, 0, FCount, 0, PrimitiveCount);
 
   FCount := 0;
   {$IFDEF PROFILER}
@@ -1136,6 +1126,7 @@ procedure TQuadRender.InitializeVolatileResources;
 var
   i: Integer;
   qbm: TQuadBlendMode;
+  P: Pointer;
 begin
   CreateOrthoMatrix;
   Device.LastResultCode := FD3DDevice.SetTransform(D3DTS_PROJECTION, FViewMatrix);
@@ -1147,6 +1138,20 @@ begin
                                                          FD3DVB,
                                                          nil);
 
+  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, FD3DIB, nil);
+  FD3DIB.Lock(0, 0, P, 0);
+  for i := 0 to MaxBufferCount div 6 - 2 do
+  begin
+    PWordArray(P)^[i * 6 + 0] := 0 + i * 4;
+    PWordArray(P)^[i * 6 + 1] := 1 + i * 4;
+    PWordArray(P)^[i * 6 + 2] := 2 + i * 4;
+    PWordArray(P)^[i * 6 + 3] := 2 + i * 4;
+    PWordArray(P)^[i * 6 + 4] := 1 + i * 4;
+    PWordArray(P)^[i * 6 + 5] := 3 + i * 4;
+  end;
+  FD3DIB.Unlock;
+
+  Device.LastResultCode := FD3DDevice.SetIndices(FD3DIB);
   Device.LastResultCode := FD3DDevice.SetStreamSource(0, FD3DVB, 0, sizeof(Tvertex));
   FCount := 0;
 
@@ -1212,12 +1217,12 @@ begin
   FQuad[0] := PointA;
   FQuad[1] := PointB;
   FQuad[2] := PointC;
-  FQuad[5] := PointD;
+  FQuad[3] := PointD;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
   FQuad[2].color := Color;
-  FQuad[5].color := Color;
+  FQuad[3].color := Color;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -1250,12 +1255,12 @@ begin
   FQuad[0] := PointA;
   FQuad[1].x := PointB.X;     FQuad[1].y := PointA.Y;
   FQuad[2].x := PointA.X;     FQuad[2].y := PointB.Y;
-  FQuad[5] := PointB;
+  FQuad[3] := PointB;
 
   FQuad[0].color := Color;
   FQuad[1].color := Color;
   FQuad[2].color := Color;
-  FQuad[5].color := Color;
+  FQuad[3].color := Color;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
@@ -1290,12 +1295,12 @@ begin
   FQuad[0] := PointA;
   FQuad[1].x := PointB.X;     FQuad[1].y := PointA.Y;
   FQuad[2].x := PointA.X;     FQuad[2].y := PointB.Y;
-  FQuad[5] := PointB;
+  FQuad[3] := PointB;
 
   FQuad[0].color := Color1;
   FQuad[1].color := Color2;
   FQuad[2].color := Color3;
-  FQuad[5].color := Color4;
+  FQuad[3].color := Color4;
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
