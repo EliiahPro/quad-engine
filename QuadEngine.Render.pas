@@ -1800,6 +1800,7 @@ begin
       Shader.LoadFromResource('mrtVS20', False);
       Shader.LoadFromResource('mrtPS20');
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
+      Shader.SetAutoCalculateTBN(True);
       TQuadShader.mrtShader := Shader;
       TQuadShader.mrtShader.SetAutoCalculateTBN(True);
 
@@ -1807,6 +1808,7 @@ begin
       Shader.LoadFromResource('deferredVS20', False);
       Shader.LoadFromResource('deferredPS20');
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
+      Shader.SetAutoCalculateTBN(True);
       TQuadShader.DeferredShading := Shader;
     end;
     qsm30: begin
@@ -1828,12 +1830,14 @@ begin
       Shader := TQuadShader.Create(Self);
       Shader.LoadFromResource('mrtVS30', False);
       Shader.LoadFromResource('mrtPS30');
+      Shader.SetAutoCalculateTBN(True);
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
       TQuadShader.mrtShader := Shader;
 
       Shader := TQuadShader.Create(Self);
       Shader.LoadFromResource('deferredVS30', False);
       Shader.LoadFromResource('deferredPS30');
+      Shader.SetAutoCalculateTBN(True);
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
       TQuadShader.DeferredShading := Shader;
     end;

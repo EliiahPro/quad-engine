@@ -71,6 +71,7 @@ begin
   QuadRender.SetBlendMode(qbmNone);
   Texture.Draw(TVec2f.Zero);
   QuadRender.RenderToGBuffer(False, QuadGBuffer);
+  QuadRender.RenderToBackBuffer;
   Camera.Disable;
 
   QuadGBuffer.GetDiffuseMap(DiffuseMap);
