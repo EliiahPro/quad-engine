@@ -1082,7 +1082,7 @@ begin
   RenderInit.BackBufferCount := 1;
   RenderInit.RefreshRate := -1;
   RenderInit.Fullscreen := AIsFullscreen;
-  RenderInit.SoftwareVertexProcessing := True;
+  RenderInit.SoftwareVertexProcessing := False;
   RenderInit.MultiThreaded := True;
   RenderInit.VerticalSync := False;
   RenderInit.ShaderModel := AShaderModel;
@@ -1421,6 +1421,8 @@ procedure TQuadRender.RenderToBackBuffer; stdcall;
 begin
   if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
     ChangeResolution(FOldScreenWidth, FOldScreenHeight);
+
+  RenderToTexture(False);
 
   Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
   FIsRenderIntoTexture := False;
