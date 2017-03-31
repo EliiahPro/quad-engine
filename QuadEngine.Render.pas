@@ -1740,7 +1740,7 @@ begin
   if ARenderInit.SoftwareVertexProcessing then
     BehaviorFlag := D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE
   else
-    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE;
+    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE or D3DCREATE_PUREDEVICE;
 
   if ARenderInit.MultiThreaded then
     BehaviorFlag := BehaviorFlag or D3DCREATE_MULTITHREADED;
@@ -1755,8 +1755,15 @@ begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write('Vertex processing: Software');
-    Device.Log.Write('Thread model: Multithreaded');
+    if ARenderInit.SoftwareVertexProcessing then
+      Device.Log.Write('Vertex processing: Software')
+    else
+      Device.Log.Write('Vertex processing: Hardware');
+
+    if ARenderInit.MultiThreaded then
+      Device.Log.Write('Thread model: Multithreaded')
+    else
+      Device.Log.Write('Thread model: Singlethreaded');
   end;
   {$ENDREGION}
 
@@ -1765,16 +1772,18 @@ begin
   {$REGION 'logging'}
   if Device.Log <> nil then
   begin
-    Device.Log.Write(PChar('Max VB count: ' + IntToStr(MaxBufferCount)));
-    Device.Log.Write(PChar('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight)));
-    Device.Log.Write(PChar('Max Texture stages: ' + IntToStr(MaxTextureStages)));
-    Device.Log.Write(PChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));
-    Device.Log.Write(PChar('Vertex shaders: ' + PixelShaderVersionString));
-    Device.Log.Write(PChar('Pixel shaders: ' + PixelShaderVersionString));
+    Device.Log.Write(PWideChar('Max VB count: ' + IntToStr(MaxBufferCount)));
+    Device.Log.Write(PWideChar('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight)));
+    Device.Log.Write(PWideChar('Max Texture stages: ' + IntToStr(MaxTextureStages)));
+    Device.Log.Write(PWideChar('Max Anisotropy: ' + IntToStr(MaxAnisotropy)));
+    Device.Log.Write(PWideChar('Vertex shaders: ' + PixelShaderVersionString));
+    Device.Log.Write(PWideChar('Pixel shaders: ' + PixelShaderVersionString));
+
+    Device.Log.Write(PWideChar('Extra features support:'));
     if IsSeparateAlphaBlend then
-      Device.Log.Write('Separate alpha blending');
+      Device.Log.Write('+ Separate alpha blending');
     if IsSupportedNonPow2 then
-      Device.Log.Write('Supported non power of 2 textures');
+      Device.Log.Write('+ Texture size non power of 2 ');
   end;
   {$ENDREGION}
 
@@ -1845,7 +1854,7 @@ begin
     end;
     qsmNone:
       if Device.Log <> nil then
-        Device.Log.Write('Samder model not specified');
+        Device.Log.Write('Shader model was not specified');
   end;
 
   FIsInitialized := True;
