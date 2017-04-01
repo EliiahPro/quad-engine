@@ -13,7 +13,7 @@ const
 
 type
   PVertexes = ^TVertexes;
-  TVertexes = array[0..5] of TVertex;
+  TVertexes = array[0..3] of TVertex;
 
   PQuadFXParticle = ^TQuadFXParticle;
   PQuadFXEmitterParams = ^TQuadFXEmitterParams;

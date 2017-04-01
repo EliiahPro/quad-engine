@@ -412,8 +412,8 @@ begin
     AParticle.Vertexes[2].x := p1.X * CosRad - p2.Y * SinRad + AParticle.Position.X;
     AParticle.Vertexes[2].y := p1.X * SinRad + p2.Y * CosRad + AParticle.Position.Y;
 
-    AParticle.Vertexes[5].x := p2.X * CosRad - p2.Y * SinRad + AParticle.Position.X;
-    AParticle.Vertexes[5].y := p2.X * SinRad + p2.Y * CosRad + AParticle.Position.Y;
+    AParticle.Vertexes[3].x := p2.X * CosRad - p2.Y * SinRad + AParticle.Position.X;
+    AParticle.Vertexes[3].y := p2.X * SinRad + p2.Y * CosRad + AParticle.Position.Y;
   end
   else
   begin
@@ -433,14 +433,14 @@ begin
     AParticle.Vertexes[2].x := p1.X;
     AParticle.Vertexes[2].y := p1.Y + p2.Y;
 
-    AParticle.Vertexes[5].x := p1.X + p2.X;
-    AParticle.Vertexes[5].y := p1.Y + p2.Y;
+    AParticle.Vertexes[3].x := p1.X + p2.X;
+    AParticle.Vertexes[3].y := p1.Y + p2.Y;
   end;
 
   AParticle.Vertexes[0].Color := AParticle.Color;
   AParticle.Vertexes[1].Color := AParticle.Color;
   AParticle.Vertexes[2].Color := AParticle.Color;
-  AParticle.Vertexes[5].Color := AParticle.Color;
+  AParticle.Vertexes[3].Color := AParticle.Color;
 
   if FParams.TextureCount > 0 then
   begin
@@ -452,8 +452,8 @@ begin
       AParticle.Vertexes[1].v := UVA.Y;
       AParticle.Vertexes[2].u := UVA.X;
       AParticle.Vertexes[2].v := UVB.Y;
-      AParticle.Vertexes[5].u := UVB.X;
-      AParticle.Vertexes[5].v := UVB.Y;
+      AParticle.Vertexes[3].u := UVB.X;
+      AParticle.Vertexes[3].v := UVB.Y;
     end;
   end
   else
@@ -464,12 +464,9 @@ begin
     AParticle.Vertexes[1].v := 0;
     AParticle.Vertexes[2].u := 0;
     AParticle.Vertexes[2].v := 1;
-    AParticle.Vertexes[5].u := 1;
-    AParticle.Vertexes[5].v := 1;
+    AParticle.Vertexes[3].u := 1;
+    AParticle.Vertexes[3].v := 1;
   end;
-
-  AParticle.Vertexes[3] := AParticle.Vertexes[2];
-  AParticle.Vertexes[4] := AParticle.Vertexes[1];
 
   {
   if FIsDebug then
@@ -563,7 +560,7 @@ begin
   Vertexes[0].z := 0;
   Vertexes[1].z := 0;
   Vertexes[2].z := 0;
-  Vertexes[5].z := 0;
+  Vertexes[3].z := 0;
 end;
 
 procedure TQuadFXEmitter.Draw; stdcall;
@@ -587,7 +584,7 @@ begin
       Manager.QuadRender.SetTexture(i, nil);
   end;
 
-  Manager.QuadRender.AddTrianglesToBuffer(FVertexes[0], 6 * FParticlesCount);
+  Manager.QuadRender.AddTrianglesToBuffer(FVertexes[0], 4 * FParticlesCount);
   Manager.QuadRender.FlushBuffer;
 end;
 
