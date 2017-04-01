@@ -49,7 +49,7 @@ type
     function GetTexture(i: Byte): IDirect3DTexture9; stdcall;
     function GetTextureHeight: Word; stdcall;
     function GetTextureWidth: Word; stdcall;
-    procedure AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9); stdcall;
+    procedure AddTexture(ARegister: Byte; const ATexture: IDirect3DTexture9); stdcall;
     procedure AssignTexture(const AQuadTexture: IQuadTexture; ASourceRegister, ATargetRegister: Byte); stdcall;
     procedure Draw(const Position: Tvec2f; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawFrame(const Position: Tvec2f; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -92,7 +92,7 @@ uses
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadTexture.AddTexture(ARegister: Byte; ATexture: IDirect3DTexture9);
+procedure TQuadTexture.AddTexture(ARegister: Byte; const ATexture: IDirect3DTexture9);
 begin
   FSync.Enter;
 
@@ -113,6 +113,8 @@ end;
 //
 //=============================================================================
 constructor TQuadTexture.Create(QuadRender: TQuadRender);
+var
+  i: Integer;
 begin
   FQuadRender := QuadRender;
   FIsLoaded := False;
@@ -120,8 +122,11 @@ begin
   FPatternHeight := 0;
   FPatternSize := TVec2f.Zero;
   FSync := TCriticalSection.Create;
-  SetLength(FTextures, FQuadRender.MaxTextureStages);
   FIsLoadFromFile := False;
+
+  SetLength(FTextures, FQuadRender.MaxTextureStages);
+  for i := 0 to High(FTextures) do
+    FTextures[i] := nil;
 end;
 
 //=============================================================================
@@ -601,7 +606,7 @@ procedure TQuadTexture.SetTextureStages;
 var
   i: Integer;
 begin
-  for i := 0 to FQuadRender.MaxTextureStages - 1 do
+  for i := 0 to High(FTextures) do
     FQuadRender.SetTexture(i, FTextures[i]);
 end;
 

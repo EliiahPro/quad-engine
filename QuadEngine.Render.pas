@@ -87,6 +87,7 @@ type
     end;
     {$ENDIF}
     FQuad: array[0..3] of TVertex;
+    FVBOffset: Integer;
     procedure AddQuadToBuffer; inline;
     function GetProjectionMatrix: TD3DMatrix;
     procedure SetRenderMode(const Value: TD3DPrimitiveType);
@@ -285,10 +286,10 @@ begin
     {$ENDIF}
   end;
 
-  Move(FQuad, FVertexBuffer[FCount], 4 * SizeOf(TVertex));
+  Move(FQuad[0], FVertexBuffer[FCount], 4 * SizeOf(TVertex));
   Inc(FCount, 4);
 
-  if FCount >= MaxBufferCount then
+  if FCount > MaxBufferCount - 4 then
     FlushBuffer;
 end;
 
@@ -308,9 +309,13 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.BeginRender;
+var
+  i: Integer;
 begin
   if FIsDeviceLost then
     Exit;
+
+  FVBOffset := 0;
 
   {$IFDEF PROFILER}
   if Assigned(FProfiler) then
@@ -319,7 +324,10 @@ begin
     FProfilerTags.BeginScene.BeginCount;
   {$ENDIF}
 
-  Device.LastResultCode := FD3DDevice.BeginScene;
+//  Device.LastResultCode := FD3DDevice.BeginScene;
+
+  for i := 0 to MaxTextureStages - 1 do
+    FActiveTexture[i] := nil;
 
   FCount := 0;
   {$IFDEF PROFILER}
@@ -871,9 +879,11 @@ begin
 
   FlushBuffer;
 
-  Device.LastResultCode := FD3DDevice.EndScene;
-  if not FIsRenderIntoTexture then
-    Device.LastResultCode := FD3DDevice.Present(nil, nil, 0, nil);
+  if FIsRenderIntoTexture then
+    RenderToBackBuffer;
+
+//  Device.LastResultCode := FD3DDevice.EndScene;
+  Device.LastResultCode := FD3DDevice.Present(nil, nil, 0, nil);
 
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.EndScene) then
@@ -898,6 +908,8 @@ procedure TQuadRender.FlushBuffer;
 var
   pver: Pointer;
   PrimitiveCount: Cardinal;
+  SizeOfData: Cardinal;
+  Flags: Cardinal;
 begin
   if FIsDeviceLost or (FCount = 0) then
     Exit;
@@ -912,14 +924,28 @@ begin
     Exit;
   end;
 
+  Flags := D3DLOCK_NOOVERWRITE;
+
+  SizeOfData := FCount * SizeOf(TVertex);
+
+  if (FVBOffset > MaxBufferCount - FCount) then
+  begin
+    Flags := D3DLOCK_DISCARD;
+    FVBOffset := 0;
+  end;
+
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.DrawCall) then
     FProfilerTags.DrawCall.BeginCount;
   {$ENDIF}
-  Device.LastResultCode := FD3DVB.Lock(0, FCount * SizeOf(TVertex), pver, D3DLOCK_DISCARD);
-  Move(FVertexBuffer, Pver^, FCount * SizeOf(TVertex));
+  Device.LastResultCode := FD3DVB.Lock((FVBOffset) * SizeOf(TVertex), SizeOfData, pver, Flags);
+  Move(FVertexBuffer[0], Pver^, SizeOfData);
   Device.LastResultCode := FD3DVB.Unlock;
-  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, 0, 0, FCount, 0, PrimitiveCount);
+
+  Device.LastResultCode := FD3DDevice.BeginScene;
+  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, FVBOffset, FVBOffset, FCount, 0, PrimitiveCount);
+  Device.LastResultCode := FD3DDevice.EndScene;
+  FVBOffset := FVBOffset + FCount;
 
   FCount := 0;
   {$IFDEF PROFILER}
@@ -1014,7 +1040,7 @@ end;
 //=============================================================================
 function TQuadRender.GetProjectionMatrix: TD3DMatrix;
 begin
-  Device.LastResultCode :=  FD3DDevice.GetTransform(D3DTS_PROJECTION, Result);
+  Device.LastResultCode := FD3DDevice.GetTransform(D3DTS_PROJECTION, Result);
 end;
 
 //=============================================================================
@@ -1138,7 +1164,7 @@ begin
                                                          FD3DVB,
                                                          nil);
 
-  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, FD3DIB, nil);
+  Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3, D3DUSAGE_DYNAMIC or D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, FD3DIB, nil);
   FD3DIB.Lock(0, 0, P, 0);
   for i := 0 to MaxBufferCount div 6 - 2 do
   begin
@@ -1252,6 +1278,7 @@ begin
     SetTexture(i, nil);
                                       { NOTE : use only 0, 1, 2, 5 vertex.
                                                Vertex 3, 4 autocalculated}
+
   FQuad[0] := PointA;
   FQuad[1].x := PointB.X;     FQuad[1].y := PointA.Y;
   FQuad[2].x := PointA.X;     FQuad[2].y := PointB.Y;
@@ -1379,8 +1406,6 @@ begin
 
   FlushBuffer;
 
-  FIsRenderIntoTexture := AIsRenderToTexture;
-
   if AIsRenderToTexture then
   begin
     FOldScreenWidth := FWidth;
@@ -1398,16 +1423,16 @@ begin
   begin
 //    if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
 //      ChangeResolution(FOldScreenWidth, FOldScreenHeight);
-
-    for i := 0 to FD3DCaps.NumSimultaneousRTs - 1 do
+    for i := 1 to FD3DCaps.NumSimultaneousRTs - 1 do
     if FRenderTargetsInUse[i] then
     begin
       Device.LastResultCode := FD3DDevice.SetRenderTarget(i, nil);
       FRenderTargetsInUse[i] := False;
     end;
-
-//    Device.LastResultCode := FD3DDevice.SetRenderTarget(0, FBackBuffer);
   end;
+
+  FIsRenderIntoTexture := AIsRenderToTexture;
+
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.SwitchRenderTarget) then
     FProfilerTags.SwitchRenderTarget.EndCount;
@@ -1417,7 +1442,7 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadRender.RenderToBackBuffer; stdcall;
+procedure TQuadRender.RenderToBackBuffer;
 begin
   if (FOldScreenWidth <> FWidth) or (FOldScreenHeight <> FHeight) then
     ChangeResolution(FOldScreenWidth, FOldScreenHeight);
@@ -1861,11 +1886,11 @@ begin
 end;
 
 //=============================================================================
-// Set active texures and flush buffer if texture changed
+// Set active textures and flush buffer if texture changed
 //=============================================================================
-procedure TQuadRender.SetTexture(aRegister: Byte; const aTexture: IDirect3DTexture9);
+procedure TQuadRender.SetTexture(ARegister: Byte; const ATexture: IDirect3DTexture9);
 begin
-  if (ARegister >= MaxTextureStages) or (aTexture = FActiveTexture[aRegister]) then
+  if (ARegister >= MaxTextureStages) or (ATexture = FActiveTexture[ARegister]) then
     Exit;
 
   FlushBuffer;
@@ -1874,8 +1899,8 @@ begin
   if Assigned(FProfilerTags.SwitchTexture) then
     FProfilerTags.SwitchTexture.BeginCount;
   {$ENDIF}
-  FActiveTexture[aRegister] := aTexture;
-  Device.LastResultCode := FD3DDevice.SetTexture(aRegister, FActiveTexture[aRegister]);
+  FActiveTexture[ARegister] := ATexture;
+  Device.LastResultCode := FD3DDevice.SetTexture(ARegister, FActiveTexture[ARegister]);
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.SwitchTexture) then
     FProfilerTags.SwitchTexture.EndCount;
@@ -1893,13 +1918,15 @@ begin
   if ATextureAdressing = FTextureAdressing then
     Exit;
 
+  FlushBuffer;
+
   FTextureAdressing := ATextureAdressing;
 
   case FTextureAdressing of
     qtaWrap:       Value := D3DTADDRESS_WRAP;
-    qtaMirror:     Value := D3DTADDRESS_MIRROR ;
-    qtaClamp:      Value := D3DTADDRESS_CLAMP ;
-    qtaBorder:     Value := D3DTADDRESS_BORDER ;
+    qtaMirror:     Value := D3DTADDRESS_MIRROR;
+    qtaClamp:      Value := D3DTADDRESS_CLAMP;
+    qtaBorder:     Value := D3DTADDRESS_BORDER;
     qtaMirrorOnce: Value := D3DTADDRESS_MIRRORONCE;
   else
     Value := D3DTADDRESS_CLAMP;
@@ -1922,6 +1949,8 @@ var
 begin
   if ATextureFiltering = FTextureFiltering then
     Exit;
+
+  FlushBuffer;
 
   FTextureFiltering := ATextureFiltering;
 
