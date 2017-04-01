@@ -58,7 +58,7 @@ type
     procedure DrawPart(const Position: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawPartRot(const Center: TVec2f; angle, Scale: Double; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawPartRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
-    procedure DrawPartRotScaledAxis(const Position: TVec2f; angle: Double; const Scale, Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color: Cardinal = $FFFFFFFF); stdcall;
+    procedure DrawPartRotScaledAxis(const Position: TVec2f; angle: Double; const Scale, Axis: TVec2f; LeftTop, RightBottom: TVec2i; Color1, Color2, Color3, Color4: Cardinal); stdcall;
     procedure DrawRot(const Center: TVec2f; angle, Scale: Double; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotFrame(const Center: TVec2f; angle, Scale: Double; Pattern: Word; Color: Cardinal = $FFFFFFFF); stdcall;
     procedure DrawRotAxis(const Position: TVec2f; angle, Scale: Double; const Axis: TVec2f; Color: Cardinal = $FFFFFFFF); stdcall;
@@ -258,7 +258,7 @@ end;
 //
 //=============================================================================
 procedure TQuadTexture.DrawPartRotScaledAxis(const Position: TVec2f; angle: Double; const Scale, Axis: TVec2f; LeftTop, RightBottom: TVec2i;
-  Color: Cardinal);
+   Color1: Cardinal; Color2: Cardinal; Color3: Cardinal; Color4: Cardinal);
 begin
   if not FIsLoaded then
     Exit;
@@ -267,7 +267,7 @@ begin
 
   FQuadRender.DrawRectRotAxis2(Position - 0.5, Position - 0.5 + (RightBottom - LeftTop) * Scale, angle, 1, Axis,
                               TVec2f.Create(LeftTop.X / FWidth, LeftTop.Y / FHeight) , TVec2f.Create(RightBottom.X / FWidth, RightBottom.Y / FHeight),
-                              Color);
+                              Color1, Color2, Color3, Color4);
 end;
 
 //=============================================================================

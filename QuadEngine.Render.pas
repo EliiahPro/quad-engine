@@ -152,7 +152,7 @@ type
     procedure DrawRect(const PointA, PointB, UVA, UVB: TVec2f; Color: Cardinal);
     procedure DrawRectRot(const PointA, PointB: TVec2f; Angle, Scale: Double; const UVA, UVB: TVec2f; Color: Cardinal);
     procedure DrawRectRotAxis(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal);
-    procedure DrawRectRotAxis2(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color: Cardinal);
+    procedure DrawRectRotAxis2(const PointA, PointB: TVec2f; Angle, Scale: Double; const Axis, UVA, UVB: TVec2f; Color1, Color2, Color3, Color4: Cardinal);
 
     property AvailableTextureMemory: Cardinal read GetAvailableTextureMemory;
     property BlendMode: TQuadBlendMode read Fqbm;
@@ -611,7 +611,7 @@ end;
 // Draws textured rotated rectangle along free axis
 //=============================================================================
 procedure TQuadRender.DrawRectRotAxis2(const PointA, PointB: TVec2f; Angle, Scale: Double;
-  const Axis, UVA, UVB: TVec2f; Color: Cardinal);
+  const Axis, UVA, UVB: TVec2f; Color1, Color2, Color3, Color4: Cardinal);
 var
   Origin, OriginAndAxis: TVec2f;
   Alpha: Single;
@@ -663,10 +663,10 @@ begin
   FQuad[3].x := ((PointB.X - OriginAndAxis.X) * cosA - (PointB.Y - OriginAndAxis.Y) * sinA) * Scale + Origin.X - (PointB.X - PointA.X) / 2 + Axis.X;
   FQuad[3].y := ((PointB.X - OriginAndAxis.X) * sinA + (PointB.Y - OriginAndAxis.Y) * cosA) * Scale + Origin.Y - (PointB.Y - PointA.Y) / 2 + Axis.Y;
 
-  FQuad[0].color := Color;
-  FQuad[1].color := Color;
-  FQuad[2].color := Color;
-  FQuad[3].color := Color;
+  FQuad[0].color := Color1;
+  FQuad[1].color := Color2;
+  FQuad[2].color := Color3;
+  FQuad[3].color := Color4;
 
   FQuad[0].u := realUVA.U;   FQuad[0].v := realUVA.V;
   FQuad[1].u := realUVB.U;   FQuad[1].v := realUVA.V;
