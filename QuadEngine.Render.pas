@@ -924,7 +924,10 @@ begin
     Exit;
   end;
 
-  Flags := D3DLOCK_NOOVERWRITE;
+  if FVBOffset = 0 then
+    Flags := D3DLOCK_DISCARD
+  else
+    Flags := D3DLOCK_NOOVERWRITE;
 
   SizeOfData := FCount * SizeOf(TVertex);
 
@@ -943,7 +946,7 @@ begin
   Device.LastResultCode := FD3DVB.Unlock;
 
   Device.LastResultCode := FD3DDevice.BeginScene;
-  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, FVBOffset, FVBOffset, FCount, 0, PrimitiveCount);
+  Device.LastResultCode := FD3DDevice.DrawIndexedPrimitive(FRenderMode, FVBOffset, 0, FCount, 0, PrimitiveCount);
   Device.LastResultCode := FD3DDevice.EndScene;
   FVBOffset := FVBOffset + FCount;
 
@@ -1106,7 +1109,7 @@ begin
   RenderInit.Width := AWidth;
   RenderInit.Height := AHeight;
   RenderInit.BackBufferCount := 1;
-  RenderInit.RefreshRate := -1;
+  RenderInit.RefreshRate := 0;
   RenderInit.Fullscreen := AIsFullscreen;
   RenderInit.SoftwareVertexProcessing := False;
   RenderInit.MultiThreaded := True;
@@ -1348,6 +1351,7 @@ begin
   Device.FreeRenderTargets;
   FBackBuffer := nil;
 //  FD3DVD := nil;
+  FD3DIB := nil;
   FD3DVB := nil;
 end;
 
@@ -1762,10 +1766,13 @@ begin
   end;
   {$ENDREGION}
 
-  if ARenderInit.SoftwareVertexProcessing then
-    BehaviorFlag := D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE
+  Device.LastResultCode := Device.D3D.GetDeviceCaps(Device.ActiveMonitorIndex, D3DDEVTYPE_HAL, FD3DCaps);
+
+  if (not ARenderInit.SoftwareVertexProcessing) and
+     (FD3DCaps.DevCaps and D3DDEVCAPS_HWTRANSFORMANDLIGHT = D3DDEVCAPS_HWTRANSFORMANDLIGHT) then
+    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE or D3DCREATE_PUREDEVICE
   else
-    BehaviorFlag := D3DCREATE_HARDWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE or D3DCREATE_PUREDEVICE;
+    BehaviorFlag := D3DCREATE_SOFTWARE_VERTEXPROCESSING or D3DCREATE_FPU_PRESERVE;
 
   if ARenderInit.MultiThreaded then
     BehaviorFlag := BehaviorFlag or D3DCREATE_MULTITHREADED;
@@ -1789,14 +1796,7 @@ begin
       Device.Log.Write('Thread model: Multithreaded')
     else
       Device.Log.Write('Thread model: Singlethreaded');
-  end;
-  {$ENDREGION}
 
-  Device.LastResultCode := Device.D3D.GetDeviceCaps(Device.ActiveMonitorIndex, D3DDEVTYPE_HAL, FD3DCaps);
-
-  {$REGION 'logging'}
-  if Device.Log <> nil then
-  begin
     Device.Log.Write(PWideChar('Max VB count: ' + IntToStr(MaxBufferCount)));
     Device.Log.Write(PWideChar('Max Texture size: ' + IntToStr(MaxTextureWidth) + 'x' + IntToStr(MaxTextureHeight)));
     Device.Log.Write(PWideChar('Max Texture stages: ' + IntToStr(MaxTextureStages)));
