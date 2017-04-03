@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.8.2 Diamond header file for Visual C++
+  Quad engine 0.9.0 Diamond header file for Visual C++
 
 	 ╔═══════════╦═╗
 	 ║           ║ ║
@@ -32,8 +32,8 @@ static const char* CreateQuadDeviceProcName = "CreateQuadDevice";
 static const char* CheckLibraryVersionProcName = "IsSameVersion";
 static const char* SecretMagicFunctionProcName = "SecretMagicFunction";
 static const unsigned char QuadEngineMinorVersion = 0;
-static const unsigned char QuadEngineMajorVersion = 8;
-static const unsigned char QuadEngineReleaseVersion = 2;
+static const unsigned char QuadEngineMajorVersion = 9;
+static const unsigned char QuadEngineReleaseVersion = 0;
 
 interface __declspec(uuid("E28626FF-738F-43B0-924C-1AFC7DEC26C7")) IQuadDevice;
 interface __declspec(uuid("D9E9C42B-E737-4CF9-A92F-F0AE483BA39B")) IQuadRender;
@@ -256,8 +256,8 @@ DECLARE_INTERFACE_(IQuadTexture, IUnknown)
 	virtual IDirect3DTexture9* CALLBACK GetTexture(unsigned char i) = 0;
 	virtual unsigned short CALLBACK GetTextureHeight() = 0;
 	virtual unsigned short CALLBACK GetTextureWidth() = 0;
-	virtual void CALLBACK AddTexture(unsigned char ARegister, IDirect3DTexture9* ATexture) = 0;
-	virtual void CALLBACK AssignTexture(IQuadTexture* quadTexture, unsigned char sourceRegister, unsigned char targetRegister) = 0;
+	virtual void CALLBACK AddTexture(unsigned char ARegister, IDirect3DTexture9* &ATexture) = 0;
+	virtual void CALLBACK AssignTexture(IQuadTexture* &quadTexture, unsigned char sourceRegister, unsigned char targetRegister) = 0;
 	virtual void CALLBACK Draw(const Vec2f& position, unsigned int color = 0xFFFFFFFF) = 0;
 	virtual void CALLBACK DrawFrame(const Vec2f& position, unsigned short pattern, unsigned int color = 0xFFFFFFFF) = 0;
 	virtual void CALLBACK DrawMap(const Vec2f& pointA, const Vec2f& pointB, const Vec2f& UVA, const Vec2f& UVB, unsigned int Color = 0xFFFFFFFF) = 0;
@@ -265,7 +265,8 @@ DECLARE_INTERFACE_(IQuadTexture, IUnknown)
 	
 	virtual void CALLBACK DrawPart(const Vec2f& position, Vec2i leftTop, Vec2i rightBottom, unsigned int color = 0xFFFFFFFF) = 0;
 	virtual void CALLBACK DrawPartRot(const Vec2f& center, double angle, double scale, Vec2i leftTop, Vec2i rightBottom, unsigned int color = 0xFFFFFFFF) = 0;
-	virtual void CALLBACK DrawPartRotAxis(const Vec2f& position, double angle, double scale, const Vec2f axis, Vec2i leftTop, Vec2i rightBottom, unsigned int color = 0xFFFFFFFF) = 0;
+	virtual void CALLBACK DrawPartRotAxis(const Vec2f& position, double angle, double scale, const Vec2f& axis, Vec2i leftTop, Vec2i rightBottom, unsigned int color = 0xFFFFFFFF) = 0;
+	virtual void CALLBACK DrawPartRotScaledAxis(const Vec2f& Position, double angle, const Vec2f& Scale, const Vec2f& Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4) = 0;
 
 	virtual void CALLBACK DrawRot(const Vec2f& center, double angle, double scale, unsigned int color = 0xFFFFFFFF) = 0;
 	virtual void CALLBACK DrawRotFrame(const Vec2f& center, double angle, double scale, unsigned short pattern, unsigned int Color = 0xFFFFFFFF) = 0;

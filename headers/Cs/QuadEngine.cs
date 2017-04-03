@@ -1,6 +1,6 @@
 ﻿/*==============================================================================
 
-  Quad engine 0.8.2 Diamond header file for Visual C#
+  Quad engine 0.9.0 Diamond header file for Visual C#
 
      ╔═══════════╦═╗
      ║           ║ ║
@@ -301,8 +301,8 @@ namespace QuadEngine
         [PreserveSig] IntPtr GetTexture(byte i);
         [PreserveSig] UInt16 GetTextureHeight();
         [PreserveSig] UInt16 GetTextureWidth();
-        void AddTexture(byte ARegister, IntPtr ATexture);  // ATexture: IDirect3DTexture9
-        void AssignTexture(IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
+        void AddTexture(byte ARegister, ref IntPtr ATexture);  // ATexture: IDirect3DTexture9
+        void AssignTexture(ref IQuadTexture AQuadTexture, byte ASourceRegister, byte ATargetRegister);
         void Draw(ref Vec2f position, UInt32 Color = 0xFFFFFFFF);
         void DrawFrame(ref Vec2f position, UInt16 pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawMap(ref Vec2f pointA, ref Vec2f pointB, ref Vec2f UVA, ref Vec2f UVB, UInt32 Color = 0xFFFFFFFF);
@@ -310,6 +310,7 @@ namespace QuadEngine
         void DrawPart(ref Vec2f position, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
         void DrawPartRot(ref Vec2f Center, double angle, double Scale, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
         void DrawPartRotAxis(ref Vec2f position, double angle, double Scale, ref Vec2f Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color = 0xFFFFFFFF);
+        void DrawPartRotScaledAxis(ref Vec2f Position, double angle, ref Vec2f Scale, ref Vec2f Axis, Vec2i LeftTop, Vec2i RightBottom, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4);
         void DrawRot(ref Vec2f Center, double angle, double Scale, UInt32 Color = 0xFFFFFFFF);
         void DrawRotFrame(ref Vec2f Center, double angle, double Scale, UInt16 Pattern, UInt32 Color = 0xFFFFFFFF);
         void DrawRotAxis(ref Vec2f position, double angle, double Scale, ref Vec2f Axis, UInt32 Color = 0xFFFFFFFF);
