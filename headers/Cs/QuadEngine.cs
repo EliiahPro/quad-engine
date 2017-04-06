@@ -620,7 +620,6 @@ namespace QuadEngine
         void GetDiffuseMap(out IQuadTexture DiffuseMap);
         void GetNormalMap(out IQuadTexture NormalMap);
         void GetSpecularMap(out IQuadTexture SpecularMap);
-        void GetHeightMap(out IQuadTexture HeightMap);
         void GetBuffer(out IQuadTexture Buffer);
         /// <summary>Draw light using GBuffer data</summary>
         /// <param name="APos">Position in world space</param>

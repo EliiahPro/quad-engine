@@ -1372,7 +1372,6 @@ begin
     RenderToTexture(True, TexBuffer, 0, 0, AIsCropScreen);
     RenderToTexture(True, TexBuffer, 1, 1, AIsCropScreen);
     RenderToTexture(True, TexBuffer, 2, 2, AIsCropScreen);
-    RenderToTexture(True, TexBuffer, 3, 3, AIsCropScreen);
 
     Obj := AQuadGBuffer as TQuadGBuffer;
     Obj.Camera := TQuadCamera.CurrentCamera;

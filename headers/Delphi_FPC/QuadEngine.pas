@@ -565,7 +565,6 @@ type
     procedure GetDiffuseMap(out ADiffuseMap: IQuadTexture); stdcall;
     procedure GetNormalMap(out ANormalMap: IQuadTexture); stdcall;
     procedure GetSpecularMap(out ASpecularMap: IQuadTexture); stdcall;
-    procedure GetHeightMap(out AHeightMap: IQuadTexture); stdcall;
     procedure GetBuffer(out ABuffer: IQuadTexture); stdcall;
     /// <summary>Draw light using GBuffer data</summary>
     /// <param name="APos">Position in world space</param>

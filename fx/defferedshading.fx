@@ -20,7 +20,7 @@ struct vertexOutput {
 
 vertexOutput std_VS(appdata Input) {
         vertexOutput Output = (vertexOutput)0;
-        float3 CamPos = (0.0, 0.0, 0.0);
+        float3 CamPos = (0.0, 0.0, 0.3);
 
         float3x3 RM;
         RM[0] = Input.Tangent;
@@ -43,27 +43,25 @@ float ratio : register(c6);
 sampler2D DiffuseMap  : register(s0);   
 sampler2D NormalMap   : register(s1);
 sampler2D SpecularMap : register(s2);
-sampler2D HeightMap   : register(s3);
 
 float4 std_PS(vertexOutput Input) : COLOR {  
             
         float4 Output;   
 
 	float2 corr = float2(ratio, 1.0);
-                         
-        float z = tex2D(HeightMap, Input.TexCoord).r;
+
         float3 n = tex2D(NormalMap, Input.TexCoord).rgb * 2.0 - 1.0;
-        float k = max(1.0 - distance(Input.TexCoord * corr, pos * corr) * (1.0 / pos.a), 0.0);        
-        float4 c = tex2D(DiffuseMap, Input.TexCoord).rgba * k;         
+        float k = max(1.0 - distance(Input.TexCoord * corr, pos * corr) * (1.0 / pos.a), 0.0);
+        float4 c = tex2D(DiffuseMap, Input.TexCoord).rgba * k;
         float3 s = tex2D(SpecularMap,  Input.TexCoord).rgb;
-        float3 pp = (float3(Input.TexCoord, 0.0) - pos.rgb) * z / pos.z;
-        float3 l = normalize(Input.LightVec - pp); 
+        float3 pp = normalize(float3(Input.TexCoord.x, Input.TexCoord.y, 0.0) - pos.rgb);
+        float3 l = normalize(Input.LightVec - pp);
         float3 v = normalize(-pp);
         float3 h = normalize(l + v);
-        float diff = dot(l, n);
-        float3 spec = pow(max(0.2, dot(h, n)), 4.0) * k * s;
+        float diff = dot(n, l);
+        float3 spec = pow(saturate(dot(h, n)), 20.0) * k * s;
                      
-        Output = float4((diff * c) * Input.Color + spec, Input.Color.a * c.a);
+        Output = float4((diff * c) * Input.Color.rgb, Input.Color.a * c.a) + float4(spec, 1.0);
         return Output;
 }
 

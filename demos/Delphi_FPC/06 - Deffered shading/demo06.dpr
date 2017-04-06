@@ -19,9 +19,6 @@ var
   QuadInput: IQuadInput;
   Texture: IQuadTexture;
   Camera: IQuadCamera;
-  diff: IQuadTexture;
-  //lightpos: TVec3f;
-  //LightUV: array[0..3] of Single;
   QuadGBuffer: IQuadGBuffer;
 
   mList: TList;
@@ -70,28 +67,36 @@ begin
   QuadRender.RenderToGBuffer(True, QuadGBuffer);
   QuadRender.SetBlendMode(qbmNone);
   Texture.Draw(TVec2f.Zero);
-  QuadRender.RenderToGBuffer(False, QuadGBuffer);
-  QuadRender.RenderToBackBuffer;
+  Texture.Draw(TVec2f.Create(1024, 0));
+  Texture.Draw(TVec2f.Create(-1024, 0));
+  Texture.Draw(TVec2f.Create(0, 1024));
+  Texture.Draw(TVec2f.Create(0, -1024));
+//  QuadRender.RenderToGBuffer(False, QuadGBuffer);
   Camera.Disable;
 
+  QuadRender.RenderToBackBuffer;
+
+  QuadRender.SetBlendMode(qbmNone);
   QuadGBuffer.GetDiffuseMap(DiffuseMap);
-  DiffuseMap.Draw(TVec2f.Zero, $FF080808);
+  DiffuseMap.Draw(TVec2f.Zero, $FF999999);
 
   t := t + delta;
 
-  if t > 1.0 then
+  if t > 0.5 then
   begin
     t := 0;
     GetMem(Vec, SizeOf(Tparticle));
-    vec^.radius := Random(200) + 50;
-    vec^.X := Random(800);
+    vec^.radius := Random(300) + 100;
+    vec^.X := Random(1280);
     vec^.Y := - 100;
-    vec^.Z := Random(30) + 5;
+    vec^.Z := 10.0;//Random(30) + 5;
     vec^.color := Random($FFFFFF) + $FF000000;
     mList.Add(vec);
   end;
 
   QuadRender.SetBlendMode(qbmSrcAlphaAdd);
+
+  QuadGBuffer.DrawLight(TVec2f.Create(640, 400), 0, 1280, $FF444444);
 
   for i := 0 to mList.Count - 1 do
     begin
@@ -106,11 +111,11 @@ begin
                            TVec2f.Create(mVec^.X + 2, mVec^.Y + 2),
                            mVec^.color);
       Camera.Disable;
-
-      QuadRender.FlushBuffer;
     end;
 
   QuadRender.EndRender;
+
+  QuadWindow.SetCaption(PWideChar(FloatToStr(QuadTimer.GetFPS)));
 end;
 
 begin
@@ -120,26 +125,24 @@ begin
 
   QuadDevice.CreateWindow(QuadWindow);
   QuadWindow.SetCaption('QuadEngine - Demo06 - Deffered shading');
-  QuadWindow.SetSize(800, 600);
+  QuadWindow.SetSize(1280, 800);
   QuadWindow.SetPosition(100, 100);
 
   QuadDevice.CreateRender(QuadRender);
-  QuadRender.Initialize(QuadWindow.GetHandle, 800, 600, False, qsm30);
-
-  QuadDevice.CreateAndLoadTexture(0, 'data\Diffuse.jpg', diff);
+  QuadRender.Initialize(QuadWindow.GetHandle, 1280, 800, False, qsm30);
 
   QuadDevice.CreateAndLoadTexture(0, 'data\Diffuse.jpg', Texture);
   Texture.LoadFromFile(1, 'data\Normal.jpg');
   Texture.LoadFromFile(2, 'data\Specular.jpg');
-  Texture.LoadFromFile(3, 'data\Bump.jpg');
 
   QuadDevice.CreateGBuffer(QuadGBuffer);
+  QuadRender.SetAutoCalculateTBN(True);
 
   QuadDevice.CreateCamera(Camera);
 
   QuadWindow.CreateInput(QuadInput);
 
-  QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 16, True);
+  QuadDevice.CreateTimerEx(QuadTimer, OnTimer, 0, True);
 
   mList := TList.Create;
 

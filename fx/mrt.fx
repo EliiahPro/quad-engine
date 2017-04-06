@@ -23,7 +23,7 @@ vertexOutput std_VS(appdata Input)
 {
     vertexOutput Output = (vertexOutput)0;
 
-Input.Binormal.y = -Input.Binormal.y;
+//    Input.Binormal.y = -Input.Binormal.y;
     Output.Position = mul(VPM, Input.Position);
     Output.TexCoord = Input.UV;
 
@@ -31,7 +31,7 @@ Input.Binormal.y = -Input.Binormal.y;
     Output.B = normalize(mul(VPM, Input.Binormal));
     Output.N = normalize(mul(VPM, Input.Normal));
 
-	Output.Color = Input.Color;
+    Output.Color = Input.Color;
     
     return Output;
 }
@@ -41,13 +41,11 @@ struct PixelOutput
     float4 Diffuse  : SV_TARGET0;
     float4 Normal   : SV_TARGET1;
     float4 Specular : SV_TARGET2;
-    float4 Height   : SV_TARGET3;
 };
-                                    
-sampler2D DiffuseMap  : register(s0);   
+
+sampler2D DiffuseMap  : register(s0);
 sampler2D NormalMap   : register(s1);
 sampler2D SpecularMap : register(s2);
-sampler2D HeightMap   : register(s3);
 
 PixelOutput std_PS(vertexOutput Input) 
 {         
@@ -57,12 +55,10 @@ PixelOutput std_PS(vertexOutput Input)
 
     float4 nn = tex2D(NormalMap, Input.TexCoord) * 2.0 - 1.0; 
     Output.Normal = float4(normalize(nn.x * Input.T + nn.y * Input.B + nn.z * Input.N), Output.Diffuse.a);
-	Output.Normal.rgb = (Output.Normal.rgb + 1.0) / 2.0;
+    Output.Normal.rgb = (Output.Normal.rgb + 1.0) / 2.0;
 
     Output.Specular = tex2D(SpecularMap, Input.TexCoord);
-    Output.Height = tex2D(HeightMap, Input.TexCoord);
-	Output.Specular.a = Output.Diffuse.a;
-	Output.Height.a = Output.Diffuse.a;
+    Output.Specular.a = Output.Diffuse.a;
 
     return Output;
 }

@@ -25,13 +25,11 @@ type
     R_DIFFUSE = 0;
     R_NORMAL = 1;
     R_SCPECULAR = 2;
-    R_HEIGHT = 3;
   private
     FBuffer: IQuadTexture;
     FDiffuseMap: IQuadTexture;
     FNormalMap: IQuadTexture;
     FSpecularMap: IQuadTexture;
-    FHeightMap: IQuadTexture;
     FQuadRender: TQuadRender;
     FCamera: TQuadCamera;
   public
@@ -39,7 +37,6 @@ type
     procedure GetDiffuseMap(out ADiffuseMap: IQuadTexture); stdcall;
     procedure GetNormalMap(out ANormalMap: IQuadTexture); stdcall;
     procedure GetSpecularMap(out ASpecularMap: IQuadTexture); stdcall;
-    procedure GetHeightMap(out AHeightMap: IQuadTexture); stdcall;
     procedure GetBuffer(out ABuffer: IQuadTexture); stdcall;
     procedure DrawLight(const APos: TVec2f; AHeight: Single; ARadius: Single; AColor: Cardinal); stdcall;
     property Camera: TQuadCamera read FCamera write FCamera;
@@ -59,28 +56,28 @@ constructor TQuadGBuffer.Create(AQuadRender: TQuadRender);
 begin
   FQuadRender := AQuadRender;
 
-  if FQuadRender.NumSimultaneousRTs < 4 then
-    Device.Log.Write('Error: Videocard does not support 4 Simultaneous Render Targets.');
+  if FQuadRender.NumSimultaneousRTs < 3 then
+    Device.Log.Write('Error: Videocard does not support 3 Simultaneous Render Targets.');
 
   Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_DIFFUSE);
   Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_NORMAL);
   Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_SCPECULAR);
-  Device.CreateRenderTarget(FQuadRender.Width, FQuadRender.Height, FBuffer, R_HEIGHT);
 
-  FDiffuseMap := TQuadTexture.Create(FQuadRender);
-  FNormalMap := TQuadTexture.Create(FQuadRender);
-  FSpecularMap := TQuadTexture.Create(FQuadRender);
-  FHeightMap := TQuadTexture.Create(FQuadRender);
- {
+  Device.CreateTexture(FDiffuseMap);
+  Device.CreateTexture(FNormalMap);
+  Device.CreateTexture(FSpecularMap);
+           {
   FDiffuseMap.AssignTexture(FBuffer, R_DIFFUSE, 0);
   FNormalMap.AssignTexture(FBuffer, R_NORMAL, 0);
   FSpecularMap.AssignTexture(FBuffer, R_SCPECULAR, 0);
-  FHeightMap.AssignTexture(FBuffer, R_HEIGHT, 0);
-          }
+
+  FDiffuseMap._Release;
+  FNormalMap._Release;
+  FSpecularMap._Release;  }
+
   FDiffuseMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
   FNormalMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
   FSpecularMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
-  FHeightMap.SetIsLoaded(FQuadRender.Width, FQuadRender.Height);
 end;
 
 //=============================================================================
@@ -155,21 +152,9 @@ end;
 //=============================================================================
 //
 //=============================================================================
-procedure TQuadGBuffer.GetHeightMap(out AHeightMap: IQuadTexture); stdcall;
-begin
-  AHeightMap := FHeightMap;
-end;
-
-//=============================================================================
-//
-//=============================================================================
 procedure TQuadGBuffer.GetBuffer(out ABuffer: IQuadTexture); stdcall;
 begin
   ABuffer := FBuffer;
 end;
-
-
-
-
 
 end.

@@ -480,7 +480,6 @@ DECLARE_INTERFACE_(IQuadGBuffer, IUnknown)
 	virtual IQuadTexture* CALLBACK DiffuseMap() = 0;
 	virtual IQuadTexture* CALLBACK NormalMap() = 0;
 	virtual IQuadTexture* CALLBACK SpecularMap() = 0;
-	virtual IQuadTexture* CALLBACK HeightMap() = 0;
 	virtual IQuadTexture* CALLBACK Buffer() = 0;
 	/// <summary>Draw light using GBuffer data</summary>
 	/// <param name="position">Position in world space</param>
