@@ -220,9 +220,11 @@ begin
       begin
         Move(pa^, aData.pBits^, 1);
         Inc(NativeInt(pa), 1);
-      end;
-      Inc(NativeInt(aData.pBits), 1);
+      end
+      else
+        Byte(aData.pBits^) := 255;
 
+      Inc(NativeInt(aData.pBits), 1);
     end;
     Inc(NativeInt(aData.pBits), 4 * (Width - FrameWidth));
   end;
