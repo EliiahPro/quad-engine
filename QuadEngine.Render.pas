@@ -327,7 +327,7 @@ begin
 //  Device.LastResultCode := FD3DDevice.BeginScene;
 
   for i := 0 to MaxTextureStages - 1 do
-    FActiveTexture[i] := nil;
+    SetTexture(i, nil);
 
   FCount := 0;
   {$IFDEF PROFILER}
@@ -791,8 +791,8 @@ begin
   for i := 0 to MaxTextureStages - 1 do
     SetTexture(i, nil);
 
-  FQuad[1] := pointA + perpendicular * (width1 / 2);
   FQuad[0] := pointA - perpendicular * (width1 / 2);
+  FQuad[1] := pointA + perpendicular * (width1 / 2);
   FQuad[2] := pointB - perpendicular * (width2 / 2);
   FQuad[3] := pointB + perpendicular * (width2 / 2);
 
