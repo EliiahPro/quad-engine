@@ -164,6 +164,12 @@ begin
       Result := 0;
     end;
 
+  WM_SYSCOMMAND :
+    begin
+      if wparam = SC_KEYMENU then
+        Result := 0;
+    end
+
   else
     Result := DefWindowProc(wnd, msg, wparam, lparam);
   end;
