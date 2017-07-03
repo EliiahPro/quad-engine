@@ -1152,6 +1152,9 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.InitializeVolatileResources;
+type
+  TArrayOfWord = array[0..MaxBufferCount - 1] of Word;
+  PArrayOfWord = ^TArrayOfWord;
 var
   i: Integer;
   qbm: TQuadBlendMode;
@@ -1171,12 +1174,12 @@ begin
   FD3DIB.Lock(0, 0, P, 0);
   for i := 0 to MaxBufferCount div 6 - 2 do
   begin
-    PWordArray(P)^[i * 6 + 0] := 0 + i * 4;
-    PWordArray(P)^[i * 6 + 1] := 1 + i * 4;
-    PWordArray(P)^[i * 6 + 2] := 2 + i * 4;
-    PWordArray(P)^[i * 6 + 3] := 2 + i * 4;
-    PWordArray(P)^[i * 6 + 4] := 1 + i * 4;
-    PWordArray(P)^[i * 6 + 5] := 3 + i * 4;
+    PArrayOfWord(P)^[i * 6 + 0] := 0 + i * 4;
+    PArrayOfWord(P)^[i * 6 + 1] := 1 + i * 4;
+    PArrayOfWord(P)^[i * 6 + 2] := 2 + i * 4;
+    PArrayOfWord(P)^[i * 6 + 3] := 2 + i * 4;
+    PArrayOfWord(P)^[i * 6 + 4] := 1 + i * 4;
+    PArrayOfWord(P)^[i * 6 + 5] := 3 + i * 4;
   end;
   FD3DIB.Unlock;
 
