@@ -162,10 +162,10 @@ end;
 
 destructor TQuadDevice.Destroy;
 var
-  RenderTarget: PRenderTarget;
+  i: Integer;
 begin
-  for RenderTarget in FRenderTargets do
-    Dispose(RenderTarget);
+  for i := FRenderTargets.Count - 1 downto 0 do
+    Dispose(FRenderTargets[i]);
   FRenderTargets.Free;
   FLog := nil;
   FD3D := nil;
