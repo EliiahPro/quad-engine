@@ -358,6 +358,10 @@ begin
     Stream.Read(FKerningPairs[0], Size);
 
     FFontHeight := 0;
+
+    for i := 0 to MAXWORD - 1 do
+      FQuadChars[i] := FQuadChars2[$D];
+
     for i := 0 to CharSize div SizeOf(TQuadChar) do
     begin
       if FQuadChars2[i].IncY > FFontHeight then
