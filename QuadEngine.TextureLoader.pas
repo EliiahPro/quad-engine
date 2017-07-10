@@ -71,7 +71,8 @@ uses
 
 class function TQuadJPGTextureFormat.CheckSignature(ASignature: TTextureSignature): Boolean;
 begin
-  Result := (ASignature[6] = 'J') and (ASignature[7] = 'F') and (ASignature[8] = 'I') and (ASignature[9] = 'F');
+  Result := ((ASignature[6] = 'J') and (ASignature[7] = 'F') and (ASignature[8] = 'I') and (ASignature[9] = 'F'))
+    or ((ASignature[6] = 'E') and (ASignature[7] = 'x') and (ASignature[8] = 'i') and (ASignature[9] = 'f'));
 end;
 
 class function TQuadJPGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
