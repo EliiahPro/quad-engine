@@ -359,8 +359,16 @@ begin
 
     FFontHeight := 0;
 
+    // fill unassigned chars with []
+    for i := 0 to CharSize div SizeOf(TQuadChar) do
+      if FQuadChars2[i].id = CHAR_NEWLINE then
+      begin
+        idx := i;
+        break;
+      end;
     for i := 0 to MAXWORD - 1 do
-      FQuadChars[i] := FQuadChars2[$D];
+      FQuadChars[i] := FQuadChars2[idx];
+
 
     for i := 0 to CharSize div SizeOf(TQuadChar) do
     begin
@@ -521,7 +529,7 @@ begin
         if FIsDistanceField then
         begin
 
-          if l <> CHAR_SPACE then
+          if not (l in [CHAR_SPACE, CHAR_NULL]) then
           FTexture.DrawMap(
                      TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
                                    (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
