@@ -28,26 +28,36 @@ vertexOutput std_VS(appdata Input) {
 }                                   
                
 
-float Radius: register(c0); 
+float Radius: register(c0);  
 
 float4 std_PS(vertexOutput Input) : COLOR0 {  
 
-    float4 Output;
+ //   float4 Output;
 
-    float2 uv = Input.TexCoord;
+ //   float2 uv = Input.TexCoord;
     
-    float d = distance(float2(0.5, 0.5), uv) * 2.0;
+ //   float d = distance(float2(0.5, 0.5), uv) * 2.0;
 
-    if ((d > 1.0) || (d < Radius))
-    {
-	Output = 0.0;
-    }
-    else
-    {
-        Output = Input.Color;
-    }
+//    if ((d > 1.0) || (d < Params.x))
+  //  {
+//	      Output = 0.0;
+  //  }
+ //   else
+ //   {
+ //       Output = Input.Color;
+ //   }
+
+
+    float distance = sqrt(dot(Input.TexCoord, Input.TexCoord)) / 2;
+    float alpha = saturate((0.5 - distance) / fwidth(distance));
+    float alpha2 = saturate((0.5 - distance*Radius) / fwidth(distance*Radius));
+alpha -= alpha2;
+
+    return float4(Input.Color.rgb, Input.Color.a * alpha);
+
+
             
-    return Output;
+   // return Output;
 }
 
 

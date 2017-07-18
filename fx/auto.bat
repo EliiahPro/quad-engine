@@ -12,4 +12,11 @@ fxc.exe /nologo /Fo ..\dll\Shaders\mrtPS20.bin /E std_PS /T ps_2_0 mrt.fx
 fxc.exe /nologo /Fo ..\dll\Shaders\mrtVS30.bin /E std_VS /T vs_3_0 mrt.fx
 fxc.exe /nologo /Fo ..\dll\Shaders\mrtPS30.bin /E std_PS /T ps_3_0 mrt.fx
 
+fxc.exe /nologo /Fo ..\dll\Shaders\CircleVS20.bin /E std_VS /T vs_2_0 Circle.fx
+fxc.exe /nologo /Fo ..\dll\Shaders\CirclePS20.bin /E std_PS /T ps_2_0 Circle.fx
+
+fxc.exe /nologo /Fo ..\dll\Shaders\CircleVS30.bin /E std_VS /T vs_3_0 Circle.fx
+fxc.exe /nologo /Fo ..\dll\Shaders\CirclePS30.bin /E std_PS /T ps_3_0 Circle.fx
+
+
 pause

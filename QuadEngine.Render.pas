@@ -690,10 +690,10 @@ begin
   if FIsDeviceLost then
     Exit;
 
+  FCircleRadius := Radius / InnerRadius;
   TQuadShader.CircleShader.BindVariableToPS(0, @FCircleRadius, 1);
-  FCircleRadius := InnerRadius / Radius;
   TQuadShader.CircleShader.SetShaderState(True);
-  DrawRect(Center - Radius, Center + Radius, TVec2f.Zero, TVec2f.Create(1.0, 1.0), Color);
+  DrawRect(Center - Radius, Center + Radius, TVec2f.Create(-1, -1), TVec2f.Create(1.0, 1.0), Color);
   TQuadShader.CircleShader.SetShaderState(False);
 end;
 
