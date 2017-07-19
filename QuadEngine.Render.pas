@@ -801,12 +801,38 @@ begin
   FQuad[2].color := Color2;
   FQuad[3].color := Color2;
 
+  AddQuadToBuffer;
+
+  FQuad[0] := pointA + perpendicular * (width1 / 2);
+  FQuad[1] := pointA + perpendicular * (width1 / 2 + 0.5);
+  FQuad[2] := pointB + perpendicular * (width2 / 2);
+  FQuad[3] := pointB + perpendicular * (width2 / 2 + 0.5);
+
+  FQuad[0].color := Color1;
+  FQuad[1].color := 0;
+  FQuad[2].color := Color2;
+  FQuad[3].color := 0;
+
+  AddQuadToBuffer;
+
+  FQuad[0] := pointA - perpendicular * (width1 / 2);
+  FQuad[1] := pointA - perpendicular * (width1 / 2 + 0.5);
+  FQuad[2] := pointB - perpendicular * (width2 / 2);
+  FQuad[3] := pointB - perpendicular * (width2 / 2 + 0.5);
+
+  FQuad[0].color := Color1;
+  FQuad[1].color := 0;
+  FQuad[2].color := Color2;
+  FQuad[3].color := 0;
+
+  AddQuadToBuffer;
+
   {$IFDEF PROFILER}
   if Assigned(FProfilerTags.Draw) then
     FProfilerTags.Draw.EndCount;
   {$ENDIF}
 
-  AddQuadToBuffer;
+
 end;
 
 //=============================================================================
