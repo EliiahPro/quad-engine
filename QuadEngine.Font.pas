@@ -240,7 +240,7 @@ begin
       end
     end;
 
-    if not (l in [CHAR_NEWLINE, CHAR_CARETRETURN]) then
+    if not (l in [CHAR_NEWLINE, CHAR_CARETRETURN, CHAR_NULL]) then
     begin
       if FIsDistanceField then
       begin
@@ -627,6 +627,7 @@ begin
 
     l := Ord(AText[i]);
     if IsIncludeSpaces or (l <> CHAR_SPACE) then
+    if not (l in [CHAR_NEWLINE, CHAR_CARETRETURN, CHAR_NULL]) then
     begin
       if FIsDistanceField then
       begin
