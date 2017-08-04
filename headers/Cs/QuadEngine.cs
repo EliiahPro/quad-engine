@@ -151,6 +151,7 @@ namespace QuadEngine
         uint CreateTexture(out IQuadTexture IQuadTexture);
         /// <summary>Return a QuadTimer object.</summary>
         /// <param name="IQuadTimer">IQuadTimer variable to recieve object.</param>
+        uint CreateTextureFromRenderTarget(IQuadTexture ARenderTarget, out IQuadTexture pQuadTexture);
         uint CreateTimer(out IQuadTimer IQuadTimer);
         /// <summary>Return a QuadTimer object with full initialization.</summary>
         /// <param name="pQuadTimer">IQuadTimer variable to recieve object.</param>

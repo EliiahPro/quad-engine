@@ -163,6 +163,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 	virtual HRESULT CALLBACK CreateLog(IQuadLog* &pQuadLog) = 0;
 	virtual HRESULT CALLBACK CreateShader(IQuadShader* &pQuadShader) = 0;
 	virtual HRESULT CALLBACK CreateTexture(IQuadTexture* &pQuadTexture) = 0;
+	virtual HRESULT CALLBACK CreateTexture(IQuadTexture* ARenderTarget, IQuadTexture* &pQuadTexture) = 0;
 	virtual HRESULT CALLBACK CreateTimer(IQuadTimer* &pQuadTimer) = 0;
 	virtual HRESULT CALLBACK CreateTimerEx(IQuadTimer* &pQuadTimer, TTimerProcedure proc, unsigned short interval, bool isEnabled) = 0;
 	virtual HRESULT CALLBACK CreateRender(IQuadRender* &pQuadRender) = 0;

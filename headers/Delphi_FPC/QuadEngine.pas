@@ -196,6 +196,7 @@ type
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
     /// <summary>Return a QuadTimer object.</summary>
     /// <param name="pQuadTimer">IQuadTimer variable to recieve object.</param>
+    function CreateTextureFromRenderTarget(ARenderTarget: IQuadTexture; out pQuadTexture: IQuadTexture): HResult; stdcall;
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
     /// <summary>Return a QuadTimer object with full initialization.</summary>
     /// <param name="pQuadTimer">IQuadTimer variable to recieve object.</param>
@@ -204,7 +205,7 @@ type
     /// </param>
     /// <param name="AInterval">Timer interval in ms.</param>
     /// <param name="IsEnabled">False if need to create in suspended state.</param>
-    function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
+    function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult; stdcall;
     /// <summary>Return a QuadRender object.</summary>
     /// <param name="pQuadRender">IQuadRender variable to recieve object.</param>
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;

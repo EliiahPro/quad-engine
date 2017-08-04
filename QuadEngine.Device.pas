@@ -65,8 +65,9 @@ type
     function CreateLog(out pQuadLog: IQuadLog): HResult; stdcall;
     function CreateShader(out pQuadShader: IQuadShader): HResult; stdcall;
     function CreateTexture(out pQuadTexture: IQuadTexture): HResult; stdcall;
+    function CreateTextureFromRenderTarget(ARenderTarget: IQuadTexture; out pQuadTexture: IQuadTexture): HResult; stdcall;
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
-    function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult;
+    function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult; stdcall;
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
     procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
@@ -372,6 +373,22 @@ begin
   pQuadTimer := Timer;
 
   if Assigned(pQuadTimer) then
+    Result := S_OK
+  else
+    Result := E_FAIL;
+end;
+
+function TQuadDevice.CreateTextureFromRenderTarget(ARenderTarget: IQuadTexture; out pQuadTexture: IQuadTexture): HResult; stdcall;
+var
+  aData : TD3DLockedRect;
+begin
+  CreateTexture(pQuadTexture);
+
+  Device.LastResultCode := ARenderTarget.GetTexture(0).LockRect(0, aData, nil, D3DLOCK_READONLY);
+  pQuadTexture.LoadFromRAW(0, aData.pBits, ARenderTarget.GetTextureWidth, ARenderTarget.GetTextureHeight, rdfARGB8);
+  Device.LastResultCode := ARenderTarget.GetTexture(0).UnlockRect(0);
+
+  if Assigned(pQuadTexture) then
     Result := S_OK
   else
     Result := E_FAIL;
