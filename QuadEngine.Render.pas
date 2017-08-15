@@ -436,6 +436,7 @@ begin
   TQuadShader.CircleShader := nil;
   TQuadShader.mrtShader := nil;
   TQuadShader.DeferredShading := nil;
+  TQuadShader.BlendAdd := nil;
   inherited;
 end;
 
@@ -804,9 +805,9 @@ begin
   AddQuadToBuffer;
 
   FQuad[0] := pointA + perpendicular * (width1 / 2);
-  FQuad[1] := pointA + perpendicular * (width1 / 2 + 0.5);
+  FQuad[1] := pointA + perpendicular * (width1 / 2 + 1.0);
   FQuad[2] := pointB + perpendicular * (width2 / 2);
-  FQuad[3] := pointB + perpendicular * (width2 / 2 + 0.5);
+  FQuad[3] := pointB + perpendicular * (width2 / 2 + 1.0);
 
   FQuad[0].color := Color1;
   FQuad[1].color := 0;
@@ -816,9 +817,9 @@ begin
   AddQuadToBuffer;
 
   FQuad[0] := pointA - perpendicular * (width1 / 2);
-  FQuad[1] := pointA - perpendicular * (width1 / 2 + 0.5);
+  FQuad[1] := pointA - perpendicular * (width1 / 2 + 1.0);
   FQuad[2] := pointB - perpendicular * (width2 / 2);
-  FQuad[3] := pointB - perpendicular * (width2 / 2 + 0.5);
+  FQuad[3] := pointB - perpendicular * (width2 / 2 + 1.0);
 
   FQuad[0].color := Color1;
   FQuad[1].color := 0;
@@ -1539,7 +1540,12 @@ begin
   if Assigned(FProfilerTags.SetBlendMode) then
     FProfilerTags.SetBlendMode.BeginCount;
   {$ENDIF}
+
+  if Fqbm = qbmBlendAdd then
+    TQuadShader.BlendAdd.SetShaderState(False);
+
   Fqbm := qbm;
+
   case qbm of
     qbmNone:
     begin
@@ -1578,6 +1584,26 @@ begin
 
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+    end;
+    qbmBlendAdd:
+    begin
+      if not FIsEnabledBlending then
+      begin
+        Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+        FIsEnabledBlending := True;
+      end;
+
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+      if FIsRenderIntoTexture and GetIsSeparateAlphaBlend then
+      begin
+        FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iFalse);
+        FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+        FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA);
+      end;
+
+      TQuadShader.BlendAdd.SetShaderState(True);
     end;
     qbmSrcAlphaMul:
     begin
@@ -1636,11 +1662,16 @@ begin
     end;
   end;
 
-  if FIsRenderIntoTexture and GetIsSeparateAlphaBlend then
+  if not (qbm = qbmBlendAdd) then
   begin
-    FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iTrue);
-    FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
-    FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
+    if FIsRenderIntoTexture and GetIsSeparateAlphaBlend  then
+    begin
+      FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iTrue);
+      FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
+      FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
+    end
+    else
+    FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iFalse);
   end;
 
   if qbm = qbmDstAlpha then
@@ -1874,6 +1905,12 @@ begin
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
       Shader.SetAutoCalculateTBN(True);
       TQuadShader.DeferredShading := Shader;
+
+      Shader := TQuadShader.Create(Self);
+      Shader.LoadFromResource('blendaddVS20', False);
+      Shader.LoadFromResource('blendaddPS20');
+      Shader.BindVariableToVS(0, @FViewMatrix, 4);
+      TQuadShader.BlendAdd := Shader;
     end;
     qsm30: begin
       if Device.Log <> nil then
@@ -1904,6 +1941,12 @@ begin
       Shader.SetAutoCalculateTBN(True);
       Shader.BindVariableToVS(0, @FViewMatrix, 4);
       TQuadShader.DeferredShading := Shader;
+
+      Shader := TQuadShader.Create(Self);
+      Shader.LoadFromResource('blendaddVS30', False);
+      Shader.LoadFromResource('blendaddPS30');
+      Shader.BindVariableToVS(0, @FViewMatrix, 4);
+      TQuadShader.BlendAdd := Shader;
     end;
     qsmNone:
       if Device.Log <> nil then

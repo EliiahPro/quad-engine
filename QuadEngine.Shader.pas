@@ -53,6 +53,7 @@ type
     CircleShader: IQuadShader;
     MRTShader: IQuadShader;
     DeferredShading: IQuadShader;
+    BlendAdd: IQuadShader;
     AutoCalcTBN: Boolean;
   end;
 
