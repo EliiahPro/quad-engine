@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{D897322D-DB20-411F-8B43-00C280C01093}</ProjectGuid>
+        <ProjectGuid>{C384146A-B4AC-4D6D-80E6-65296C5AD48E}</ProjectGuid>
         <ProjectVersion>18.2</ProjectVersion>
         <FrameworkType>None</FrameworkType>
         <MainSource>demo10.dpr</MainSource>
