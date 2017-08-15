@@ -19,7 +19,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Direct3D9, QuadEngine.Utils, QuadEngine.Log, Vec2f,
-  QuadEngine.Render, System.IniFiles, QuadEngine, Classes;
+  QuadEngine.Render, System.IniFiles, QuadEngine, Classes, vcl.graphics;
 
 const
   QuadVersion: PWideChar = 'Quad Engine v0.9.0 (Diamond)';
@@ -380,13 +380,19 @@ end;
 
 function TQuadDevice.CreateTextureFromRenderTarget(ARenderTarget: IQuadTexture; out pQuadTexture: IQuadTexture): HResult; stdcall;
 var
+  surface: IDirect3DSurface9;
+  surfaceDest: IDirect3DSurface9;
   aData : TD3DLockedRect;
 begin
   CreateTexture(pQuadTexture);
 
-  Device.LastResultCode := ARenderTarget.GetTexture(0).LockRect(0, aData, nil, D3DLOCK_READONLY);
+  Device.LastResultCode := ARenderTarget.GetTexture(0).GetSurfaceLevel(0, surface);
+  Device.LastResultCode := Render.D3DDevice.CreateOffscreenPlainSurface(ARenderTarget.GetTextureWidth, ARenderTarget.GetTextureHeight, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, surfaceDest, nil);
+  Device.LastResultCode := Render.D3DDevice.GetRenderTargetData(surface, surfaceDest);
+
+  Device.LastResultCode := surfaceDest.LockRect(aData, nil, D3DLOCK_READONLY or D3DLOCK_NO_DIRTY_UPDATE or D3DLOCK_NOSYSLOCK);
   pQuadTexture.LoadFromRAW(0, aData.pBits, ARenderTarget.GetTextureWidth, ARenderTarget.GetTextureHeight, rdfARGB8);
-  Device.LastResultCode := ARenderTarget.GetTexture(0).UnlockRect(0);
+  Device.LastResultCode := surfaceDest.UnlockRect;
 
   if Assigned(pQuadTexture) then
     Result := S_OK
@@ -463,7 +469,7 @@ procedure TQuadDevice.CreateRenderTarget(AWidth, AHeight: Word;
   var AQuadTexture: IQuadTexture; ARegister: Byte);
 var
   Target: IDirect3DTexture9;
-  RenderTarget : PRenderTarget;
+  RenderTarget: PRenderTarget;
 begin
 //  if ((AWidth mod 4) > 0) or ((AHeight mod 4) > 0) then
 //    Log.Write('HINT: RenderTarget size must be scale of 4.');
@@ -491,7 +497,7 @@ begin
     FRenderTargets.Add(RenderTarget);
   end;
 
-  Device.LastResultCode := FRender.D3DDevice.CreateTexture(AWidth, AHeight, 1,
+  Device.LastResultCode := FRender.D3DDevice.CreateTexture(AWidth, AHeight, 0,
                                              D3DUSAGE_RENDERTARGET or D3DUSAGE_AUTOGENMIPMAP,  // with mipmaps
                                              D3DFMT_A8R8G8B8,
                                              D3DPOOL_DEFAULT,
