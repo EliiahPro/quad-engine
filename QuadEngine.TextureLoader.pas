@@ -3,7 +3,7 @@ unit QuadEngine.TextureLoader;
 interface
 
 uses
-  direct3d9, QuadEngine, Generics.Collections, sysutils, classes;
+  Direct3D9, QuadEngine, Generics.Collections, SysUtils, Classes, System.SyncObjs;
 
 type
   TTextureSignature = array[0..31] of AnsiChar;
@@ -15,36 +15,36 @@ type
   end;
 
   TQuadCustomTextureFormat = class abstract
-    class var
+    private
       aData : TD3DLockedRect;
       Width, Height: Integer;
       FrameWidth, FrameHeight: Integer;
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; virtual; abstract;
+    function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; virtual; abstract;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; virtual; abstract;
   end;
 
   TQuadBMPTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
+    function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadPNGTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
+    function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadTGATextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
+    function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadJPGTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
+    function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
   TQuadDDSTextureFormat = class sealed(TQuadCustomTextureFormat)
-    class function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
+    function LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9; override;
     class function CheckSignature(ASignature: TTextureSignature): Boolean; override;
   end;
 
@@ -53,11 +53,13 @@ type
   TQuadTextureLoader = class
   private
     class var FFormats: TList<TQuadCustomTextureClass>;
+    class var FSync: TCriticalSection;
   public
     class constructor Create;
     class destructor Destroy;
     class procedure Register(AQuadCustomTextureClass: TQuadCustomTextureClass);
     class function LoadFromStream(AStream: TMemoryStream): TTextureResult;
+    class property Sync: TCriticalSection read FSync;
   end;
 
   TQ = (TQuadBMPTextureClass, TQuadPNGTextureClass, TQuadTGATextureClass, TQuadJPGTextureClass, TQuadDDSTextureClass);
@@ -75,7 +77,7 @@ begin
     or ((ASignature[6] = 'E') and (ASignature[7] = 'x') and (ASignature[8] = 'i') and (ASignature[9] = 'f'));
 end;
 
-class function TQuadJPGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
+function TQuadJPGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp : TBitmap;
   jpg : TJPEGImage;
@@ -102,6 +104,7 @@ begin
   FrameWidth := bmp.Width;
   FrameHeight := bmp.Height;
 
+  TQuadTextureLoader.Sync.Enter;
   Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, Result, nil);
   Device.LastResultCode := result.LockRect(0, aData, nil, 0);
 
@@ -120,6 +123,7 @@ begin
   end;
 
   Device.LastResultCode := Result.UnlockRect(0);
+  TQuadTextureLoader.Sync.Leave;
 
   bmp.Free;
 end;
@@ -131,7 +135,7 @@ begin
   Result := Copy(ASignature, 1, 16) = 'TRUEVISION-XFILE';
 end;
 
-class function TQuadTGATextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
+function TQuadTGATextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp: TBitmapEx;
   i, j: Integer;
@@ -154,6 +158,7 @@ begin
   FrameWidth := bmp.Width;
   FrameHeight := bmp.Height;
 
+  TQuadTextureLoader.Sync.Enter;
   Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Result, nil);
   Device.LastResultCode := Result.LockRect(0, aData, nil, 0);
 
@@ -170,6 +175,7 @@ begin
   end;
 
   Device.LastResultCode := Result.UnlockRect(0);
+  TQuadTextureLoader.Sync.Leave;
 
   bmp.Free;
 end;
@@ -181,7 +187,7 @@ begin
   Result := Copy(ASignature, 2, 3) = 'PNG';
 end;
 
-class function TQuadPNGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
+function TQuadPNGTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp : TPngImage;
   i, j : Integer;
@@ -204,6 +210,7 @@ begin
   FrameWidth := bmp.Width;
   FrameHeight := bmp.Height;
 
+  TQuadTextureLoader.Sync.Enter;
   Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Result, nil);
   Device.LastResultCode := Result.LockRect(0, aData, nil, 0);
 
@@ -231,6 +238,7 @@ begin
   end;
 
   Device.LastResultCode := Result.UnlockRect(0);
+  TQuadTextureLoader.Sync.Leave;
 
   bmp.Free;
 end;
@@ -242,7 +250,7 @@ begin
   Result := Copy(ASignature, 1, 2) = 'BM';
 end;
 
-class function TQuadBMPTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
+function TQuadBMPTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   bmp : TBitmap;
   i, j : Integer;
@@ -266,6 +274,8 @@ begin
 
   FrameWidth := bmp.Width;
   FrameHeight := bmp.Height;
+
+  TQuadTextureLoader.Sync.Enter;
 
   Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Result, nil);
   Device.LastResultCode := Result.LockRect(0, aData, nil, 0);
@@ -308,6 +318,7 @@ begin
   end;
 
   Device.LastResultCode := Result.UnlockRect(0);
+  TQuadTextureLoader.Sync.Leave;
 
   bmp.Free;
 end;
@@ -317,7 +328,7 @@ begin
   Result := Copy(ASignature, 1, 4) = 'DDS ';
 end;
 
-class function TQuadDDSTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
+function TQuadDDSTextureFormat.LoadFromStream(AStream: TMemoryStream; ColorKey: Integer): IDirect3DTexture9;
 var
   i, j: Integer;
   p: Pointer;
@@ -335,12 +346,14 @@ begin
     Height := NormalizeSize(FrameHeight);
   end;
 
+  TQuadTextureLoader.Sync.Enter;
   Device.LastResultCode := Device.Render.D3DDevice.CreateTexture(Width, Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, Result, nil);
   Device.LastResultCode := Result.LockRect(0, aData, nil, 0);
 
   System.Move(p, aData, FrameWidth * FrameHeight * 4);
 
   Device.LastResultCode := Result.UnlockRect(0);
+  TQuadTextureLoader.Sync.Leave;
 end;
 
 { TQuadTextureLoader }
@@ -353,18 +366,22 @@ begin
   Register(TQuadTGATextureFormat);
   Register(TQuadJPGTextureFormat);
   Register(TQuadDDSTextureFormat);
+  FSync := TCriticalSection.Create;
 end;
 
 class destructor TQuadTextureLoader.Destroy;
 begin
+  FSync.Free;
   FFormats.Free;
 end;
 
 class function TQuadTextureLoader.LoadFromStream(AStream: TMemoryStream): TTextureResult;
 var
   tf: TQuadCustomTextureClass;
+  Loader: TQuadCustomTextureFormat;
   Signature: TTextureSignature;
   res: Boolean;
+  Tex: TTextureResult;
 begin
   Result.Texture := nil;
   tf := nil;
@@ -383,19 +400,19 @@ begin
   end;
 
   if (not res) or (not Assigned(tf)) then
-  begin
-    FreeAndNil(AStream);
     Exit;
+
+  Loader := tf.Create;
+  try
+    AStream.Position := 0;
+    Result.Texture := Loader.LoadFromStream(AStream, -1);
+    Result.Width := Loader.Width;
+    Result.Height := Loader.Height;
+    Result.FrameWidth := Loader.FrameWidth;
+    Result.FrameHeight := Loader.FrameHeight;
+  finally
+    FreeAndNil(Loader);
   end;
-
-  AStream.Position := 0;
-  Result.Texture := tf.LoadFromStream(AStream, -1);
-  Result.Width := tf.Width;
-  Result.Height := tf.Height;
-  Result.FrameWidth := tf.FrameWidth;
-  Result.FrameHeight := tf.FrameHeight;
-
-  FreeAndNil(AStream);
 end;
 
 class procedure TQuadTextureLoader.Register(AQuadCustomTextureClass: TQuadCustomTextureClass);

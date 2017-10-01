@@ -446,6 +446,7 @@ procedure TQuadTexture.LoadFromFile(ARegister: Byte; AFilename: PWideChar;
 var
   Stream: TMemoryStream;
 begin
+  FIsLoaded := False;
   FIsLoadFromFile := True;
 
   if Assigned(Device.Log) then
@@ -568,6 +569,7 @@ begin
     FFrameWidth := TextureResult.FrameWidth;
     FFrameHeight := TextureResult.FrameHeight;
   except
+    Stream.Free;
     if Assigned(Device.Log) then
       Device.Log.Write(PWideChar('Error loading texture'));
     Exit;
@@ -584,6 +586,7 @@ begin
     FPatternHeight := APatternHeight;
   end;
 
+  Stream.Free;
   FIsLoaded := True;
 end;
 
