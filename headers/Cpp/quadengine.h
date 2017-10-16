@@ -91,7 +91,17 @@ enum TQuadTextureMirroring {
 	qtmHorizontal = 2,	/* Horizontal mirroring */
 	qtmVertical = 3,	/* Vertical mirroring */
 	qtmBoth = 4			/* Horizontal and vertical mirroring */
-}; 
+};
+
+// Texture Format
+enum TQuadTextureFormat{
+	qtfInvalidFormat = 0,
+	qtfA8R8G8B8      = 1,
+	qtfR5G6B5        = 2,
+	qtfD16           = 3,
+	qtfD32           = 4,
+	qtfG16R16        = 5
+};
 
 // Vector record declaration
 struct TVector
@@ -167,7 +177,7 @@ DECLARE_INTERFACE_(IQuadDevice, IUnknown)
 	virtual HRESULT CALLBACK CreateTimer(IQuadTimer* &pQuadTimer) = 0;
 	virtual HRESULT CALLBACK CreateTimerEx(IQuadTimer* &pQuadTimer, TTimerProcedure proc, unsigned short interval, bool isEnabled) = 0;
 	virtual HRESULT CALLBACK CreateRender(IQuadRender* &pQuadRender) = 0;
-	virtual HRESULT CALLBACK CreateRenderTarget(unsigned short width, unsigned short height, IQuadTexture* &texture, byte ARegister) = 0;
+	virtual HRESULT CALLBACK CreateRenderTarget(unsigned short width, unsigned short height, IQuadTexture* &texture, byte ARegister, TQuadTextureFormat AFormat = TQuadTextureFormat.qtfA8R8G8B8) = 0;
 	virtual HRESULT CALLBACK CreateWindowEx(IQuadWindow* &pQuadWindow) = 0;
 	virtual bool CALLBACK GetIsResolutionSupported(unsigned short width, unsigned short height) = 0;
 	virtual wchar_t* CALLBACK GetLastError() = 0;

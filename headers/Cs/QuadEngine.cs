@@ -70,12 +70,20 @@ namespace QuadEngine
                                       qtfGaussianQuad    = 6,    /* 4-sample gaussian */
                                       qtfConvolutionMono = 7};   /* Convolution filter for monochrome textures */
 
-  // Texture Mirroring mode
+    // Texture Mirroring mode
     public enum TQuadTextureMirroring{qtmInvalid    = 0,
                                       qtmNone       = 1,   /* No mirroring */
                                       qtmHorizontal = 2,   /* Horizontal mirroring */
                                       qtmVertical   = 3,   /* Vertical mirroring */
                                       qtmBoth       = 4};  /* Horizontal and vertical mirroring */
+
+    //Texture Format
+    public enum TQuadTextureFormat{qtfInvalidFormat = 0,
+                                   qtfA8R8G8B8      = 1,
+                                   qtfR5G6B5        = 2,
+                                   qtfD16           = 3,
+                                   qtfD32           = 4,
+                                   qtfG16R16        = 5};
 
     // Vector record declaration
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -169,7 +177,7 @@ namespace QuadEngine
         /// <param name="AHeight">Height of rendertarget.</param>
         /// <param name="IQuadTexture">Pointer to declared <see cref="QuadEngine.IQuadTexture"/>. If it not created this function will create one. Otherwise it will use existing one.</param>
         /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
-        void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister);
+        void CreateRenderTarget(UInt16 AWidth, UInt16 AHeight, ref IQuadTexture IQuadTexture, byte ARegister, TQuadTextureFormat AFormat = TQuadTextureFormat.qtfA8R8G8B8);
         uint CreateWindow(out IQuadWindow IQuadWindow);
         uint CreateProfiler(string AName, out IQuadProfiler quadProfiler);
         [PreserveSig] bool GetIsResolutionSupported(UInt16 AWidth, UInt16 AHeight);

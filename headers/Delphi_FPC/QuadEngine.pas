@@ -57,7 +57,8 @@ type
                     qbmSrcColor       = 7,
                     qbmSrcColorAdd    = 8,
                     qbmInvertSrcColor = 9,
-                    qbmDstAlpha       = 10);
+                    qbmDstAlpha       = 10,
+                    qbmBlendAdd       = 11);
 
   ///<summary>Texture adressing mode</summary>
   ///<param name="qtaWrap">Repeat UV</param>
@@ -88,6 +89,15 @@ type
                            qtmHorizontal = 2,   { Horizontal mirroring }
                            qtmVertical   = 3,   { Vertical mirroring }
                            qtmBoth       = 4);  { Horizontal and vertical mirroring }
+
+  //Texture Format
+  TQuadTextureFormat = (qtfInvalidFormat = 0,
+                        qtfA8R8G8B8      = 1,
+                        qtfR5G6B5        = 2,
+                        qtfD16           = 3,
+                        qtfD32           = 4,
+                        qtfG16R16        = 5
+                        );
 
   // Vector record declaration
   TVector = packed record
@@ -214,7 +224,7 @@ type
     /// <param name="AHeight">Height of rendertarget.</param>
     /// <param name="AQuadTexture">Pointer to declared <see cref="QuadEngine.IQuadTexture"/>. If it not created this function will create one. Otherwise it will use existing one.</param>
     /// <param name="ARegister">Texture's register in which rendertarget must be assigned.</param>
-    procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
+    procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte; AFormat: TQuadTextureFormat = qtfA8R8G8B8); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
     function CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult; stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
