@@ -32,6 +32,7 @@ type
     Width: Word;
     Height: Word;
     IsAlive: Boolean;
+    Format: TQuadTextureFormat;
   end;
 
   TQuadDevice = class(TInterfacedObject, IQuadDevice)
@@ -69,7 +70,7 @@ type
     function CreateTimer(out pQuadTimer: IQuadTimer): HResult; stdcall;
     function CreateTimerEx(out pQuadTimer: IQuadTimer; AProc: TTimerProcedure; AInterval: Word; IsEnabled: Boolean): HResult; stdcall;
     function CreateRender(out pQuadRender: IQuadRender): HResult; stdcall;
-    procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte); stdcall;
+    procedure CreateRenderTarget(AWidth, AHeight: Word; var AQuadTexture: IQuadTexture; ARegister: Byte; AFormat: TQuadTextureFormat = qtfA8R8G8B8); stdcall;
     function CreateWindow(out pQuadWindow: IQuadWindow): HResult; stdcall;
     function CreateProfiler(AName: PWideChar; out pQuadProfiler: IQuadProfiler): HResult; stdcall;
     function GetIsResolutionSupported(AWidth, AHeight: Word): Boolean; stdcall;
@@ -191,7 +192,7 @@ var
 begin
   for RenderTarget in FRenderTargets do
     if RenderTarget.IsAlive then
-      CreateRenderTarget(RenderTarget.Width, RenderTarget.Height, RenderTarget.Texture, RenderTarget.Reg);
+      CreateRenderTarget(RenderTarget.Width, RenderTarget.Height, RenderTarget.Texture, RenderTarget.Reg, RenderTarget.Format);
 end;
 
 function TQuadDevice.GetMonitorsCount: Byte;
@@ -466,10 +467,11 @@ end;
 // Create render target
 //=============================================================================
 procedure TQuadDevice.CreateRenderTarget(AWidth, AHeight: Word;
-  var AQuadTexture: IQuadTexture; ARegister: Byte);
+  var AQuadTexture: IQuadTexture; ARegister: Byte; AFormat: TQuadTextureFormat = qtfA8R8G8B8);
 var
   Target: IDirect3DTexture9;
   RenderTarget: PRenderTarget;
+  fmt: TD3DFormat;
 begin
 //  if ((AWidth mod 4) > 0) or ((AHeight mod 4) > 0) then
 //    Log.Write('HINT: RenderTarget size must be scale of 4.');
@@ -485,6 +487,14 @@ begin
     Device.CreateTexture(AQuadTexture);
   end;
 
+  case AFormat of
+    qtfA8R8G8B8 : fmt := D3DFMT_A8R8G8B8;
+    qtfR5G6B5   : fmt := D3DFMT_R5G6B5;
+    qtfD16      : fmt := D3DFMT_D16;
+    qtfD32      : fmt := D3DFMT_D32;
+    qtfG16R16   : fmt := D3DFMT_G16R16;
+  end;
+  
   if not Render.IsDeviceLost then
   begin
     New(RenderTarget);
@@ -494,12 +504,13 @@ begin
     RenderTarget.Width := AWidth;
     RenderTarget.Height := AHeight;
     RenderTarget.IsAlive := True;
+    RenderTarget.Format := AFormat;
     FRenderTargets.Add(RenderTarget);
   end;
 
   Device.LastResultCode := FRender.D3DDevice.CreateTexture(AWidth, AHeight, 0,
                                              D3DUSAGE_RENDERTARGET or D3DUSAGE_AUTOGENMIPMAP,  // with mipmaps
-                                             D3DFMT_A8R8G8B8,
+                                             fmt,
                                              D3DPOOL_DEFAULT,
                                              Target,
                                              nil);
