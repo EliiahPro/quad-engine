@@ -355,7 +355,8 @@ begin
     Stream.Read(c, 8);
     Stream.Read(Size, 4);
     SetLength(FKerningPairs, Size div SizeOf(tagKERNINGPAIR));
-    Stream.Read(FKerningPairs[0], Size);
+    if Length(FKerningPairs) > 0 then
+      Stream.Read(FKerningPairs[0], Size);
 
     FFontHeight := 0;
 
@@ -369,8 +370,7 @@ begin
     for i := 0 to MAXWORD - 1 do
       FQuadChars[i] := FQuadChars2[idx];
 
-
-    for i := 0 to CharSize div SizeOf(TQuadChar) do
+    for i := 0 to CharSize div SizeOf(TQuadChar) - 1 do
     begin
       if FQuadChars2[i].IncY > FFontHeight then
         FFontHeight := FQuadChars2[i].IncY;
