@@ -18,5 +18,11 @@ fxc.exe /nologo /Fo ..\dll\Shaders\CirclePS20.bin /E std_PS /T ps_2_0 Circle.fx
 fxc.exe /nologo /Fo ..\dll\Shaders\CircleVS30.bin /E std_VS /T vs_3_0 Circle.fx
 fxc.exe /nologo /Fo ..\dll\Shaders\CirclePS30.bin /E std_PS /T ps_3_0 Circle.fx
 
+fxc.exe /nologo /Fo ..\dll\Shaders\BlendAddVS20.bin /E std_VS /T vs_2_0 BlendAdd.fx
+fxc.exe /nologo /Fo ..\dll\Shaders\BlendAddPS20.bin /E std_PS /T ps_2_0 BlendAdd.fx
+
+fxc.exe /nologo /Fo ..\dll\Shaders\BlendAddVS30.bin /E std_VS /T vs_3_0 BlendAdd.fx
+fxc.exe /nologo /Fo ..\dll\Shaders\BlendAddPS30.bin /E std_PS /T ps_3_0 BlendAdd.fx
+
 
 pause

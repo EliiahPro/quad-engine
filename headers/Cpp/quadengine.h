@@ -59,7 +59,9 @@ enum TQuadBlendMode {
 	qbmSrcColor = 7,		/* Blend source with color weight to dest */
 	qbmSrcColorAdd = 8,     /* Blend source with color weight and alpha to dest */
 	qbmInvertSrcColor = 9,	/* Blend inverted source color */
-	qbmDstAlpha = 10        /* Copy destination alpha to source */
+	qbmDstAlpha = 10,       /* Copy destination alpha to source */
+	qbmBlendAdd = 11,
+	qbmDstColorAdd = 12     /*Add destination color using destination alpha */
 };    
 
 // Texture adressing mode

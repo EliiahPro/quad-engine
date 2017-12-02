@@ -832,8 +832,6 @@ begin
   if Assigned(FProfilerTags.Draw) then
     FProfilerTags.Draw.EndCount;
   {$ENDIF}
-
-
 end;
 
 //=============================================================================
@@ -1374,13 +1372,10 @@ end;
 //
 //=============================================================================
 procedure TQuadRender.ReleaseVolatileResources;
-var
-  i: Integer;
 begin
   FIsRenderIntoTexture := False;
   Device.FreeRenderTargets;
   FBackBuffer := nil;
-//  FD3DVD := nil;
   FD3DIB := nil;
   FD3DVB := nil;
 end;
@@ -1596,13 +1591,6 @@ begin
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
       Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-      if FIsRenderIntoTexture and GetIsSeparateAlphaBlend then
-      begin
-        FD3DDevice.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, iFalse);
-        FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-        FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA);
-      end;
-
       TQuadShader.BlendAdd.SetShaderState(True);
     end;
     qbmSrcAlphaMul:
@@ -1684,6 +1672,21 @@ begin
 
     Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
     Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+
+    FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ZERO);
+    FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_SRCALPHA);
+  end;
+
+  if qbm = qbmDstColorAdd then
+  begin
+    if not FIsEnabledBlending then
+    begin
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_ALPHABLENDENABLE, iTrue);
+      FIsEnabledBlending := True;
+    end;
+
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+      Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 
     FD3DDevice.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ZERO);
     FD3DDevice.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_SRCALPHA);

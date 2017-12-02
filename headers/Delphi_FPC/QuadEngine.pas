@@ -47,6 +47,7 @@ type
   ///<param name="qbmSrcColorAdd">Blend source with color weight and alpha to destination</param>
   ///<param name="qbmInvertSrcColor">Blend inverted source color</param>
   ///<param name="qbmDstAlpha">Copy destination alpha to source</param>
+  ///<param name="qbmDstColorAdd">Add destination color using destination alpha</param>
   TQuadBlendMode = (qbmInvalid        = 0,
                     qbmNone           = 1,
                     qbmAdd            = 2,
@@ -58,7 +59,8 @@ type
                     qbmSrcColorAdd    = 8,
                     qbmInvertSrcColor = 9,
                     qbmDstAlpha       = 10,
-                    qbmBlendAdd       = 11);
+                    qbmBlendAdd       = 11,
+                    qbmDstColorAdd    = 12);
 
   ///<summary>Texture adressing mode</summary>
   ///<param name="qtaWrap">Repeat UV</param>

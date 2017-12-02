@@ -33,7 +33,7 @@ sampler2D DiffuseMap    : register(s0);
 
 float4 std_PS(vertexOutput Input) : COLOR {  
 	float4 tex = tex2D(DiffuseMap, Input.TexCoord);
-	float4 res = float4((tex.rgb), tex.a)  * Input.Color;
+	float4 res = float4((tex.rgb * Input.Color.rgb), tex.a* Input.Color.a);
 	if (res.a == 0.0f){ 
 		res.rgb = 0.0f;	
 	}
