@@ -140,6 +140,11 @@ begin
     begin
       Device.Render.D3DDevice.ShowCursor(True);
       Result := 0;
+    end
+    else
+    begin
+      Device.Render.D3DDevice.ShowCursor(False);
+      Result := 0;
     end;
 
   WM_ACTIVATEAPP:

@@ -526,8 +526,7 @@ begin
   begin
     FIsHardwareCursor := Show;
 
-    if not IsHardwareCursor then
-      FRender.D3DDevice.ShowCursor(False);
+    FRender.D3DDevice.ShowCursor(FIsHardwareCursor);
   end
   else
     Log.Write('ERROR: ShowCursor called before QuadRender was initialized');
