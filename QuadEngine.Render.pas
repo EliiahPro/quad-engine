@@ -1178,7 +1178,7 @@ end;
 //=============================================================================
 procedure TQuadRender.InitializeVolatileResources;
 type
-  TArrayOfWord = array[0..MaxBufferCount - 1] of Word;
+  TArrayOfWord = array[0..MaxBufferCount * 2] of Word;
   PArrayOfWord = ^TArrayOfWord;
 var
   i: Integer;
@@ -1197,7 +1197,7 @@ begin
 
   Device.LastResultCode := FD3DDevice.CreateIndexBuffer(MaxBufferCount * 3, D3DUSAGE_DYNAMIC or D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, FD3DIB, nil);
   FD3DIB.Lock(0, 0, P, 0);
-  for i := 0 to MaxBufferCount div 6 - 2 do
+  for i := 0 to MaxBufferCount div 4 - 1 do
   begin
     PArrayOfWord(P)^[i * 6 + 0] := 0 + i * 4;
     PArrayOfWord(P)^[i * 6 + 1] := 1 + i * 4;
