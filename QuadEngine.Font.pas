@@ -26,6 +26,7 @@ type
     U1, V1, U2, V2: Double;   { Texture UV coords }
     X, Y          : Word;     { X, Y position }
     H, W          : Byte;     { Height and width }
+    TexId         : Byte;     { Texture Id }
   end;
 
   TQuadChar = packed record
@@ -69,14 +70,15 @@ type
   strict private
     FColors: array[Word] of Cardinal;
     FDistanceFieldParams: TInternalDistanceFieldParams;
-    FHeight: Word;
     FIsSmartColoring: Boolean;
     FKerning: Single;
     FSpacing: Single;
     FLetters: array[Word] of TLetterUV;
     FQuadRender: IQuadRender;
-    FTexture: IQuadTexture;
-    FWidth: Word;
+    FTexture: array[Byte] of IQuadTexture;
+    FTextureCount: Byte;
+    FWidth: array[Byte] of Word;
+    FHeight: array[Byte] of Word;
     FFontHeight: Integer;
 
     //v2.0
@@ -154,15 +156,20 @@ begin
   FDistanceFieldParams.SetColor(TQuadColor.White);
 
   FStrings := TList<TQuadStringLine>.Create;
+
+  FTextureCount := 0;
 end;
 
 //=============================================================================
 //
 //=============================================================================
 destructor TQuadFont.destroy;
+var
+  i: Integer;
 begin
   FStrings.Free;
-  FTexture := nil;
+  for i := 0 to FTextureCount - 1 do
+    FTexture[i] := nil;
   FQuadRender := nil;
   inherited;
 end;
@@ -250,9 +257,9 @@ begin
       end
       else
       begin
-        qsl.Width := qsl.Width + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+        qsl.Width := qsl.Width + (FLetters[l].U2 - FLetters[l].U1) * FWidth[FLetters[l].TexId] * AScale + FKerning;
         if l <> CHAR_SPACE then
-          qsl.WidthWOSpaces := qsl.WidthWOSpaces + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+          qsl.WidthWOSpaces := qsl.WidthWOSpaces + (FLetters[l].U2 - FLetters[l].U1) * FWidth[FLetters[l].TexId] * AScale + FKerning;
       end;
     end;
 
@@ -274,8 +281,16 @@ end;
 //
 //=============================================================================
 function TQuadFont.GetIsLoaded: Boolean;
+var
+  i: integer;
 begin
-  Result := not (FTexture = nil);
+  Result := true;
+  for i := 0 to FTextureCount do
+  if FTexture[i] = nil then
+  begin
+    Result := false;
+    Exit;
+  end;
 end;
 
 //=============================================================================
@@ -294,15 +309,14 @@ begin
     Exit;
   end;
 
-  if GetIsLoaded then
-    FTexture := nil;
+  Inc(FTextureCount);
 
-  Device.CreateAndLoadTexture(0, ATextureFilename, FTexture);
+  Device.CreateAndLoadTexture(0, ATextureFilename, FTexture[FTextureCount - 1]);
 
   Stream := TMemoryStream.Create;
   Stream.LoadFromFile(aUVFilename);
 
-  LoadFromStream(Stream.Memory, Stream.Size, FTexture);
+  LoadFromStream(Stream.Memory, Stream.Size, FTexture[FTextureCount - 1]);
 
   FreeAndNil(Stream);
 end;
@@ -326,9 +340,9 @@ begin
 
   Device.Log.Write(PWideChar('Loading font from stream'));
 
-  FWidth := ATexture.GetTextureWidth;
-  FHeight := ATexture.GetTextureHeight;
-  FTexture := ATexture;
+  FWidth[FTextureCount - 1] := ATexture.GetTextureWidth;
+  FHeight[FTextureCount - 1] := ATexture.GetTextureHeight;
+  FTexture[FTextureCount - 1] := ATexture;
 
   Stream := TMemoryStream.Create;
   Stream.WriteBuffer((AStream)^, AStreamSize);
@@ -361,14 +375,17 @@ begin
     FFontHeight := 0;
 
     // fill unassigned chars with []
-    for i := 0 to CharSize div SizeOf(TQuadChar) do
-      if FQuadChars2[i].id = CHAR_NEWLINE then
-      begin
-        idx := i;
-        break;
-      end;
-    for i := 0 to MAXWORD - 1 do
-      FQuadChars[i] := FQuadChars2[idx];
+    if FTextureCount <= 1 then
+    begin
+      for i := 0 to CharSize div SizeOf(TQuadChar) do
+        if FQuadChars2[i].id = CHAR_NEWLINE then
+        begin
+          idx := i;
+          break;
+        end;
+      for i := 0 to MAXWORD - 1 do
+        FQuadChars[i] := FQuadChars2[idx];
+    end;
 
     for i := 0 to CharSize div SizeOf(TQuadChar) - 1 do
     begin
@@ -376,9 +393,16 @@ begin
         FFontHeight := FQuadChars2[i].IncY;
 
       idx := FQuadChars2[i].id;
-      FQuadChars[idx] := FQuadChars2[i];
+
+      if FQuadChars[idx].Reserved <> 333 then
+      begin
+        FQuadChars[idx] := FQuadChars2[i];
+        FQuadChars[idx].Reserved := 333;      // MAGIC
+        FLetters[idx].TexId := FTextureCount - 1;
+      end;
     end;
-    FQuadChars[CHAR_SPACE] := FQuadChars2[CHAR_SPACE];
+    if FTextureCount <= 1 then
+      FQuadChars[CHAR_SPACE] := FQuadChars2[CHAR_SPACE];
     Device.Log.Write(PWideChar(String('Distance field font loaded. Char count: ' + IntToStr(CharSize div SizeOf(TQuadChar)))));
   end
   else
@@ -392,11 +416,13 @@ begin
       Stream.Read(TempUV.W, SizeOf(Byte));
       Stream.Read(TempUV.H, SizeOf(Byte));
 
-      TempUV.U1 := TempUV.X / FWidth;
-      TempUV.V1 := TempUV.Y / FHeight;
+      TempUV.U1 := TempUV.X / FWidth[FTextureCount - 1];
+      TempUV.V1 := TempUV.Y / FHeight[FTextureCount - 1];
 
-      TempUV.U2 := (TempUV.X + TempUV.W) / FWidth;
-      TempUV.V2 := (TempUV.Y + TempUV.H) / FHeight;
+      TempUV.U2 := (TempUV.X + TempUV.W) / FWidth[FTextureCount - 1];
+      TempUV.V2 := (TempUV.Y + TempUV.H) / FWidth[FTextureCount - 1];
+
+      TempUV.TexId := FTextureCount - 1;
 
       FLetters[TempUV.id] := TempUV;
       Inc(i);
@@ -524,21 +550,22 @@ begin
       end;
 
       l := Ord(AText[FStrings[line].Start + i]);
+//      Device.Log.Write(PWideChar(IntToStr(FLetters[l].TexId) + ' ' + IntToStr(l) + ' ' + string(AText[FStrings[line].Start + i])));
 
       begin
         if FIsDistanceField then
         begin
 
           if not (l in [CHAR_SPACE, CHAR_NULL]) then
-          FTexture.DrawMap(
+          FTexture[FLetters[l].TexId].DrawMap(
                      TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor) * AScale + sx - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale,
                                    (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
                      TVec2f.Create((FQuadChars[l].OriginX / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeX) * AScale + sx - (FQuadFontHeader.Coeef/ FQuadFontHeader.ScaleFactor) * AScale,
                                    (-FQuadChars[l].OriginY / FQuadFontHeader.ScaleFactor + FQuadChars[l].SizeY) * AScale - (FQuadFontHeader.Coeef / FQuadFontHeader.ScaleFactor) * AScale + ypos),
-                     TVec2f.Create(FQuadChars[l].Xpos / FWidth,
-                                   FQuadChars[l].YPos / FHeight),
-                     TVec2f.Create((FQuadChars[l].Xpos + FQuadChars[l].SizeX) / FWidth,
-                                   (FQuadChars[l].YPos + FQuadChars[l].SizeY) / FHeight),
+                     TVec2f.Create(FQuadChars[l].Xpos / FWidth[FLetters[l].TexId],
+                                   FQuadChars[l].YPos / FHeight[FLetters[l].TexId]),
+                     TVec2f.Create((FQuadChars[l].Xpos + FQuadChars[l].SizeX) / FWidth[FLetters[l].TexId],
+                                   (FQuadChars[l].YPos + FQuadChars[l].SizeY) / FHeight[FLetters[l].TexId]),
                      CurrentColor);
 
           if (AAlign = qfaJustify) and (l = CHAR_SPACE) then
@@ -550,7 +577,7 @@ begin
         end
         else
         begin
-          FTexture.DrawMap(TVec2f.Create(sx, ypos), TVec2f.Create(sx + FLetters[l].W * AScale, ypos + FLetters[l].H * AScale),
+          FTexture[FLetters[l].TexId].DrawMap(TVec2f.Create(sx, ypos), TVec2f.Create(sx + FLetters[l].W * AScale, ypos + FLetters[l].H * AScale),
                            TVec2f.Create(FLetters[l].U1, FLetters[l].V1), TVec2f.Create(FLetters[l].U2, FLetters[l].V2),
                            CurrentColor);
           sx := sx + FLetters[l].W * AScale + FKerning;
@@ -583,14 +610,14 @@ begin
   end
   else
   begin
-    Result := (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight * AScale;
+    Result := (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight[0] * AScale;
     if AText[0] = #0 then
       Exit;
 
     i := 0;
     repeat
       if AText[i] = #13 then
-        Result := Result + (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight * AScale;
+        Result := Result + (FLetters[CHAR_SPACE].V2 - FLetters[CHAR_SPACE].V1) * FHeight[0] * AScale;
 
       Inc(i);
     until AText[i] = #0;
@@ -634,7 +661,7 @@ begin
         Result := Result + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning
       end
       else
-        Result := Result + (FLetters[l].U2 - FLetters[l].U1) * FWidth * AScale + FKerning;
+        Result := Result + (FLetters[l].U2 - FLetters[l].U1) * FWidth[FLetters[l].TexId] * AScale + FKerning;
     end;
 
     if l = Ord(#13) then
