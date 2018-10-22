@@ -1,4 +1,4 @@
-﻿/*==============================================================================
+/*==============================================================================
 
   Quad engine 0.9.0 Diamond header file for Visual C#
 
@@ -264,14 +264,14 @@ namespace QuadEngine
         void Polygon(ref Vec2f PointA, ref Vec2f PointB, ref Vec2f PointC, ref Vec2f PointD, UInt32 Color);
         void Rectangle(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color);
         void RectangleEx(ref Vec2f PointA, ref Vec2f PointB, UInt32 Color1, UInt32 Color2, UInt32 Color3, UInt32 Color4);
-        void RenderToGBuffer(bool AIsRenderToGBuffer, ref IQuadGBuffer AQuadGBuffer = null, bool AIsCropScreen = false);
+        void RenderToGBuffer(bool AIsRenderToGBuffer, IQuadGBuffer AQuadGBuffer = null, bool AIsCropScreen = false);
         /// <summary>Enables render to texture. You can use multiple render targets within one render call.</summary>
         /// <param name="AIsRenderToTexture">Enable render to texture.</param>
         /// <param name="AQuadTexture">IQuadTexture. Instance must be created with IQuadDevice.CreateRenderTexture only.</param>
         /// <param name="ATextureRegister">Register of IQuadTexture to be used for rendering.</param>
         /// <param name="ARenderTargetRegister">When using multiple rendertargets this parameter tells what register this rendertarget will be in output.</param>
         /// <param name="AIsCropScreen">Scale or crop scene to match rendertarget's resolution</param>
-        void RenderToTexture(bool AIsRenderToTexture, ref IQuadTexture AQuadTexture = null,
+        void RenderToTexture(bool AIsRenderToTexture, IQuadTexture AQuadTexture = null,
           byte ATextureRegister = 0, byte ARenderTargetRegister = 0, bool AIsCropScreen = false);
         void RenderToBackBuffer();
         void SetAutoCalculateTBN(bool Value);
@@ -582,7 +582,7 @@ namespace QuadEngine
         void SetCaption(string caption);
         void SetSize(int width, int height); 
         void SetPosition(int xPos, int yPos);
-        [PreserveSig] UIntPtr GetHandle();
+        [PreserveSig] IntPtr GetHandle();
 
         void SetOnKeyDown(IntPtr onKeyDown); 
         void SetOnKeyUp(IntPtr onKeyUp); 
@@ -671,7 +671,7 @@ namespace QuadEngine
       void SendMessage(string AMessage, TQuadProfilerMessageType AMessageType = TQuadProfilerMessageType.pmtMessage);
     }
 
-    public static class QuadEngine                                                               oCalculateTBN(Value:
+    public static class QuadEngine                                                               
     {
         [DllImport("qei.dll", CallingConvention = CallingConvention.StdCall, EntryPoint = "CreateQuadDevice", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateQuadDevice(out IQuadDevice Device); //[Out, MarshalAs(UnmanagedType.Interface)]
