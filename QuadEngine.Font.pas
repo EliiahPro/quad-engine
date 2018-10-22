@@ -570,7 +570,10 @@ begin
 
           if (AAlign = qfaJustify) and (l = CHAR_SPACE) then
           begin
-            sx := sx + (MaxLineWidth - FStrings[line].WidthWOSpaces) / FStrings[line].Spaces;
+            SpaceWidth := (MaxLineWidth - FStrings[line].WidthWOSpaces) / FStrings[line].Spaces;
+            if SpaceWidth > MaxLineWidth * 0.1 then
+              SpaceWidth := (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;
+            sx := sx + SpaceWidth;
           end
           else
             sx := sx + (FQuadChars[l].IncX / FQuadFontHeader.ScaleFactor) * AScale + FKerning;
