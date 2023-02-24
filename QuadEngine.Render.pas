@@ -2075,8 +2075,8 @@ procedure TQuadRender.SkipClipRect;
 begin
   FViewport.Left   := 0;
   FViewport.Top    := 0;
-  FViewport.Right  := FWidth;
-  FViewport.Bottom := FHeight;
+  FViewport.Right  := FD3DPP.BackBufferWidth;
+  FViewport.Bottom := FD3DPP.BackBufferHeight;
 
   Device.LastResultCode := FD3DDevice.SetRenderState(D3DRS_SCISSORTESTENABLE, iFalse);
   Device.LastResultCode := FD3DDevice.SetScissorRect(@FViewport);
