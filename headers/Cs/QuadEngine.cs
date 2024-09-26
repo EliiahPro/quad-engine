@@ -1,4 +1,4 @@
-/*==============================================================================
+﻿/*==============================================================================
 
   Quad engine 0.9.0 Diamond header file for Visual C#
 
@@ -578,7 +578,8 @@ namespace QuadEngine
         /// <summary>Return a QuadInput object.</summary>
         /// <param name="QuadInput">IQuadInput variable to recieve object.</param>
         uint CreateInput(out IQuadInput IQuadInput);
-        void Start(); 
+        void Start();
+        void Close();
         void SetCaption(string caption);
         void SetSize(int width, int height); 
         void SetPosition(int xPos, int yPos);

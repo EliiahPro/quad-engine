@@ -53,6 +53,7 @@ type
     destructor Destroy; override;
     function CreateInput(out pQuadInput: IQuadInput): HResult; stdcall;
     procedure Start; stdcall;
+    procedure Close; stdcall;
     procedure SetCaption(ACaption: PChar); stdcall;
     procedure SetSize(AWidth, AHeight: Integer); stdcall;
     procedure SetPosition(AXpos, AYPos: Integer); stdcall;
@@ -478,6 +479,11 @@ begin
     TranslateMessage(Mmsg);
     DispatchMessage(Mmsg);
   end;
+end;
+
+procedure TQuadWindow.Close;
+begin
+  PostMessage(FHandle, WM_CLOSE, 0, 0);
 end;
 
 procedure TQuadWindow.SetSize(AWidth, AHeight: Integer);

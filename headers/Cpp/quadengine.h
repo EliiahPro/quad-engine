@@ -446,6 +446,7 @@ DECLARE_INTERFACE_(IQuadWindow, IUnknown)
 {
 	virtual HRESULT CALLBACK CreateInput(IQuadInput* &pQuadInput) = 0;
 	virtual void CALLBACK Start() = 0;
+	virtual void CALLBACK Close() = 0;
 	virtual void CALLBACK SetCaption(const wchar_t* caption) = 0;
 	virtual void CALLBACK SetSize(int width, int height) = 0;
 	virtual void CALLBACK SetPosition(int xPos, int yPos) = 0;

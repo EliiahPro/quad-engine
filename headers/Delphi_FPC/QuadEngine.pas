@@ -532,6 +532,7 @@ type
   ['{8EB98692-67B1-4E64-9090-B6A0F47054BA}']
     function CreateInput(out pQuadInput: IQuadInput): HResult; stdcall;
     procedure Start; stdcall;
+    procedure Close; stdcall;
     procedure SetCaption(ACaption: PChar); stdcall;
     procedure SetSize(AWidth, AHeight: Integer); stdcall;
     procedure SetPosition(AXpos, AYPos: Integer); stdcall;
